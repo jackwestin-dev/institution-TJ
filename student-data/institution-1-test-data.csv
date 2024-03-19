@@ -1,4 +1,4 @@
-﻿student_name,student_id,test_name,test_date,actual_exam_score,low_predicted_exam,high_predicted_exam
+﻿student_name,student_id,test_name,test_date,actual_exam_score,low_predicted_exam_score,high_predicted_exam_score
 David Cantu,10,Actual Previous MCAT,7/1/23,498,,
 David Cantu,10,FST,12/30/23,498,,
 David Cantu,10,Test 2 (3rd Party),2/25/24,502,500,509
