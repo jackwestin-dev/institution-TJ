@@ -51,6 +51,13 @@ df_engagement_attendance_student_filtered['num_attended_small_session_cumsum'] =
 df_engagement_attendance_student_filtered['num_scheduled_small_session_cumsum'] = df_engagement_attendance_student_filtered['num_scheduled_small_session'].cumsum()
 df_engagement_attendance_student_filtered['large_session'] = df_engagement_attendance_student_filtered['num_attended_large_session_cumsum'] / df_engagement_attendance_student_filtered['num_scheduled_large_session_cumsum']
 df_engagement_attendance_student_filtered['small_session'] = df_engagement_attendance_student_filtered['num_attended_small_session_cumsum'] / df_engagement_attendance_student_filtered['num_scheduled_small_session_cumsum']
+df_engagement_attendance_avg = df_engagement_attendance_student_filtered.mean()[['class_participation','homework_participation','cars_accuracy','sciences_accuracy','class_accuracy']]
+
+class_participation = df_engagement_attendance_avg.loc['class_participation']
+homework_participation = df_engagement_attendance_avg.loc['homework_participation']
+cars_accuracy = df_engagement_attendance_avg.loc['cars_accuracy']
+sciences_accuracy = df_engagement_attendance_avg.loc['sciences_accuracy']
+class_accuracy = df_engagement_attendance_avg.loc['class_accuracy']
 
 df_test_scores_student_filtered = df_test_scores[df_test_scores['student_id'] == student_id]
 
@@ -58,6 +65,7 @@ df_test_scores_student_filtered = df_test_scores[df_test_scores['student_id'] ==
 st.write(' ')
 st.write(' ')
 st.header('Participation')
+st.write('The student has weekly average rates of {class_participation:.1%} for class participation and {homework_participation:.1%} for homework participation.'.format(class_participation=class_participation,homework_participation=homework_participation))
 st.write(' ')
 st.write(' ')
 
@@ -90,7 +98,8 @@ st.altair_chart(line_participation,use_container_width=True)
 
 st.write(' ')
 st.write(' ')
-st.header('Engagement Rate')
+st.header('Accuracy')
+st.write('The student has weekly average scores of {cars_accuracy:.1%} for cars accuracy, {sciences_accuracy:.1%} for sciences accuracy, and {class_accuracy:.1%} for class accuracy.'.format(cars_accuracy=cars_accuracy,sciences_accuracy=sciences_accuracy,class_accuracy=class_accuracy))
 st.write(' ')
 st.write(' ')
 
@@ -108,7 +117,7 @@ line_engagement = alt.Chart(df_engagement_attendance_student_filtered).mark_line
     y=alt.Y(
         'value:Q',
         axis=alt.Axis(
-            title='Accuracy Rate',
+            title='Accuracy Score',
             format='%'
         )
     ),
