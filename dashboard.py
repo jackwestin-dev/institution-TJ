@@ -51,7 +51,7 @@ df_engagement_attendance_student_filtered['num_attended_small_session_cumsum'] =
 df_engagement_attendance_student_filtered['num_scheduled_small_session_cumsum'] = df_engagement_attendance_student_filtered['num_scheduled_small_session'].cumsum()
 df_engagement_attendance_student_filtered['large_session'] = df_engagement_attendance_student_filtered['num_attended_large_session_cumsum'] / df_engagement_attendance_student_filtered['num_scheduled_large_session_cumsum']
 df_engagement_attendance_student_filtered['small_session'] = df_engagement_attendance_student_filtered['num_attended_small_session_cumsum'] / df_engagement_attendance_student_filtered['num_scheduled_small_session_cumsum']
-df_engagement_attendance_avg = df_engagement_attendance_student_filtered.mean()[['class_participation','homework_participation','cars_accuracy','sciences_accuracy','class_accuracy']]
+df_engagement_attendance_avg = df_engagement_attendance_student_filtered[['class_participation','homework_participation','cars_accuracy','sciences_accuracy','class_accuracy']].mean()
 
 class_participation = df_engagement_attendance_avg.loc['class_participation']
 homework_participation = df_engagement_attendance_avg.loc['homework_participation']
