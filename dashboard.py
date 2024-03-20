@@ -55,9 +55,7 @@ df_engagement_attendance_avg = df_engagement_attendance_student_filtered.mean()[
 
 class_participation = df_engagement_attendance_avg.loc['class_participation']
 homework_participation = df_engagement_attendance_avg.loc['homework_participation']
-cars_accuracy = df_engagement_attendance_avg.loc['cars_accuracy']
-sciences_accuracy = df_engagement_attendance_avg.loc['sciences_accuracy']
-class_accuracy = df_engagement_attendance_avg.loc['class_accuracy']
+overall_participation = (class_participation + homework_participation) / 2
 
 df_test_scores_student_filtered = df_test_scores[df_test_scores['student_id'] == student_id]
 
@@ -65,7 +63,7 @@ df_test_scores_student_filtered = df_test_scores[df_test_scores['student_id'] ==
 st.write(' ')
 st.write(' ')
 st.header('Participation')
-st.write('The student has weekly average rates of {class_participation:.1%} for class participation and {homework_participation:.1%} for homework participation.'.format(class_participation=class_participation,homework_participation=homework_participation))
+st.write('The student has an aggregate weekly average rate of {class_participation:.1%} for class participation and {homework_participation:.1%} for homework participation. To date, overall participation is {overall_participation:.1%}.'.format(class_participation=class_participation,homework_participation=homework_participation,overall_participation=overall_participation))
 st.write(' ')
 st.write(' ')
 
@@ -99,7 +97,6 @@ st.altair_chart(line_participation,use_container_width=True)
 st.write(' ')
 st.write(' ')
 st.header('Accuracy')
-st.write('The student has weekly average scores of {cars_accuracy:.1%} for cars accuracy, {sciences_accuracy:.1%} for sciences accuracy, and {class_accuracy:.1%} for class accuracy.'.format(cars_accuracy=cars_accuracy,sciences_accuracy=sciences_accuracy,class_accuracy=class_accuracy))
 st.write(' ')
 st.write(' ')
 
