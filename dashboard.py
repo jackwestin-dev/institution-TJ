@@ -4,7 +4,7 @@ from datetime import datetime, date
 import hmac
 import altair as alt
 
-st.set_page_config(page_title='Institutuion 1 Student Dashboard',layout='wide')
+st.set_page_config(page_title='Institution 1 Student Dashboard',layout='wide')
 
 st.title('Institution 1 - Student Dashboard')
 
