@@ -1,4 +1,4 @@
-﻿Week ,start_date,end_date,student_name,student_id,cars_accuracy,science_accuracy,class_accuracy,completed_lessons,"total_completed_passages_discrete_sets	",score_trends_on_completed_dailies,num_attended_large_session,num_scheduled_large_session,num_attended_small_session,num_scheduled_small_session,class_participation,homework_participation,,,,,,,,,,,,,,,,,,,,,,,
+﻿week ,start_date,end_date,student_name,student_id,cars_accuracy,sciences_accuracy,class_accuracy,completed_lessons,"total_completed_passages_discrete_sets	",score_trends_on_completed_dailies,num_attended_large_session,num_scheduled_large_session,num_attended_small_session,num_scheduled_small_session,class_participation,homework_participation,,,,,,,,,,,,,,,,,,,,,,,
 1,6/1/24,6/6/24,Dafne Balderas,1,,0.71,0.75,9,4,0.38,2,2,,,1,,,,,,,,,,,,,,,,,,,,,,,,
 1,6/1/24,6/6/24,Abid Miah,2,,0.79,0.75,9,3,0.70,2,2,,,1,,,,,,,,,,,,,,,,,,,,,,,,
 1,6/1/24,6/6/24,Abigail Padilla,3,,0.75,1.00,7,6,0.35,2,2,,,1,,,,,,,,,,,,,,,,,,,,,,,,
