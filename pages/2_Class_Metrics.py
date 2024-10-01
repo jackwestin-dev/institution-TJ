@@ -104,14 +104,14 @@ else:
 st.write(' ')
 st.write(' ')
 st.header('Performance Class Average')
-st.write(
-    f'''
-    Over the course of {week_total} weeks:
-    * The scholar’s accuracy rates on their science questions (passage or discrete questions) {sciences_accuracy_directional_change} by {sciences_accuracy_magnitude_change:.0%} from {sciences_accuracy_first_week:.0%} to {sciences_accuracy_latest_week:.0%}.
-    * The scholar’s accuracy rates on their CARS passages {cars_accuracy_directional_change} by {cars_accuracy_magnitude_change:.0%} from  {cars_accuracy_first_week:.0%} to {cars_accuracy_latest_week:.0%}.
-    * Class accuracy averages on question sets completed in class fluctuated week to week, with a range of {class_accuracy_weekly_min:.0%} - {class_accuracy_weekly_max:.0%}.
-    '''
-)
+# st.write(
+#     f'''
+#     Over the course of {week_total} weeks:
+#     * The scholar’s accuracy rates on their science questions (passage or discrete questions) {sciences_accuracy_directional_change} by {sciences_accuracy_magnitude_change:.0%} from {sciences_accuracy_first_week:.0%} to {sciences_accuracy_latest_week:.0%}.
+#     * The scholar’s accuracy rates on their CARS passages {cars_accuracy_directional_change} by {cars_accuracy_magnitude_change:.0%} from  {cars_accuracy_first_week:.0%} to {cars_accuracy_latest_week:.0%}.
+#     * Class accuracy averages on question sets completed in class fluctuated week to week, with a range of {class_accuracy_weekly_min:.0%} - {class_accuracy_weekly_max:.0%}.
+#     '''
+# )
 st.write(' ')
 st.write(' ')
 st.dataframe(
