@@ -63,7 +63,7 @@ overall_participation = (class_participation + homework_participation) / 2
 st.write(' ')
 st.write(' ')
 st.header('Participation')
-st.write('The student has an aggregate weekly average rate of {class_participation:.1%} for class participation and {homework_participation:.1%} for homework participation. To date, overall participation is {overall_participation:.1%}.'.format(class_participation=class_participation,homework_participation=homework_participation,overall_participation=overall_participation))
+# st.write('The student has an aggregate weekly average rate of {class_participation:.1%} for class participation and {homework_participation:.1%} for homework participation. To date, overall participation is {overall_participation:.1%}.'.format(class_participation=class_participation,homework_participation=homework_participation,overall_participation=overall_participation))
 st.write(' ')
 st.write(' ')
 
