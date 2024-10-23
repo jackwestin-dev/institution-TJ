@@ -38,7 +38,7 @@ if not check_password():
 
 ## Read data from CSV files
 df_engagement_attendance = pd.read_csv('./student-data/institution-1-engagement-data.csv',parse_dates=['start_date','end_date'])
-# df_test_scores = pd.read_csv('./student-data/institution-1-test-data.csv',parse_dates=['test_date'])
+df_test_scores = pd.read_csv('./student-data/institution-1-test-data.csv',parse_dates=['test_date'])
 
 ## Create dashboard filters
 student_id = st.selectbox("Choose a student:", list(df_engagement_attendance['student_id'].unique()))
@@ -57,7 +57,7 @@ class_participation = df_engagement_attendance_avg.loc['class_participation']
 homework_participation = df_engagement_attendance_avg.loc['homework_participation']
 overall_participation = (class_participation + homework_participation) / 2
 
-# df_test_scores_student_filtered = df_test_scores[df_test_scores['student_id'] == student_id]
+df_test_scores_student_filtered = df_test_scores[df_test_scores['student_id'] == student_id]
 
 ## Create sections and render dashboard
 st.write(' ')
@@ -160,35 +160,35 @@ line_attendance = alt.Chart(df_engagement_attendance_student_filtered).mark_line
 
 st.altair_chart(line_attendance,use_container_width=True)
 
-# st.write(' ')
-# st.write(' ')
-# st.header('Practice Exams')
-# st.write(' ')
-# st.write(' ')
+st.write(' ')
+st.write(' ')
+st.header('Practice Exams')
+st.write(' ')
+st.write(' ')
 
-# st.dataframe(df_test_scores_student_filtered[['test_name','test_date','actual_exam_score','low_predicted_exam_score','high_predicted_exam_score']],use_container_width=True)
-# st.write(' ')
-# st.write(' ')
+st.dataframe(df_test_scores_student_filtered[['test_name','test_date','actual_exam_score','low_predicted_exam_score','high_predicted_exam_score']],use_container_width=True)
+st.write(' ')
+st.write(' ')
 
-# point_exam_scores = alt.Chart(df_test_scores_student_filtered).mark_point().transform_fold(
-#     fold=['actual_exam_score','low_predicted_exam_score','high_predicted_exam_score'],
-#     as_=['variable','value']
-# ).encode(
-#     x=alt.X(
-#         'yearmonthdate(test_date):O',
-#         axis=alt.Axis(
-#             labelAngle=-45,
-#             title='Test Date'
-#         )
-#     ),
-#     y=alt.Y(
-#         'value:Q',
-#         axis=alt.Axis(
-#             title='Exam Score'
-#         ),
-#         scale=alt.Scale(domain=[470, 528])
-#     ),
-#     color=alt.Color('variable:N',legend=alt.Legend(title='Range',orient='bottom'))
-# )
+point_exam_scores = alt.Chart(df_test_scores_student_filtered).mark_point().transform_fold(
+    fold=['actual_exam_score','low_predicted_exam_score','high_predicted_exam_score'],
+    as_=['variable','value']
+).encode(
+    x=alt.X(
+        'yearmonthdate(test_date):O',
+        axis=alt.Axis(
+            labelAngle=-45,
+            title='Test Date'
+        )
+    ),
+    y=alt.Y(
+        'value:Q',
+        axis=alt.Axis(
+            title='Exam Score'
+        ),
+        scale=alt.Scale(domain=[470, 528])
+    ),
+    color=alt.Color('variable:N',legend=alt.Legend(title='Range',orient='bottom'))
+)
 
-# st.altair_chart(point_exam_scores,use_container_width=True)
+st.altair_chart(point_exam_scores,use_container_width=True)
