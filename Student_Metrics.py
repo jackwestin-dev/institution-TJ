@@ -57,6 +57,7 @@ class_participation = df_engagement_attendance_avg.loc['class_participation']
 homework_participation = df_engagement_attendance_avg.loc['homework_participation']
 overall_participation = (class_participation + homework_participation) / 2
 
+df_test_scores['test_date'] = df_test_scores['test_date'].dt.date
 df_test_scores_student_filtered = df_test_scores[df_test_scores['student_id'] == student_id]
 
 ## Create sections and render dashboard
