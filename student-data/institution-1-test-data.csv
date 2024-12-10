@@ -1,5 +1,4 @@
-﻿,,,,,
-student_id,test_name,test_date,actual_exam_score,low_predicted_exam_score,high_predicted_exam_score
+﻿student_id,test_name,test_date,actual_exam_score,low_predicted_exam_score,high_predicted_exam_score
 1,JW Full Length Exam 1,9/1/24,494,,
 1,Anticipated MCAT Exam,,,,
 1,AAMC Free Sample Test,,,,
