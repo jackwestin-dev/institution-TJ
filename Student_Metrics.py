@@ -202,6 +202,6 @@ st.write(' ')
 st.subheader('Practice Exam - Accuracy per Topic')
 exam_section = st.selectbox("Choose an exam section:", list(df_test_section_scores['Exam Section'].unique()))
 st.dataframe(
-    df_test_section_scores_student_filtered[df_test_section_scores_student_filtered['Exam Section'] == exam_section][['Question Topic','Question Frequency','Student Accuracy','Site Accuracy']].reset_index(drop=True),
+    df_test_section_scores_student_filtered[df_test_section_scores_student_filtered['Exam Section'] == exam_section][['Exam Name','Question Topic','Question Frequency','Student Accuracy','Site Accuracy']].sort_values(by='Exam Name').reset_index(drop=True),
     use_container_width=True
     )
