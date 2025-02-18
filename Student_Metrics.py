@@ -39,6 +39,7 @@ if not check_password():
 ## Read data from CSV files
 df_engagement_attendance = pd.read_csv('./student-data/institution-1-engagement-data.csv',parse_dates=['start_date','end_date'])
 df_test_scores = pd.read_csv('./student-data/institution-1-test-data.csv',parse_dates=['test_date'])
+df_test_section_scores = pd.read_csv('./student-data/institution-1-2025-exam-data-jw-exams.csv')
 
 ## Create dashboard filters
 student_id = st.selectbox("Choose a student:", list(df_engagement_attendance['student_id'].unique()))
@@ -59,6 +60,8 @@ overall_participation = (class_participation + homework_participation) / 2
 
 df_test_scores['test_date'] = df_test_scores['test_date'].dt.date
 df_test_scores_student_filtered = df_test_scores[df_test_scores['student_id'] == student_id]
+
+df_test_section_scores_student_filtered = df_test_section_scores[df_test_section_scores['student_id'] == student_id]
 
 ## Create sections and render dashboard
 st.write(' ')
@@ -193,3 +196,12 @@ point_exam_scores = alt.Chart(df_test_scores_student_filtered).mark_point().tran
 )
 
 st.altair_chart(point_exam_scores,use_container_width=True)
+st.write(' ')
+st.write(' ')
+
+st.subheader('Practice Exam - Accuracy per Topic')
+exam_section = st.selectbox("Choose an exam section:", list(df_test_section_scores['Exam Section'].unique()))
+st.dataframe(
+    df_test_section_scores_student_filtered[df_test_section_scores_student_filtered['Exam Section'] == exam_section][['Question Topic','Question Frequency','Student Accuracy','Site Accuracy']].reset_index(drop=True),
+    use_container_width=True
+    )
