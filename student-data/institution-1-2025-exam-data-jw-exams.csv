@@ -1,4 +1,4 @@
-student_id,exam_name,exam_section,question_topic,question_freq,student_accuracy,site_accuracy,student_score,site_median_score
+student_id,Exam Name,Exam Section,Question Topic,Question Frequency,Student Accuracy,Site Accuracy,student_score,site_median_score
 3,Jack Westin MCAT Practice Exam 1,"Psychological, Social, and Biological Foundations of Behavior",Social Inequality & Social Class,4,75,65.16,494,496.72
 3,Jack Westin MCAT Practice Exam 1,"Psychological, Social, and Biological Foundations of Behavior",Psychological Disorders,3,66.67,75,494,496.72
 3,Jack Westin MCAT Practice Exam 1,"Psychological, Social, and Biological Foundations of Behavior",Types of psychological disorders,2,50,68.94,494,496.72
