@@ -1,4 +1,4 @@
-student_name,student_id,test_name,test_date,actual_exam_score,low_predicted_exam_score,high-predicted_exam_score
+student_name,student_id,test_name,test_date,actual_exam_score,low_predicted_exam_score,high_predicted_exam_score
 Dafne Balderas,1,JW Full Length Exam 1,9/1/24,494,,
 Dafne Balderas,1,Anticipated MCAT Exam,3/21/25,,,
 Dafne Balderas,1,AAMC Free Sample Test,,486,,
