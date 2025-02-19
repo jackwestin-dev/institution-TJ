@@ -170,12 +170,12 @@ st.header('Practice Exams')
 st.write(' ')
 st.write(' ')
 
-st.dataframe(df_test_scores_student_filtered[['test_name','test_date','actual_exam_score','low_predicted_exam_score','high_predicted_exam_score']],use_container_width=True)
+st.dataframe(df_test_scores_student_filtered[['test_name','test_date','actual_exam_score']],use_container_width=True)
 st.write(' ')
 st.write(' ')
 
 point_exam_scores = alt.Chart(df_test_scores_student_filtered).mark_point().transform_fold(
-    fold=['actual_exam_score','low_predicted_exam_score','high_predicted_exam_score'],
+    fold=['actual_exam_score'],
     as_=['variable','value']
 ).encode(
     x=alt.X(
@@ -192,7 +192,7 @@ point_exam_scores = alt.Chart(df_test_scores_student_filtered).mark_point().tran
         ),
         scale=alt.Scale(domain=[470, 528])
     ),
-    color=alt.Color('variable:N',legend=alt.Legend(title='Range',orient='bottom'))
+    color=alt.Color('variable:N',legend=alt.Legend(title='Practice Exam Scores',orient='bottom'))
 )
 
 st.altair_chart(point_exam_scores,use_container_width=True)
