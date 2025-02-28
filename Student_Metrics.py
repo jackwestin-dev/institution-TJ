@@ -209,7 +209,7 @@ st.altair_chart(line_participation,use_container_width=True)
 
 st.write(' ')
 st.write(' ')
-st.header('Accuracy')
+st.header('Accuracy Percentages on Question Sets Completed')
 st.write(' ')
 st.write(' ')
 
@@ -235,7 +235,14 @@ line_engagement = alt.Chart(df_engagement_attendance_student_filtered).mark_line
         alt.Tooltip('week:O',title='Week'),
         alt.Tooltip('value:Q',title='Accuracy Rate',format='0.1%')
     ],
-    color=alt.Color('variable:N',legend=alt.Legend(title='Subject',orient='bottom'))
+        color=alt.Color(
+        'variable:N',
+        legend=alt.Legend(
+            title='Subject',
+            orient='bottom',
+            labelExpr="datum.value == 'cars_accuracy' ? 'CARS Question Accuracy' : datum.value == 'class_accuracy' ? 'In-Class Questions Accuracy' : 'Science Question Accuracy'"
+        )
+    )
 )
 
 st.altair_chart(line_engagement,use_container_width=True)
