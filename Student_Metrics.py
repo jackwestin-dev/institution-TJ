@@ -166,6 +166,75 @@ st.altair_chart(line_attendance,use_container_width=True)
 
 st.write(' ')
 st.write(' ')
+
+st.header('Engagement')
+st.subheader('Completed Lessons')
+
+st.write(' ')
+st.write(' ')
+
+line_engagement = alt.Chart(df_engagement_attendance_student_filtered).mark_line(point=True).transform_fold(
+        ['completed_lessons', 'completed_mandatory_lessons'],
+        as_=['variable', 'value']
+    ).encode(
+        x=alt.X(
+            'week:O',
+            axis=alt.Axis(
+                labelAngle=0,
+                title='Week'
+            )
+        ),
+        y=alt.Y(
+            'value:Q',
+            axis=alt.Axis(
+                title='Completed Count',
+            )
+        ),
+        tooltip=[
+            alt.Tooltip('week:O',title='Week'),
+            alt.Tooltip('value:Q',title='Completed Count')
+        ],
+        color=alt.Color(
+            'variable:N',
+            legend=alt.Legend(
+                title='Type',
+                orient='bottom',
+                labelExpr="datum.value == 'completed_lessons' ? 'Lessons' : 'Mandatory Lessons'"
+            )
+        )
+)
+
+st.altair_chart(line_engagement,use_container_width=True)
+
+st.write(' ')
+st.write(' ')
+
+st.subheader('Completed Questions Sets')
+
+st.write(' ')
+st.write(' ')
+
+line_question_sets = alt.Chart(df_engagement_attendance_student_filtered).mark_line(point=True).encode(
+    x=alt.X(
+        'week:O',
+        axis=alt.Axis(
+            labelAngle=0,
+            title='Week'
+        )
+    ),
+    y=alt.Y(
+        'total_completed_passages_discrete_sets',
+        axis=alt.Axis(
+            title='Completed Count'
+        )
+    ),
+    tooltip=[
+            alt.Tooltip('week:O',title='Week'),
+            alt.Tooltip('total_completed_passages_discrete_sets',title='Completed Count')
+    ],
+)
+
+st.altair_chart(line_question_sets,use_container_width=True)
 st.header('Practice Exams')
 st.write(' ')
 st.write(' ')
