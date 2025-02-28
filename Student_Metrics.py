@@ -202,14 +202,21 @@ line_participation = alt.Chart(df_engagement_attendance_student_filtered).mark_l
         alt.Tooltip('week:O',title='Week'),
         alt.Tooltip('value:Q',title='Participation Rate',format='0.1%')
     ],
-    color=alt.Color('variable:N',legend=alt.Legend(title='Setting',orient='bottom'))
+    color=alt.Color(
+        'variable:N',
+        legend=alt.Legend(
+            title='Type',
+            orient='bottom',
+            labelExpr="datum.value == 'class_participation' ? 'Class Participation' : 'Homework Completion'"
+        )
+    )
 )
 
 st.altair_chart(line_participation,use_container_width=True)
 
 st.write(' ')
 st.write(' ')
-st.header('Accuracy Percentages on Question Sets Completed')
+st.header('Average Accuracy (%) on Question Sets Per Week')
 st.write(' ')
 st.write(' ')
 
@@ -227,7 +234,7 @@ line_engagement = alt.Chart(df_engagement_attendance_student_filtered).mark_line
     y=alt.Y(
         'value:Q',
         axis=alt.Axis(
-            title='Accuracy Score',
+            title='Average Accuracy (%)',
             format='%'
         )
     ),
