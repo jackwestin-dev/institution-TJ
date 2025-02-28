@@ -240,7 +240,7 @@ line_engagement = alt.Chart(df_engagement_attendance_student_filtered).mark_line
         legend=alt.Legend(
             title='Subject',
             orient='bottom',
-            labelExpr="datum.value == 'cars_accuracy' ? 'CARS Question Accuracy' : datum.value == 'class_accuracy' ? 'In-Class Questions Accuracy' : 'Science Question Accuracy'"
+            labelExpr="datum.value == 'cars_accuracy' ? 'CARS Question' : datum.value == 'class_accuracy' ? 'In-Class Questions' : 'Science Question'"
         )
     )
 )
