@@ -107,9 +107,9 @@ st.dataframe(
 st.write(' ')
 st.write(' ')
 
-st.header('Engagement')
+st.header('Self-Learning with Jack Westin Course or Question Bank')
 st.subheader('Completed Lessons')
-
+st.caption('Number of video lessons or assignments within the Self-Paced JW Complete MCAT Course completed by the student per week')
 st.write(' ')
 st.write(' ')
 
@@ -132,7 +132,7 @@ line_engagement = alt.Chart(df_engagement_attendance_student_filtered).mark_line
         ),
         tooltip=[
             alt.Tooltip('week:O',title='Week'),
-            alt.Tooltip('value:Q',title='Completed Count')
+            alt.Tooltip('value:Q',title='Completed Number of Lessons')
         ],
         color=alt.Color(
             'variable:N',
@@ -150,7 +150,7 @@ st.write(' ')
 st.write(' ')
 
 st.subheader('Completed Questions Sets')
-
+st.caption('The number of question sets completed within our question bank per week. Question sets usually range between 5 to 10 questions, and can be discrete or passage-based questions.')
 st.write(' ')
 st.write(' ')
 
@@ -165,7 +165,7 @@ line_question_sets = alt.Chart(df_engagement_attendance_student_filtered).mark_l
     y=alt.Y(
         'total_completed_passages_discrete_sets',
         axis=alt.Axis(
-            title='Completed Count'
+            title='Completed Number of Question Sets'
         )
     ),
     tooltip=[
@@ -175,8 +175,8 @@ line_question_sets = alt.Chart(df_engagement_attendance_student_filtered).mark_l
 )
 
 st.altair_chart(line_question_sets,use_container_width=True)
-st.header('Participation')
-# st.write('The student has an aggregate weekly average rate of {class_participation:.1%} for class participation and {homework_participation:.1%} for homework participation. To date, overall participation is {overall_participation:.1%}.'.format(class_participation=class_participation,homework_participation=homework_participation,overall_participation=overall_participation))
+st.header('Class and Homework Participation')
+
 st.write(' ')
 st.write(' ')
 
