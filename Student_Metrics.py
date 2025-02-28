@@ -213,7 +213,7 @@ st.write(' ')
 st.write(' ')
 
 line_engagement = alt.Chart(df_engagement_attendance_student_filtered).mark_line(point=True).transform_fold(
-        ['completed_lessons', 'completed_mandatory_lessons'],
+        ['completed_lessons'],
         as_=['variable', 'value']
     ).encode(
         x=alt.X(
@@ -238,7 +238,7 @@ line_engagement = alt.Chart(df_engagement_attendance_student_filtered).mark_line
             legend=alt.Legend(
                 title='Type',
                 orient='bottom',
-                labelExpr="datum.value == 'completed_lessons' ? 'Lessons' : 'Mandatory Lessons'"
+                labelExpr="'Completed Self-Paced Course Lessons'"
             )
         )
 )
