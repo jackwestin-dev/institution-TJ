@@ -104,7 +104,77 @@ exam_section = st.selectbox("Choose an exam section:", list(df_test_section_scor
 st.dataframe(
     df_test_section_scores_student_filtered[df_test_section_scores_student_filtered['Exam Section'] == exam_section][['Exam Name','Question Topic','Question Frequency','Student Accuracy','Site Accuracy']].sort_values(by='Exam Name').reset_index(drop=True),
     use_container_width=True)
+st.write(' ')
+st.write(' ')
 
+st.header('Engagement')
+st.subheader('Completed Lessons')
+
+st.write(' ')
+st.write(' ')
+
+line_engagement = alt.Chart(df_engagement_attendance_student_filtered).mark_line(point=True).transform_fold(
+        ['completed_lessons'],
+        as_=['variable', 'value']
+    ).encode(
+        x=alt.X(
+            'week:O',
+            axis=alt.Axis(
+                labelAngle=0,
+                title='Week'
+            )
+        ),
+        y=alt.Y(
+            'value:Q',
+            axis=alt.Axis(
+                title='Completed Count',
+            )
+        ),
+        tooltip=[
+            alt.Tooltip('week:O',title='Week'),
+            alt.Tooltip('value:Q',title='Completed Count')
+        ],
+        color=alt.Color(
+            'variable:N',
+            legend=alt.Legend(
+                title='Type',
+                orient='bottom',
+                labelExpr="'Completed Course Lessons'"
+            )
+        )
+)
+
+st.altair_chart(line_engagement,use_container_width=True)
+
+st.write(' ')
+st.write(' ')
+
+st.subheader('Completed Questions Sets')
+
+st.write(' ')
+st.write(' ')
+
+line_question_sets = alt.Chart(df_engagement_attendance_student_filtered).mark_line(point=True).encode(
+    x=alt.X(
+        'week:O',
+        axis=alt.Axis(
+            labelAngle=0,
+            title='Week'
+        )
+    ),
+    y=alt.Y(
+        'total_completed_passages_discrete_sets',
+        axis=alt.Axis(
+            title='Completed Count'
+        )
+    ),
+    tooltip=[
+            alt.Tooltip('week:O',title='Week'),
+            alt.Tooltip('total_completed_passages_discrete_sets',title='Completed Count')
+    ],
+)
+
+st.altair_chart(line_question_sets,use_container_width=True)
 st.header('Participation')
 # st.write('The student has an aggregate weekly average rate of {class_participation:.1%} for class participation and {homework_participation:.1%} for homework participation. To date, overall participation is {overall_participation:.1%}.'.format(class_participation=class_participation,homework_participation=homework_participation,overall_participation=overall_participation))
 st.write(' ')
@@ -202,75 +272,3 @@ line_attendance = alt.Chart(df_engagement_attendance_student_filtered).mark_line
 )
 
 st.altair_chart(line_attendance,use_container_width=True)
-
-st.write(' ')
-st.write(' ')
-
-st.header('Engagement')
-st.subheader('Completed Lessons')
-
-st.write(' ')
-st.write(' ')
-
-line_engagement = alt.Chart(df_engagement_attendance_student_filtered).mark_line(point=True).transform_fold(
-        ['completed_lessons'],
-        as_=['variable', 'value']
-    ).encode(
-        x=alt.X(
-            'week:O',
-            axis=alt.Axis(
-                labelAngle=0,
-                title='Week'
-            )
-        ),
-        y=alt.Y(
-            'value:Q',
-            axis=alt.Axis(
-                title='Completed Count',
-            )
-        ),
-        tooltip=[
-            alt.Tooltip('week:O',title='Week'),
-            alt.Tooltip('value:Q',title='Completed Count')
-        ],
-        color=alt.Color(
-            'variable:N',
-            legend=alt.Legend(
-                title='Type',
-                orient='bottom',
-                labelExpr="'Completed Self-Paced Course Lessons'"
-            )
-        )
-)
-
-st.altair_chart(line_engagement,use_container_width=True)
-
-st.write(' ')
-st.write(' ')
-
-st.subheader('Completed Questions Sets')
-
-st.write(' ')
-st.write(' ')
-
-line_question_sets = alt.Chart(df_engagement_attendance_student_filtered).mark_line(point=True).encode(
-    x=alt.X(
-        'week:O',
-        axis=alt.Axis(
-            labelAngle=0,
-            title='Week'
-        )
-    ),
-    y=alt.Y(
-        'total_completed_passages_discrete_sets',
-        axis=alt.Axis(
-            title='Completed Count'
-        )
-    ),
-    tooltip=[
-            alt.Tooltip('week:O',title='Week'),
-            alt.Tooltip('total_completed_passages_discrete_sets',title='Completed Count')
-    ],
-)
-
-st.altair_chart(line_question_sets,use_container_width=True)
