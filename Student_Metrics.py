@@ -66,7 +66,7 @@ df_test_section_scores_student_filtered = df_test_section_scores[df_test_section
 ## Create sections and render dashboard
 st.write(' ')
 st.write(' ')
-st.header('Practice Exams')
+st.header('Practice Exam Scores')
 st.write(' ')
 st.write(' ')
 
@@ -88,11 +88,18 @@ point_exam_scores = alt.Chart(df_test_scores_student_filtered).mark_point().tran
     y=alt.Y(
         'value:Q',
         axis=alt.Axis(
-            title='Exam Score'
+            title='Practice Exam Score'
         ),
         scale=alt.Scale(domain=[470, 528])
     ),
-    color=alt.Color('variable:N',legend=alt.Legend(title='Practice Exam Scores',orient='bottom'))
+    color=alt.Color(
+        'variable:N',
+        legend=alt.Legend(
+            title='Exam Scores',
+            orient='bottom',
+            labelExpr="'Practice Exam Score'"
+        )
+    )
 )
 
 st.altair_chart(point_exam_scores,use_container_width=True)
