@@ -275,7 +275,14 @@ line_attendance = alt.Chart(df_engagement_attendance_student_filtered).mark_line
         alt.Tooltip('week:O',title='Week'),
         alt.Tooltip('value:Q',title='Cumulative Attendance Rate',format='0.1%')
     ],
-    color=alt.Color('variable:N',legend=alt.Legend(title='Session Size',orient='bottom'))
+    color=alt.Color(
+        'variable:N',
+        legend=alt.Legend(
+            title='Session Type',
+            orient='bottom',
+            labelExpr="datum.value == 'large_session' ? 'Classes with All Students' : 'Small Group Sessions'"
+        )
+    )
 )
 
 st.altair_chart(line_attendance,use_container_width=True)
