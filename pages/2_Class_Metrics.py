@@ -39,7 +39,6 @@ if not check_password():
 ## Read data from CSV files
 df_engagement_attendance = pd.read_csv('./student-data/institution-1-engagement-data.csv',parse_dates=['start_date','end_date'])
 df_engagement_attendance['attendance'] = df_engagement_attendance['num_attended_large_session'] / df_engagement_attendance['num_scheduled_large_session']
-df_tier_data = pd.read_csv('./student-data/tierdata.csv')
 
 ## Performance Class Average - Data Prep
 df_engagement_attendance_weekly = df_engagement_attendance.groupby(['week']).agg(
@@ -130,13 +129,6 @@ tier_percentages = pd.DataFrame({
         small_group_tier_counts.get('Tier 3', 0) / total_students * 100,
         class_participation_tier_counts.get('Tier 3', 0) / total_students * 100,
         final_tier_counts.get('Tier 3', 0) / total_students * 100
-    ],
-    'Tier 4': [
-        survey_tier_counts.get('Tier 4', 0) / total_students * 100,
-        large_group_tier_counts.get('Tier 4', 0) / total_students * 100,
-        small_group_tier_counts.get('Tier 4', 0) / total_students * 100,
-        class_participation_tier_counts.get('Tier 4', 0) / total_students * 100,
-        final_tier_counts.get('Tier 4', 0) / total_students * 100
     ]
 }, index=['Survey Tier', 'Large Group Tier', 'Small Group Tier', 'Class Participation Tier', 'Final Tier'])
 
