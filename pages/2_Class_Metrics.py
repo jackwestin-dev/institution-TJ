@@ -39,6 +39,7 @@ if not check_password():
 ## Read data from CSV files
 df_engagement_attendance = pd.read_csv('./student-data/institution-1-engagement-data.csv',parse_dates=['start_date','end_date'])
 df_engagement_attendance['attendance'] = df_engagement_attendance['num_attended_large_session'] / df_engagement_attendance['num_scheduled_large_session']
+df_tier_data = pd.read_csv('./student-data/tierdata.csv')
 
 ## Performance Class Average - Data Prep
 df_engagement_attendance_weekly = df_engagement_attendance.groupby(['week']).agg(
