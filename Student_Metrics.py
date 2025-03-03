@@ -63,6 +63,7 @@ df_test_scores['test_date'] = df_test_scores['test_date'].dt.date
 df_test_scores_student_filtered = df_test_scores[df_test_scores['student_id'] == student_id]
 
 df_test_section_scores_student_filtered = df_test_section_scores[df_test_section_scores['student_id'] == student_id]
+df_tier_data_student_filtered = df_tier_data[df_tier_data['student_id'] == student_id]
 
 ## Create sections and render dashboard
 st.write(' ')
