@@ -40,6 +40,7 @@ if not check_password():
 df_engagement_attendance = pd.read_csv('./student-data/institution-1-engagement-data.csv',parse_dates=['start_date','end_date'])
 df_test_scores = pd.read_csv('./student-data/institution-1-test-data.csv',parse_dates=['test_date'])
 df_test_section_scores = pd.read_csv('./student-data/institution-1-2025-exam-data-jw-exams.csv')
+df_tier_data = pd.read_csv('./student-data/tierdata.csv')
 
 ## Create dashboard filters
 student_id = st.selectbox("Choose a student:", list(df_engagement_attendance['student_id'].unique()))
@@ -111,6 +112,55 @@ exam_section = st.selectbox("Choose an exam section:", list(df_test_section_scor
 st.dataframe(
     df_test_section_scores_student_filtered[df_test_section_scores_student_filtered['Exam Section'] == exam_section][['Exam Name','Question Topic','Question Frequency','Student Accuracy']].sort_values(by='Exam Name').reset_index(drop=True),
     use_container_width=True)
+st.write(' ')
+st.write(' ')
+
+# Display the student tier data
+st.header('Student Tier Assessment')
+st.caption('This assessment is based on student participation, accuracy, and attendance across different learning formats')
+st.write(' ')
+
+# Check if we have tier data for this student
+if not df_tier_data_student_filtered.empty:
+    # Create a more user-friendly display of tier data
+    tier_display = pd.DataFrame({
+        'Assessment Category': ['Survey Completion', 'Class Attendance', 'Small Group Attendance', 'Class Participation', 'Overall Assessment'],
+        'Performance Tier': [
+            df_tier_data_student_filtered['Survey Tier'].values[0],
+            df_tier_data_student_filtered['Large Group Tier'].values[0],
+            df_tier_data_student_filtered['Small Group Tier'].values[0],
+            df_tier_data_student_filtered['Class Participation Tier'].values[0],
+            df_tier_data_student_filtered['Final Tier'].values[0]
+        ]
+    })
+    
+    # Display the tier information in a table
+    st.dataframe(tier_display, use_container_width=True)
+    
+    # Optional: Add a visual representation of the tiers using colored indicators
+    col1, col2, col3, col4, col5 = st.columns(5)
+    
+    # Helper function to display tier with appropriate color
+    def display_tier(column, category, tier):
+        colors = {
+            'Tier 1': '#1B5E20',  # Dark green
+            'Tier 2': '#66BB6A',  # Light green
+            'Tier 3': '#FFC107',  # Amber
+            'Tier 4': '#EF5350'   # Red
+        }
+        color = colors.get(tier, '#9E9E9E')  # Default to grey if tier not recognized
+        column.markdown(f"<h5 style='text-align: center'>{category}</h5>", unsafe_allow_html=True)
+        column.markdown(f"<div style='background-color: {color}; padding: 10px; border-radius: 5px; text-align: center; color: white; font-weight: bold;'>{tier}</div>", unsafe_allow_html=True)
+    
+    # Display each category with its tier
+    display_tier(col1, 'Survey', df_tier_data_student_filtered['Survey Tier'].values[0])
+    display_tier(col2, 'Classes', df_tier_data_student_filtered['Large Group Tier'].values[0])
+    display_tier(col3, 'Small Groups', df_tier_data_student_filtered['Small Group Tier'].values[0])
+    display_tier(col4, 'Participation', df_tier_data_student_filtered['Class Participation Tier'].values[0])
+    display_tier(col5, 'Overall', df_tier_data_student_filtered['Final Tier'].values[0])
+else:
+    st.info("No tier assessment data available for this student.")
+
 st.write(' ')
 st.write(' ')
 
