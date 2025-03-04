@@ -103,7 +103,7 @@ else:
 ## Tier - Data Prep
 assessment_categories = ['Survey Tier', 'Large Group Tier', 'Small Group Tier', 'Class Participation Tier', 'Final Tier']
 tier_values = ['Tier 1', 'Tier 2', 'Tier 3']
-df_tier_percentages = pd.DataFrame(index=categories, columns=tiers)
+df_tier_percentages = pd.DataFrame(index=assessment_categories, columns=tier_values)
 total_students = len(df_tier_data)
 
 for category in assessment_categories:
