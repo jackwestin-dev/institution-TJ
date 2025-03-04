@@ -40,6 +40,8 @@ if not check_password():
 df_engagement_attendance = pd.read_csv('./student-data/institution-1-engagement-data.csv',parse_dates=['start_date','end_date'])
 df_engagement_attendance['attendance'] = df_engagement_attendance['num_attended_large_session'] / df_engagement_attendance['num_scheduled_large_session']
 
+df_tier_data = pd.read_csv('./student-data/tierdata.csv')
+
 ## Performance Class Average - Data Prep
 df_engagement_attendance_weekly = df_engagement_attendance.groupby(['week']).agg(
     {
@@ -97,6 +99,30 @@ if homework_participation_magnitude_change > 0:
     homework_participation_directional_change = 'increased'
 else:
     homework_participation_directional_change = 'decreased'
+
+## Tier - Data Prep
+assessment_categories = ['Survey Tier', 'Large Group Tier', 'Small Group Tier', 'Class Participation Tier', 'Final Tier']
+tier_values = ['Tier 1', 'Tier 2', 'Tier 3']
+df_tier_percentages = pd.DataFrame(index=categories, columns=tiers)
+total_students = len(df_tier_data)
+
+for category in assessment_categories:
+    # Count occurrences of each tier in this category
+    tier_counts = df_tier_data[category].value_counts()
+    
+    # Calculate percentages
+    for tier in tier_values:
+        if tier in tier_counts:
+            percentage = (tier_counts[tier] / total_students) * 100
+            df_tier_percentages.loc[category, tier] = round(percentage, 2)
+        else:
+            df_tier_percentages.loc[category, tier] = 0.0
+
+# Fill any NaN values with 0
+df_tier_percentages = df_tier_percentages.fillna(0.0)
+
+# Add a descriptive column name for the assessment categories
+df_tier_percentages.index.name = 'Assessment Category'
 
 ## Create sections and render dashboard
 st.write(' ')
@@ -165,3 +191,11 @@ st.dataframe(
 ),
 use_container_width=True
 )
+
+st.write(' ')
+st.write(' ')
+st.header('Class Tier Data')
+st.write('Listed below is the class breakdown of the percentage of students that fall into different tiers for each assessment category.')
+st.write(' ')
+st.write(' ')
+st.dataframe(df_tier_percentages, use_container_width=True)
