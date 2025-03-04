@@ -113,7 +113,7 @@ for category in assessment_categories:
     # Calculate percentages
     for tier in tier_values:
         if tier in tier_counts:
-            percentage = (tier_counts[tier] / total_students) * 100
+            percentage = (tier_counts[tier] / total_students)
             df_tier_percentages.loc[category, tier] = round(percentage, 2)
         else:
             df_tier_percentages.loc[category, tier] = 0.0
@@ -198,4 +198,13 @@ st.header('Class Tier Data')
 st.write('Listed below is the class breakdown of the percentage of students that fall into different tiers for each assessment category.')
 st.write(' ')
 st.write(' ')
-st.dataframe(df_tier_percentages, use_container_width=True)
+st.dataframe(
+    df_tier_percentages.style.format(
+    {
+        'Tier 1' : '{:.1%}',
+        'Tier 2' : '{:.1%}',
+        'Tier 3' : '{:.1%}'
+    }
+), 
+use_container_width=True
+)
