@@ -75,7 +75,7 @@ df_tier_data_student_filtered = df_tier_data[df_tier_data['student_id'] == stude
 st.write(' ')
 st.write(' ')
 st.header('Practice Exam Scores')
-st.write('Students were asked to update us with practice exam schedules and scores throughout the program. This is a link to the [Texas JAMP Scholars | MCAT Exam Schedule & Scores Survey](https://forms.gle/pK1bGfvxZZQQvmo26) Here is a [list of responses to the survey as of March 3rd](https://docs.google.com/spreadsheets/d/1PEhGrf5HiiX70Sb57KZtIPKThSno0o1MFXFJUDvhpuM/edit?usp=sharing) We update the information seen below on a weekly basis.')
+st.write('Students were asked to update us with practice exam schedules and scores throughout the program. This is a link to the [Texas JAMP Scholars | MCAT Exam Schedule & Scores Survey](https://forms.gle/pK1bGfvxZZQQvmo26) Here is a [list of responses to the survey as of March 3rd.](https://docs.google.com/spreadsheets/d/1PEhGrf5HiiX70Sb57KZtIPKThSno0o1MFXFJUDvhpuM/edit?usp=sharing) We update the information seen below on a weekly basis.')
 st.write(' ')
 
 st.dataframe(df_test_scores_student_filtered[['test_name','test_date','actual_exam_score']],use_container_width=True)
