@@ -47,6 +47,11 @@ student_id = st.selectbox("Choose a student:", list(df_engagement_attendance['st
 
 ## Transform dataframes
 df_engagement_attendance_student_filtered = df_engagement_attendance[df_engagement_attendance['student_id'] == student_id]
+# Create date_range column for tooltips
+df_engagement_attendance_student_filtered['date_range'] = df_engagement_attendance_student_filtered.apply(
+    lambda row: f"{row['start_date'].strftime('%m/%d/%y')} - {row['end_date'].strftime('%m/%d/%y')}", 
+    axis=1
+)
 df_engagement_attendance_student_filtered['num_attended_large_session_cumsum'] = df_engagement_attendance_student_filtered['num_attended_large_session'].cumsum()
 df_engagement_attendance_student_filtered['num_scheduled_large_session_cumsum'] = df_engagement_attendance_student_filtered['num_scheduled_large_session'].cumsum()
 df_engagement_attendance_student_filtered['num_attended_small_session_cumsum'] = df_engagement_attendance_student_filtered['num_attended_small_session'].cumsum()
@@ -94,6 +99,10 @@ point_exam_scores = alt.Chart(df_test_scores_student_filtered).mark_point().tran
         ),
         scale=alt.Scale(domain=[470, 528])
     ),
+    tooltip=[
+        alt.Tooltip('test_date:T', title='Test Date'),
+        alt.Tooltip('value:Q', title='Exam Score')
+    ],
     color=alt.Color(
         'variable:N',
         legend=alt.Legend(
@@ -136,16 +145,34 @@ if not df_tier_data_student_filtered.empty:
         })
         
         # Display the tier information in a table
-        st.dataframe(tier_display, use_container_width=True)
+        # st.dataframe(tier_display, use_container_width=True)
         
         # Optional: Add a visual representation of the tiers using colored indicators
         col1, col2, col3, col4, col5 = st.columns(5)
         
-        # Helper function and display code remains the same
-        # ...
+        # Helper function to display tier with appropriate color
+        def display_tier(column, category, tier):
+            colors = {
+                'Tier 1': '#1B5E20',  # Dark green
+                'Tier 2': '#d4950f',  # Orange green
+                'Tier 3': '#EF5350',  # Red
+                'Tier 4': '#EF5350'   # Red
+            }
+            color = colors.get(tier, '#9E9E9E')  # Default to grey if tier not recognized
+            column.markdown(f"<h5 style='text-align: center'>{category}</h5>", unsafe_allow_html=True)
+            column.markdown(f"<div style='background-color: {color}; padding: 10px; border-radius: 5px; text-align: center; color: white; font-weight: bold;'>{tier}</div>", unsafe_allow_html=True)
+        
+        # Display each category with its tier
+        display_tier(col1, 'Survey', df_tier_data_student_filtered['Survey Tier'].values[0])
+        display_tier(col2, 'Classes', df_tier_data_student_filtered['Large Group Tier'].values[0])
+        display_tier(col3, 'Small Groups', df_tier_data_student_filtered['Small Group Tier'].values[0])
+        display_tier(col4, 'Participation', df_tier_data_student_filtered['Class Participation Tier'].values[0])
+        display_tier(col5, 'Overall', df_tier_data_student_filtered['Final Tier'].values[0])
 else:
     st.info("No tier assessment data available for this student.")
 
+st.write(' ')
+st.write(' ')
 st.write(' ')
 st.write(' ')
 
@@ -173,8 +200,9 @@ line_engagement = alt.Chart(df_engagement_attendance_student_filtered).mark_line
             )
         ),
         tooltip=[
-            alt.Tooltip('week:O',title='Week'),
-            alt.Tooltip('value:Q',title='Completed Number of Lessons')
+            alt.Tooltip('week:O', title='Week'),
+            alt.Tooltip('date_range:N', title='Date Range'),
+            alt.Tooltip('value:Q', title='Completed Number of Lessons')
         ],
         color=alt.Color(
             'variable:N',
@@ -211,8 +239,9 @@ line_question_sets = alt.Chart(df_engagement_attendance_student_filtered).mark_l
         )
     ),
     tooltip=[
-            alt.Tooltip('week:O',title='Week'),
-            alt.Tooltip('total_completed_passages_discrete_sets',title='Completed Count')
+        alt.Tooltip('week:O', title='Week'),
+        alt.Tooltip('date_range:N', title='Date Range'),
+        alt.Tooltip('total_completed_passages_discrete_sets', title='Completed Count')
     ],
 )
 
@@ -241,8 +270,9 @@ line_participation = alt.Chart(df_engagement_attendance_student_filtered).mark_l
         )
     ),
     tooltip=[
-        alt.Tooltip('week:O',title='Week'),
-        alt.Tooltip('value:Q',title='Participation Rate',format='0.1%')
+        alt.Tooltip('week:O', title='Week'),
+        alt.Tooltip('date_range:N', title='Date Range'),
+        alt.Tooltip('value:Q', title='Participation Rate', format='0.1%')
     ],
     color=alt.Color(
         'variable:N',
@@ -281,10 +311,11 @@ line_engagement = alt.Chart(df_engagement_attendance_student_filtered).mark_line
         )
     ),
     tooltip=[
-        alt.Tooltip('week:O',title='Week'),
-        alt.Tooltip('value:Q',title='Accuracy Rate',format='0.1%')
+        alt.Tooltip('week:O', title='Week'),
+        alt.Tooltip('date_range:N', title='Date Range'),
+        alt.Tooltip('value:Q', title='Accuracy Rate', format='0.1%')
     ],
-        color=alt.Color(
+    color=alt.Color(
         'variable:N',
         legend=alt.Legend(
             title='Subject',
@@ -321,8 +352,9 @@ line_attendance = alt.Chart(df_engagement_attendance_student_filtered).mark_line
         )
     ),
     tooltip=[
-        alt.Tooltip('week:O',title='Week'),
-        alt.Tooltip('value:Q',title='Cumulative Attendance Rate',format='0.1%')
+        alt.Tooltip('week:O', title='Week'),
+        alt.Tooltip('date_range:N', title='Date Range'),
+        alt.Tooltip('value:Q', title='Cumulative Attendance Rate', format='0.1%')
     ],
     color=alt.Color(
         'variable:N',
@@ -332,6 +364,9 @@ line_attendance = alt.Chart(df_engagement_attendance_student_filtered).mark_line
             labelExpr="datum.value == 'large_session' ? 'Classes with All Students' : 'Small Group Sessions'"
         )
     )
+)
+
+st.altair_chart(line_attendance,use_container_width=True)
 )
 
 st.altair_chart(line_attendance,use_container_width=True)
