@@ -191,10 +191,9 @@ st.subheader('Participation')
 st.write(' ')
 st.write(' ')
 st.dataframe(
-    df_engagement_attendance_weekly[['class_participation','homework_participation']].style.format(
+    df_engagement_attendance_weekly[['class_participation']].sort_values(by='week',ascending=False).style.format(
     {
         'class_participation' : '{:.1%}',
-        'homework_participation' : '{:.1%}'
     }
 ),
 use_container_width=True
