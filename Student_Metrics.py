@@ -4,9 +4,9 @@ from datetime import datetime, date
 import hmac
 import altair as alt
 
-st.set_page_config(page_title='Institution TJ Student Dashboard',layout='wide')
+st.set_page_config(page_title='Institution TJ Scholar Dashboard',layout='wide')
 
-st.title('Institution TJ - Student Dashboard')
+st.title('Institution TJ - Scholar Dashboard')
 
 # Password protection
 def check_password():
@@ -44,6 +44,7 @@ df_tier_data = pd.read_csv('./student-data/tierdata.csv')
 
 ## Create dashboard filters
 student_id = st.selectbox("Choose a student:", list(df_engagement_attendance['student_id'].unique()))
+st.write('Here is [a link to a Texas JAMP Scholar Student Roster with Associated Student ID Numbers](https://drive.google.com/file/d/1ibmeF4CtRwOaZeCjLM3Nm5S_mGlMvgIZ/view?usp=sharing)')
 
 ## Transform dataframes
 df_engagement_attendance_student_filtered = df_engagement_attendance[df_engagement_attendance['student_id'] == student_id]
