@@ -170,7 +170,7 @@ if not df_tier_data_student_filtered.empty:
             column.markdown(f"<div style='background-color: {color}; padding: 10px; border-radius: 5px; text-align: center; color: white; font-weight: bold;'>{tier}</div>", unsafe_allow_html=True)
         
         # Display each category with its tier
-        display_tier(col1, 'Survey', df_tier_data_student_filtered['Survey Tier'].values[0])
+        display_tier(col1, 'Survey Completion', df_tier_data_student_filtered['Survey Tier'].values[0])
         display_tier(col2, 'Class Attendance', df_tier_data_student_filtered['Large Group Tier'].values[0])
         display_tier(col3, 'Small Group Attendance', df_tier_data_student_filtered['Small Group Tier'].values[0])
         display_tier(col4, 'Participation', df_tier_data_student_filtered['Class Participation Tier'].values[0])
