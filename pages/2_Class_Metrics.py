@@ -50,7 +50,7 @@ df_engagement_attendance_weekly = df_engagement_attendance.groupby(['week']).agg
         'class_accuracy':'mean',
         'attendance':'mean',
         'completed_lessons':'mean',
-        'completed_question_sets':'mean',
+        'total_completed_passages_discrete_sets':'mean',
         'homework_participation':'mean',
         'class_participation':'mean'
     }
@@ -198,11 +198,10 @@ st.write(' ')
 st.header('Engagement')
 st.write(' ')
 st.write(' ')
-st.dataframe(df_engagement_attendance_weekly[['completed_lessons','completed_question_sets','time_spent_hrs']].sort_values(by='week',ascending=False).style.format(
+st.dataframe(df_engagement_attendance_weekly[['completed_lessons','completed_question_sets']].sort_values(by='week',ascending=False).style.format(
     {
         'completed_lessons' : '{:,.1f}',
-        'completed_question_sets' : '{:,.1f}',
-        'time_spent_hrs' : '{:,.1f}'
+        'total_completed_passages_discrete_sets' : '{:,.1f}',
     }
 ),
 use_container_width=True
