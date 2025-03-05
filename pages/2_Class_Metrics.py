@@ -38,6 +38,12 @@ if not check_password():
 
 ## Read data from CSV files
 df_engagement_attendance = pd.read_csv('./student-data/institution-1-engagement-data.csv',parse_dates=['start_date','end_date'])
+df_engagement_attendance.rename(
+    columns={
+        'total_completed_passages_discrete_sets': 'completed_question_sets'
+    },
+    inplace=True
+)
 df_engagement_attendance['attendance'] = df_engagement_attendance['num_attended_large_session'] / df_engagement_attendance['num_scheduled_large_session']
 
 df_tier_data = pd.read_csv('./student-data/tierdata.csv')
@@ -50,7 +56,7 @@ df_engagement_attendance_weekly = df_engagement_attendance.groupby(['week']).agg
         'class_accuracy':'mean',
         'attendance':'mean',
         'completed_lessons':'mean',
-        'total_completed_passages_discrete_sets':'mean',
+        'completed_question_sets':'mean',
         'homework_participation':'mean',
         'class_participation':'mean'
     }
@@ -201,7 +207,7 @@ st.write(' ')
 st.dataframe(df_engagement_attendance_weekly[['completed_lessons','completed_question_sets']].sort_values(by='week',ascending=False).style.format(
     {
         'completed_lessons' : '{:,.1f}',
-        'total_completed_passages_discrete_sets' : '{:,.1f}',
+        'completed_question_sets' : '{:,.1f}',
     }
 ),
 use_container_width=True
