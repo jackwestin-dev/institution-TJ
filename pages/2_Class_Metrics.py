@@ -51,6 +51,8 @@ df_tier_data = pd.read_csv('./student-data/tierdata.csv')
 ## Performance Class Average - Data Prep
 df_engagement_attendance_weekly = df_engagement_attendance.groupby(['week']).agg(
     {
+        'start_date': 'first',  # Get the first start_date for each week
+        'end_date': 'first',    # Get the first end_date for each week
         'cars_accuracy':'mean',
         'sciences_accuracy':'mean',
         'class_accuracy':'mean',
@@ -149,6 +151,8 @@ st.write(' ')
 st.dataframe(
     df_engagement_attendance_weekly[['cars_accuracy','sciences_accuracy']].sort_values(by='week',ascending=False).style.format(
     {
+        'start_date': lambda x: x.strftime('%m/%d/%y'),
+        'end_date': lambda x: x.strftime('%m/%d/%y'),
         'cars_accuracy' : '{:.1%}',
         'sciences_accuracy' : '{:.1%}',
     }
