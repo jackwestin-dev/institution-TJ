@@ -161,7 +161,7 @@ if not df_tier_data_student_filtered.empty:
         def display_tier(column, category, tier):
             colors = {
                 'Tier 1': '#1B5E20',  # Dark green
-                'Tier 2': '#cfa255',  # Light orange
+                'Tier 2': '#FF9800',  # Light orange
                 'Tier 3': '#EF5350',  # Red
                 'Tier 4': '#EF5350'   # Red
             }
@@ -173,7 +173,7 @@ if not df_tier_data_student_filtered.empty:
         display_tier(col1, 'Survey Completion', df_tier_data_student_filtered['Survey Tier'].values[0])
         display_tier(col2, 'Class Attendance', df_tier_data_student_filtered['Large Group Tier'].values[0])
         display_tier(col3, 'Small Group Attendance', df_tier_data_student_filtered['Small Group Tier'].values[0])
-        display_tier(col4, 'Participation', df_tier_data_student_filtered['Class Participation Tier'].values[0])
+        display_tier(col4, 'Class Participation', df_tier_data_student_filtered['Class Participation Tier'].values[0])
         display_tier(col5, 'Overall', df_tier_data_student_filtered['Final Tier'].values[0])
 else:
     st.info("No tier assessment data available for this student.")
@@ -217,28 +217,28 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown("""
     <p class="tier1-text">Tier 1 Students</p>
-    <div class="tier-criteria" style="color: #4CAF50;">Overall Participation (≥75%)</div>
-    <div class="tier-criteria" style="color: #4CAF50;">Engagement (≥75%)</div>
     <div class="tier-criteria" style="color: #4CAF50;">Responsiveness to Surveys (≥90%)</div>
-    <div class="tier-criteria" style="color: #4CAF50;">Attendance to All Sessions (≥80%)</div>
+    <div class="tier-criteria" style="color: #4CAF50;">Attendance in Sessions (≥80%)</div>
+    <div class="tier-criteria" style="color: #4CAF50;">Participation (≥75%)</div>
+    <div class="tier-criteria" style="color: #4CAF50;">Engagement (≥75%)</div> 
     """, unsafe_allow_html=True)
 
 with col2:
     st.markdown("""
     <p class="tier2-text">Tier 2 Students</p>
-    <div class="tier-criteria" style="color: #FF9800;">Overall Participation (50% - 74%)</div>
-    <div class="tier-criteria" style="color: #FF9800;">Engagement (50% - 74%)</div>
     <div class="tier-criteria" style="color: #FF9800;">Responsiveness to Surveys (50% - 89%)</div>
-    <div class="tier-criteria" style="color: #FF9800;">Attendance to All Sessions (50% - 79%)</div>
+    <div class="tier-criteria" style="color: #FF9800;">Attendance in Sessions (50% - 79%)</div>
+    <div class="tier-criteria" style="color: #FF9800;">Participation (50% - 74%)</div>
+    <div class="tier-criteria" style="color: #FF9800;">Engagement (50% - 74%)</div> 
     """, unsafe_allow_html=True)
 
 with col3:
     st.markdown("""
     <p class="tier3-text">Tier 3 Students</p>
-    <div class="tier-criteria" style="color: #EF5350;">Overall Participation (&lt;50%)</div>
-    <div class="tier-criteria" style="color: #EF5350;">Engagement (&lt;50%)</div>
     <div class="tier-criteria" style="color: #EF5350;">Responsiveness to Surveys (&lt;50%)</div>
-    <div class="tier-criteria" style="color: #EF5350;">Attendance to All Sessions (&lt;50%)</div>
+    <div class="tier-criteria" style="color: #EF5350;">Attendance in Sessions (&lt;50%)</div>
+    <div class="tier-criteria" style="color: #EF5350;">Participation (&lt;50%)</div> 
+    <div class="tier-criteria" style="color: #EF5350;">Engagement (&lt;50%)</div>
     """, unsafe_allow_html=True)
 
 st.write(' ')
