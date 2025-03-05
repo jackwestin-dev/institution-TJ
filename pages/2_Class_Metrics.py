@@ -48,6 +48,12 @@ df_engagement_attendance['attendance'] = df_engagement_attendance['num_attended_
 
 df_tier_data = pd.read_csv('./student-data/tierdata.csv')
 
+# Add these lines here - right before creating the weekly aggregation
+# Create a lookup for date ranges by week
+week_dates = df_engagement_attendance.groupby('week')[['start_date', 'end_date']].first().reset_index()
+# Convert to a dictionary for easy lookup
+week_to_dates = {row['week']: (row['start_date'], row['end_date']) for _, row in week_dates.iterrows()}
+
 ## Performance Class Average - Data Prep
 df_engagement_attendance_weekly = df_engagement_attendance.groupby(['week']).agg(
     {
@@ -63,6 +69,11 @@ df_engagement_attendance_weekly = df_engagement_attendance.groupby(['week']).agg
         'class_participation':'mean'
     }
 )
+# Now add the date columns back to the aggregated dataframe
+df_engagement_attendance_weekly = df_engagement_attendance_weekly.reset_index()
+df_engagement_attendance_weekly['start_date'] = df_engagement_attendance_weekly['week'].map(lambda w: week_to_dates.get(w, (None, None))[0])
+df_engagement_attendance_weekly['end_date'] = df_engagement_attendance_weekly['week'].map(lambda w: week_to_dates.get(w, (None, None))[1])
+df_engagement_attendance_weekly = df_engagement_attendance_weekly.set_index('week')
 
 week_total = df_engagement_attendance_weekly.reset_index()['week'].max()
 sciences_accuracy_latest_week = df_engagement_attendance_weekly.loc[week_total]['sciences_accuracy']
