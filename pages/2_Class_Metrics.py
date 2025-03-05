@@ -182,7 +182,7 @@ st.write(
     Through {week_total} weeks of the course, the range of attendance has been between {attendance_weekly_min:.0%} and {attendance_weekly_max:.0%}.
     '''
 )
-st.write(' ')
+st.write('None beneath attendance column indicates student's did not have class that week, consequently no attendance was reported.')
 st.write(' ')
 st.dataframe(
     df_engagement_attendance_weekly[['attendance']].sort_values(by='week',ascending=False).style.format(
