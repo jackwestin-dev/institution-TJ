@@ -318,7 +318,7 @@ st.altair_chart(line_question_sets,use_container_width=True)
 st.header('Participation')
 st.subheader('Class and Homework Participation')
 st.write(
-    '"Class Participation" represents the percentage of class activities students engaged in each week.\n\n'
+    '"Class Participation" represents the percentage of class activities students engaged in each week. Here is a [video sample of an in-class activity](https://www.loom.com/share/48b383838811401892a38e17761c4993?sid=3d3e7dc2-b294-4b73-b1c6-8d78e6e0b6e8) a student can participate in.\n\n'
     'To note: We encouraged students to utilize resources they have access to, such as AAMC materials, to apply their knowledge. '
     '"Homework Completion" indicates that a student utilized the question sets we provided within our learning platform that reviews material we covered in class.'
 )
@@ -414,7 +414,7 @@ st.header('Attendance')
 st.write(
     'Below demonstrates the weekly percentage of attendance by students within our "All Student" and "Small Group" classes.\n\n'
     'For example, if there are two large classes and a student attends one of them, they would receive a 50% attendance rate for that week. '
-    'A data point with 0% indicates no attendance during that week, while the absence of a data point reflects that no classes were held that week.'
+    'A data point with 0% indicates no attendance during that week, while the absence of a data point reflects that no classes were held that week. Here is the [MCAT class schedule for JAMP Scholars](https://drive.google.com/file/d/1ku3YESl2If9v3T-n40lVV-KH1QWRVtOr/view?usp=sharing)'
 )
 st.write(' ')
 st.write(' ')
