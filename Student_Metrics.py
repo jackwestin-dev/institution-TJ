@@ -129,21 +129,20 @@ st.header('Student Tier Assessment')
 st.caption('The tiers listed below represent student data gathered throughout their time in our MCAT program, from June 2024 to now.')
 st.write(' ')
 
-# Add tier descriptions with colored text, side by side
+# First, set up the styles
 st.markdown("""
 <style>
-.tier-container {
+.tier-flex {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    gap: 20px;
-    margin-bottom: 20px;
+    width: 100%;
 }
 .tier-column {
-    flex: 1;
+    width: 32%;
 }
 .tier1-text {
-    color: #4CAF50;  /* Lighter green */
+    color: #4CAF50;
     font-weight: bold;
 }
 .tier2-text {
@@ -158,33 +157,37 @@ st.markdown("""
     margin: 6px 0;
 }
 </style>
-
-<div class="tier-container">
-    <div class="tier-column">
-        <p class="tier1-text">Tier 1 Students</p>
-        <div class="tier-criteria" style="color: #4CAF50;">Overall Participation (≥75%)</div>
-        <div class="tier-criteria" style="color: #4CAF50;">Engagement (≥75%)</div>
-        <div class="tier-criteria" style="color: #4CAF50;">Responsiveness to Surveys (≥90%)</div>
-        <div class="tier-criteria" style="color: #4CAF50;">Attendance to All Sessions (≥80%)</div>
-    </div>
-    
-    <div class="tier-column">
-        <p class="tier2-text">Tier 2 Students</p>
-        <div class="tier-criteria" style="color: #FF9800;">Overall Participation (50% - 74%)</div>
-        <div class="tier-criteria" style="color: #FF9800;">Engagement (50% - 74%)</div>
-        <div class="tier-criteria" style="color: #FF9800;">Responsiveness to Surveys (50% - 89%)</div>
-        <div class="tier-criteria" style="color: #FF9800;">Attendance to All Live Sessions (50% - 79%)</div>
-    </div>
-    
-    <div class="tier-column">
-        <p class="tier3-text">Tier 3 Students</p>
-        <div class="tier-criteria" style="color: #EF5350;">Overall Participation (<50%)</div>
-        <div class="tier-criteria" style="color: #EF5350;">Engagement (<50%)</div>
-        <div class="tier-criteria" style="color: #EF5350;">Responsiveness to Surveys (<50%)</div>
-        <div class="tier-criteria" style="color: #EF5350;">Attendance to All Live Sessions (<50%)</div>
-    </div>
-</div>
 """, unsafe_allow_html=True)
+
+# Then create each column separately
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("""
+    <p class="tier1-text">Tier 1 Students</p>
+    <div class="tier-criteria" style="color: #4CAF50;">Overall Participation (≥75%)</div>
+    <div class="tier-criteria" style="color: #4CAF50;">Engagement (≥75%)</div>
+    <div class="tier-criteria" style="color: #4CAF50;">Responsiveness to Surveys (≥90%)</div>
+    <div class="tier-criteria" style="color: #4CAF50;">Attendance to All Sessions (≥80%)</div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+    <p class="tier2-text">Tier 2 Students</p>
+    <div class="tier-criteria" style="color: #FF9800;">Overall Participation (50% - 74%)</div>
+    <div class="tier-criteria" style="color: #FF9800;">Engagement (50% - 74%)</div>
+    <div class="tier-criteria" style="color: #FF9800;">Responsiveness to Surveys (50% - 89%)</div>
+    <div class="tier-criteria" style="color: #FF9800;">Attendance to All Sessions (50% - 79%)</div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown("""
+    <p class="tier3-text">Tier 3 Students</p>
+    <div class="tier-criteria" style="color: #EF5350;">Overall Participation (&lt;50%)</div>
+    <div class="tier-criteria" style="color: #EF5350;">Engagement (&lt;50%)</div>
+    <div class="tier-criteria" style="color: #EF5350;">Responsiveness to Surveys (&lt;50%)</div>
+    <div class="tier-criteria" style="color: #EF5350;">Attendance to All Sessions (&lt;50%)</div>
+    """, unsafe_allow_html=True)
 
 # Check if we have tier data for this student
 if not df_tier_data_student_filtered.empty:
