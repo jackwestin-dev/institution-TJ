@@ -117,7 +117,8 @@ st.altair_chart(point_exam_scores,use_container_width=True)
 st.write(' ')
 st.write(' ')
 
-st.subheader('Practice Exam - Accuracy per Topic')
+st.subheader('Practice Exam - Accuracy per Subject')
+st.write('Question Topic references the different MCAT subjects tested on the exam. Question Frequency references the frequency that subject showed up on the respective exam. Student accuracy reflects the % accuracy the student got those questions correct on the respective exam.')
 exam_section = st.selectbox("Choose an exam section:", list(df_test_section_scores['Exam Section'].unique()))
 st.dataframe(
     df_test_section_scores_student_filtered[df_test_section_scores_student_filtered['Exam Section'] == exam_section][['Exam Name','Question Topic','Question Frequency','Student Accuracy']].sort_values(by='Exam Name').reset_index(drop=True),
