@@ -44,7 +44,7 @@ df_tier_data = pd.read_csv('./student-data/tierdata.csv')
 
 ## Create dashboard filters
 student_id = st.selectbox("Choose a student:", list(df_engagement_attendance['student_id'].unique()))
-st.write('Here is [a link to a Texas JAMP Scholar Student Roster with Associated Student ID Numbers](https://drive.google.com/file/d/1ibmeF4CtRwOaZeCjLM3Nm5S_mGlMvgIZ/view?usp=sharing)')
+st.write('Here is a link to the [Texas JAMP Scholar Student Roster with Associated Student ID Numbers](https://drive.google.com/file/d/1ibmeF4CtRwOaZeCjLM3Nm5S_mGlMvgIZ/view?usp=sharing)')
 
 ## Transform dataframes
 df_engagement_attendance_student_filtered = df_engagement_attendance[df_engagement_attendance['student_id'] == student_id]
@@ -75,7 +75,7 @@ df_tier_data_student_filtered = df_tier_data[df_tier_data['student_id'] == stude
 st.write(' ')
 st.write(' ')
 st.header('Practice Exam Scores')
-st.write(' ')
+st.write('Students were asked to update us with practice exam schedules and scores throughout the program. This is a link to the [Texas JAMP Scholars | MCAT Exam Schedule & Scores Survey](https://forms.gle/pK1bGfvxZZQQvmo26) Here is a [list of responses to the survey as of March 3rd](https://docs.google.com/spreadsheets/d/1PEhGrf5HiiX70Sb57KZtIPKThSno0o1MFXFJUDvhpuM/edit?usp=sharing) We update the information seen below on a weekly basis.')
 st.write(' ')
 
 st.dataframe(df_test_scores_student_filtered[['test_name','test_date','actual_exam_score']],use_container_width=True)
