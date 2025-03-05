@@ -180,7 +180,7 @@ use_container_width=True
 st.write(' ')
 st.write(' ')
 st.subheader('Participation')
-st.write('Participation includes the % of students who completed the activities provided in class. This typically comes as a completed question set that instructors assign during the class."
+st.write('Participation includes the % of students who completed the activities provided in class. This typically comes as a completed question set that instructors assign during the class.')
 st.write(' ')
 st.dataframe(
     df_engagement_attendance_weekly[['class_participation']].sort_values(by='week',ascending=False).style.format(
