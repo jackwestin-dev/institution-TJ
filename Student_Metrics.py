@@ -154,8 +154,8 @@ if not df_tier_data_student_filtered.empty:
         def display_tier(column, category, tier):
             colors = {
                 'Tier 1': '#1B5E20',  # Dark green
-                'Tier 2': '#66BB6A',  # Light green
-                'Tier 3': '#FFC107',  # Amber
+                'Tier 2': '#cfa255',  # Light orange
+                'Tier 3': '#EF5350',  # Red
                 'Tier 4': '#EF5350'   # Red
             }
             color = colors.get(tier, '#9E9E9E')  # Default to grey if tier not recognized
