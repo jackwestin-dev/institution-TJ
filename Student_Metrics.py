@@ -171,8 +171,8 @@ if not df_tier_data_student_filtered.empty:
         
         # Display each category with its tier
         display_tier(col1, 'Survey', df_tier_data_student_filtered['Survey Tier'].values[0])
-        display_tier(col2, 'Classes', df_tier_data_student_filtered['Large Group Tier'].values[0])
-        display_tier(col3, 'Small Groups', df_tier_data_student_filtered['Small Group Tier'].values[0])
+        display_tier(col2, 'Class Attendance', df_tier_data_student_filtered['Large Group Tier'].values[0])
+        display_tier(col3, 'Small Group Attendance', df_tier_data_student_filtered['Small Group Tier'].values[0])
         display_tier(col4, 'Participation', df_tier_data_student_filtered['Class Participation Tier'].values[0])
         display_tier(col5, 'Overall', df_tier_data_student_filtered['Final Tier'].values[0])
 else:
