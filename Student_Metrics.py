@@ -126,8 +126,62 @@ st.dataframe(
 st.write(' ')
 st.write(' ')
 st.header('Student Tier Assessment')
-st.caption('This assessment is based on student participation, accuracy, and attendance across different learning formats')
+st.caption('The tiers listed below represent student data gathered throughout their time in our MCAT program, from June 2024 to now.')
 st.write(' ')
+
+# Add tier descriptions with colors
+st.markdown("""
+<style>
+.tier-box {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+.tier1 {
+    background-color: #e8f5e9;
+    border-left: 5px solid #1B5E20;
+}
+.tier2 {
+    background-color: #fff8e1;
+    border-left: 5px solid #FF9800;
+}
+.tier3 {
+    background-color: #ffebee;
+    border-left: 5px solid #EF5350;
+}
+.tier-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.tier-criteria {
+    margin: 5px 0;
+}
+</style>
+
+<div class="tier-box tier1">
+    <div class="tier-title">Tier 1 Students</div>
+    <div class="tier-criteria">Overall Participation (≥75%)</div>
+    <div class="tier-criteria">Engagement (≥75%)</div>
+    <div class="tier-criteria">Responsiveness to Surveys (≥90%)</div>
+    <div class="tier-criteria">Attendance to All Sessions (≥80%)</div>
+</div>
+
+<div class="tier-box tier2">
+    <div class="tier-title">Tier 2 Students</div>
+    <div class="tier-criteria">Overall Participation (50% - 74%)</div>
+    <div class="tier-criteria">Engagement (50% - 74%)</div>
+    <div class="tier-criteria">Responsiveness to Surveys (50% - 89%)</div>
+    <div class="tier-criteria">Attendance to All Live Sessions (50% - 79%)</div>
+</div>
+
+<div class="tier-box tier3">
+    <div class="tier-title">Tier 3 Students</div>
+    <div class="tier-criteria">Overall Participation (<50%)</div>
+    <div class="tier-criteria">Engagement (<50%)</div>
+    <div class="tier-criteria">Responsiveness to Surveys (<50%)</div>
+    <div class="tier-criteria">Attendance to All Live Sessions (<50%)</div>
+</div>
+""", unsafe_allow_html=True)
 
 # Check if we have tier data for this student
 if not df_tier_data_student_filtered.empty:
