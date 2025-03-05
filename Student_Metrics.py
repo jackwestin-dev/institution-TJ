@@ -129,58 +129,45 @@ st.header('Student Tier Assessment')
 st.caption('The tiers listed below represent student data gathered throughout their time in our MCAT program, from June 2024 to now.')
 st.write(' ')
 
-# Add tier descriptions with colors
+# Add tier descriptions with colored text
 st.markdown("""
 <style>
-.tier-box {
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
-.tier1 {
-    background-color: #e8f5e9;
-    border-left: 5px solid #1B5E20;
-}
-.tier2 {
-    background-color: #fff8e1;
-    border-left: 5px solid #FF9800;
-}
-.tier3 {
-    background-color: #ffebee;
-    border-left: 5px solid #EF5350;
-}
-.tier-title {
+.tier1-text {
+    color: #1B5E20;
     font-weight: bold;
-    margin-bottom: 5px;
+}
+.tier2-text {
+    color: #FF9800;
+    font-weight: bold;
+}
+.tier3-text {
+    color: #EF5350;
+    font-weight: bold;
 }
 .tier-criteria {
-    margin: 5px 0;
+    margin: 2px 0;
 }
 </style>
 
-<div class="tier-box tier1">
-    <div class="tier-title">Tier 1 Students</div>
-    <div class="tier-criteria">Overall Participation (≥75%)</div>
-    <div class="tier-criteria">Engagement (≥75%)</div>
-    <div class="tier-criteria">Responsiveness to Surveys (≥90%)</div>
-    <div class="tier-criteria">Attendance to All Sessions (≥80%)</div>
-</div>
+<p class="tier1-text">Tier 1 Students</p>
+<div class="tier-criteria" style="color: #1B5E20;">Overall Participation (≥75%)</div>
+<div class="tier-criteria" style="color: #1B5E20;">Engagement (≥75%)</div>
+<div class="tier-criteria" style="color: #1B5E20;">Responsiveness to Surveys (≥90%)</div>
+<div class="tier-criteria" style="color: #1B5E20;">Attendance to All Sessions (≥80%)</div>
+<br>
 
-<div class="tier-box tier2">
-    <div class="tier-title">Tier 2 Students</div>
-    <div class="tier-criteria">Overall Participation (50% - 74%)</div>
-    <div class="tier-criteria">Engagement (50% - 74%)</div>
-    <div class="tier-criteria">Responsiveness to Surveys (50% - 89%)</div>
-    <div class="tier-criteria">Attendance to All Live Sessions (50% - 79%)</div>
-</div>
+<p class="tier2-text">Tier 2 Students</p>
+<div class="tier-criteria" style="color: #FF9800;">Overall Participation (50% - 74%)</div>
+<div class="tier-criteria" style="color: #FF9800;">Engagement (50% - 74%)</div>
+<div class="tier-criteria" style="color: #FF9800;">Responsiveness to Surveys (50% - 89%)</div>
+<div class="tier-criteria" style="color: #FF9800;">Attendance to All Live Sessions (50% - 79%)</div>
+<br>
 
-<div class="tier-box tier3">
-    <div class="tier-title">Tier 3 Students</div>
-    <div class="tier-criteria">Overall Participation (<50%)</div>
-    <div class="tier-criteria">Engagement (<50%)</div>
-    <div class="tier-criteria">Responsiveness to Surveys (<50%)</div>
-    <div class="tier-criteria">Attendance to All Live Sessions (<50%)</div>
-</div>
+<p class="tier3-text">Tier 3 Students</p>
+<div class="tier-criteria" style="color: #EF5350;">Overall Participation (<50%)</div>
+<div class="tier-criteria" style="color: #EF5350;">Engagement (<50%)</div>
+<div class="tier-criteria" style="color: #EF5350;">Responsiveness to Surveys (<50%)</div>
+<div class="tier-criteria" style="color: #EF5350;">Attendance to All Live Sessions (<50%)</div>
 """, unsafe_allow_html=True)
 
 # Check if we have tier data for this student
