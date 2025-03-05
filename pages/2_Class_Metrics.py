@@ -147,11 +147,10 @@ st.write(
 st.write(' ')
 st.write(' ')
 st.dataframe(
-    df_engagement_attendance_weekly[['cars_accuracy','sciences_accuracy','class_accuracy']].sort_values(by='week',ascending=False).style.format(
+    df_engagement_attendance_weekly[['cars_accuracy','sciences_accuracy']].sort_values(by='week',ascending=False).style.format(
     {
         'cars_accuracy' : '{:.1%}',
         'sciences_accuracy' : '{:.1%}',
-        'class_accuracy' : '{:.1%}'
     }
 ),
 use_container_width=True
