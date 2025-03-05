@@ -180,14 +180,7 @@ use_container_width=True
 st.write(' ')
 st.write(' ')
 st.subheader('Participation')
-# st.write(
-#     f'''
-#     Over the course of {week_total} weeks:
-#     * Class participation has {class_participation_directional_change} by {class_participation_magnitude_change:.0%}, from {class_participation_first_week:.0%} to {class_participation_latest_week:.0%}.
-#     * Homework participation has {homework_participation_directional_change} by {homework_participation_magnitude_change:.0%}, from {homewrok_participation_first_week:.0%} to {homework_participation_latest_week:.0%}.
-#     '''
-# )
-st.write(' ')
+st.write('Participation includes the % of students who completed the activities provided in class. This typically comes as a completed question set that instructors assign during the class."
 st.write(' ')
 st.dataframe(
     df_engagement_attendance_weekly[['class_participation']].sort_values(by='week',ascending=False).style.format(
