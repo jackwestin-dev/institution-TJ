@@ -244,8 +244,8 @@ with col3:
 st.write(' ')
 st.write(' ')
 
-st.header('Self-Learning with Jack Westin Course or Question Bank')
-st.subheader('Completed Lessons')
+st.header('Engagement')
+st.subheader('Self-Learning with Jack Westin Course or Question Bank')
 st.write('This graph displays the number of video lessons or assignments within the Self-Paced JW Complete MCAT Course completed by the student per week')
 st.write(' ')
 st.write(' ')
@@ -314,7 +314,9 @@ line_question_sets = alt.Chart(df_engagement_attendance_student_filtered).mark_l
 )
 
 st.altair_chart(line_question_sets,use_container_width=True)
-st.header('Class and Homework Participation')
+
+st.header('Participation')
+st.subheader('Class and Homework Participation')
 st.write(
     '"Class Participation" represents the percentage of class activities students engaged in each week.\n\n'
     'To note: We encouraged students to utilize resources they have access to, such as AAMC materials, to apply their knowledge. '
@@ -361,7 +363,8 @@ st.altair_chart(line_participation,use_container_width=True)
 
 st.write(' ')
 st.write(' ')
-st.header('Average Accuracy (%) on Question Sets Per Week')
+st.header('Performance')
+st.subheader('Average Accuracy (%) on Question Sets Per Week')
 st.write(
     'During Session Practice: "In-Class Questions" refer to a student\'s accuracy percentage for question sets specifically given during class. '
     'That being said, these percentages will not be present if a student did not attempt the class activity. Also, to note, a data point will not be present if there was no class during a certain week.\n\n'
