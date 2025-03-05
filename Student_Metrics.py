@@ -119,7 +119,12 @@ st.write(' ')
 st.write(' ')
 
 st.subheader('Practice Exam - Accuracy per Subject')
-st.write('Question Topic references the different MCAT subjects tested on the Jack Westin Exams. Question Frequency references the number of questions tagged with that subject within the Jack Westin Exams. Student Accuracy reflects the number of questions on a particular subject that the student answered correctly, divided by the total number of questions.')
+st.write(
+    'The "Question Topic" column represents the various MCAT subjects tested in the Jack Westin Exams. '
+    '"Question Frequency" indicates the number of questions associated with each subject in these exams. '
+    '"Student Accuracy" is calculated as the percentage of correctly answered questions for a given subject, '
+    'based on the total number of questions attempted.'
+)
 exam_section = st.selectbox("Choose an exam section:", list(df_test_section_scores['Exam Section'].unique()))
 st.dataframe(
     df_test_section_scores_student_filtered[df_test_section_scores_student_filtered['Exam Section'] == exam_section][['Exam Name','Question Topic','Question Frequency','Student Accuracy']].sort_values(by='Exam Name').reset_index(drop=True),
