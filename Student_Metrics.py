@@ -246,7 +246,7 @@ st.write(' ')
 
 st.header('Self-Learning with Jack Westin Course or Question Bank')
 st.subheader('Completed Lessons')
-st.caption('Number of video lessons or assignments within the Self-Paced JW Complete MCAT Course completed by the student per week')
+st.write('This graph displays the number of video lessons or assignments within the Self-Paced JW Complete MCAT Course completed by the student per week')
 st.write(' ')
 st.write(' ')
 
@@ -287,8 +287,8 @@ st.altair_chart(line_engagement,use_container_width=True)
 st.write(' ')
 st.write(' ')
 
-st.subheader('Completed Questions Sets')
-st.caption('The number of question sets completed within our question bank per week. Question sets usually range between 5 to 10 questions, and can be discrete or passage-based questions.')
+st.subheader('Completed Question Sets')
+st.write('This graph displays the number of question sets completed within our question bank per week. Question sets usually range between 5 to 10 questions, and can be discrete or passage-based questions.')
 st.write(' ')
 st.write(' ')
 
@@ -315,6 +315,11 @@ line_question_sets = alt.Chart(df_engagement_attendance_student_filtered).mark_l
 
 st.altair_chart(line_question_sets,use_container_width=True)
 st.header('Class and Homework Participation')
+st.write(
+    '"Class Participation" represents the percentage of class activities students engaged in each week.\n\n'
+    'To note: We encouraged students to utilize resources they have access to, such as AAMC materials, to apply their knowledge. '
+    '"Homework Completion" indicates that a student utilized the question sets we provided within our learning platform that reviews material we covered in class.'
+)
 
 st.write(' ')
 st.write(' ')
@@ -403,6 +408,11 @@ st.altair_chart(line_engagement,use_container_width=True)
 st.write(' ')
 st.write(' ')
 st.header('Attendance')
+st.write(
+    'Below demonstrates the weekly percentage of attendance by students within our "All Student" and "Small Group" classes.\n\n'
+    'For example, if there are two large classes and a student attends one of them, they would receive a 50% attendance rate for that week. '
+    'A data point with 0% indicates no attendance during that week, while the absence of a data point reflects that no classes were held that week.'
+)
 st.write(' ')
 st.write(' ')
 
