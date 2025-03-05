@@ -182,7 +182,7 @@ st.write(
     Through {week_total} weeks of the course, the range of attendance has been between {attendance_weekly_min:.0%} and {attendance_weekly_max:.0%}.
     '''
 )
-st.write('Here is the [the MCAT class schedule for JAMP Scholars.](https://drive.google.com/file/d/1ku3YESl2If9v3T-n40lVV-KH1QWRVtOr/view?usp=sharing) here. None written beneath the attendance column indicates students did not have class that week, consequently no attendance was reported.')
+st.write('Here is the [the MCAT class schedule for JAMP Scholars.](https://drive.google.com/file/d/1ku3YESl2If9v3T-n40lVV-KH1QWRVtOr/view?usp=sharing). None written beneath the attendance column indicates students did not have class that week, consequently no attendance was reported.')
 st.write(' ')
 st.dataframe(
     df_engagement_attendance_weekly[['attendance']].sort_values(by='week',ascending=False).style.format(
