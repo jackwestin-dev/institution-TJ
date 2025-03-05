@@ -357,6 +357,11 @@ st.altair_chart(line_participation,use_container_width=True)
 st.write(' ')
 st.write(' ')
 st.header('Average Accuracy (%) on Question Sets Per Week')
+st.write(
+    'During Session Practice: "In-Class Questions" refer to a student\'s accuracy percentage for question sets specifically given during class. '
+    'That being said, these percentages will not be present if a student did not attempt the class activity. Also, to note, a data point will not be present if there was no class during a certain week.\n\n'
+    'Self-Learning Practice: "CARS Questions" and "Science Questions" refer to a student\'s weekly performance on independent practice sets that they complete independently. Data points will be present for all weeks the student completed a passage or question set.'
+)
 st.write(' ')
 st.write(' ')
 
