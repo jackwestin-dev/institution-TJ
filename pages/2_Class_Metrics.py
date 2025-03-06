@@ -173,10 +173,7 @@ use_container_width=True
 
 st.write(' ')
 st.write(' ')
-st.header('Average Participation Class Data')
-st.write(' ')
-st.write(' ')
-st.subheader('Attendance')
+st.header('Attendance')
 st.write(
     f'''
     Through {week_total} weeks of the course, the range of attendance has been between {attendance_weekly_min:.0%} and {attendance_weekly_max:.0%}.
@@ -194,7 +191,7 @@ use_container_width=True
 )
 st.write(' ')
 st.write(' ')
-st.subheader('Participation')
+st.header('Participation')
 st.write('Participation includes the % of students who completed the activities provided in class. This typically comes as a completed question set that instructors assign during the class. Here is an [participation activity example](https://www.loom.com/share/48b383838811401892a38e17761c4993?sid=a0215f6f-0d3f-4abb-b0c8-75e1836075e1) here.')
 st.write(' ')
 st.dataframe(
