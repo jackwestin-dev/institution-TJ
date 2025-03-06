@@ -318,7 +318,7 @@ st.altair_chart(line_question_sets,use_container_width=True)
 st.header('Participation')
 st.subheader('Class and Homework Participation')
 st.write(
-    '"Class Participation" represents the percentage of class activities students engaged in each week. Here is a [video sample of an in-class activity](https://www.loom.com/share/48b383838811401892a38e17761c4993?sid=3d3e7dc2-b294-4b73-b1c6-8d78e6e0b6e8) a student can participate in. It should also be noted that we did not track participation in class polls.\n\n'
+    '"Class Participation" represents the percentage of class activities students engaged in each week. Here is a [video sample of an in-class activity](https://www.loom.com/share/48b383838811401892a38e17761c4993?sid=3d3e7dc2-b294-4b73-b1c6-8d78e6e0b6e8) a student can participate in. It should also be noted we did not track participation in class polls.\n\n'
     'To note: We encouraged students to utilize resources they have access to, such as AAMC materials, to apply their knowledge. '
     '"Homework Completion" indicates that a student utilized the question sets we provided within our learning platform that reviews material we covered in class.'
 )
