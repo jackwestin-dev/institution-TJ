@@ -159,7 +159,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown("""
     <p class="tier1-text">Tier 1 Students</p>
-    <div class="tier-criteria" style="color: #4CAF50;">Responsiveness to Surveys (≥90%)</div>
+    <div class="tier-criteria" style="color: #4CAF50;">Responsiveness to Surveys (≥80%)</div>
     <div class="tier-criteria" style="color: #4CAF50;">Attendance in Sessions (≥80%)</div>
     <div class="tier-criteria" style="color: #4CAF50;">Participation (≥75%)</div>
     <div class="tier-criteria" style="color: #4CAF50;">Engagement (≥75%)</div> 
@@ -168,7 +168,7 @@ with col1:
 with col2:
     st.markdown("""
     <p class="tier2-text">Tier 2 Students</p>
-    <div class="tier-criteria" style="color: #FF9800;">Responsiveness to Surveys (50% - 89%)</div>
+    <div class="tier-criteria" style="color: #FF9800;">Responsiveness to Surveys (50% - 79%)</div>
     <div class="tier-criteria" style="color: #FF9800;">Attendance in Sessions (50% - 79%)</div>
     <div class="tier-criteria" style="color: #FF9800;">Participation (50% - 74%)</div>
     <div class="tier-criteria" style="color: #FF9800;">Engagement (50% - 74%)</div> 
