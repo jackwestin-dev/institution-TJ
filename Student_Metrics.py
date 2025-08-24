@@ -161,7 +161,7 @@ with col1:
     <p class="tier1-text">Tier 1 Students</p>
     <div class="tier-criteria" style="color: #4CAF50;">Responsiveness to Surveys (≥80%)</div>
     <div class="tier-criteria" style="color: #4CAF50;">Attendance in Sessions (≥80%)</div>
-    <div class="tier-criteria" style="color: #4CAF50;">Participation (≥75%)</div>
+    <div class="tier-criteria" style="color: #4CAF50;">Class Participation (≥75%)</div>
     <div class="tier-criteria" style="color: #4CAF50;">Engagement (≥75%)</div> 
     """, unsafe_allow_html=True)
 
@@ -170,7 +170,7 @@ with col2:
     <p class="tier2-text">Tier 2 Students</p>
     <div class="tier-criteria" style="color: #FF9800;">Responsiveness to Surveys (50% - 79%)</div>
     <div class="tier-criteria" style="color: #FF9800;">Attendance in Sessions (50% - 79%)</div>
-    <div class="tier-criteria" style="color: #FF9800;">Participation (50% - 74%)</div>
+    <div class="tier-criteria" style="color: #FF9800;">Class Participation (50% - 74%)</div>
     <div class="tier-criteria" style="color: #FF9800;">Engagement (50% - 74%)</div> 
     """, unsafe_allow_html=True)
 
@@ -179,7 +179,7 @@ with col3:
     <p class="tier3-text">Tier 3 Students</p>
     <div class="tier-criteria" style="color: #EF5350;">Responsiveness to Surveys (&lt;50%)</div>
     <div class="tier-criteria" style="color: #EF5350;">Attendance in Sessions (&lt;50%)</div>
-    <div class="tier-criteria" style="color: #EF5350;">Participation (&lt;50%)</div> 
+    <div class="tier-criteria" style="color: #EF5350;">Class Participation (&lt;50%)</div> 
     <div class="tier-criteria" style="color: #EF5350;">Engagement (&lt;50%)</div>
     """, unsafe_allow_html=True)
 
