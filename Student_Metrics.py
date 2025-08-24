@@ -84,13 +84,12 @@ if not df_tier_data_student_filtered.empty:
     with st.container():
         # Create a more user-friendly display of tier data
         tier_display = pd.DataFrame({
-            'Assessment Category': ['Survey Completion', 'Class Attendance', 'Small Group Attendance', 'Class Participation', 'Overall Assessment'],
+            'Assessment Category': ['Survey Completion', 'Class Attendance', 'Small Group Attendance', 'Class Participation'],
             'Performance Tier': [
                 df_tier_data_student_filtered['Survey Tier'].values[0],
                 df_tier_data_student_filtered['Large Group Tier'].values[0],
                 df_tier_data_student_filtered['Small Group Tier'].values[0],
-                df_tier_data_student_filtered['Class Participation Tier'].values[0],
-                df_tier_data_student_filtered['Final Tier'].values[0]
+                df_tier_data_student_filtered['Class Participation Tier'].values[0]
             ]
         })
         
@@ -98,7 +97,7 @@ if not df_tier_data_student_filtered.empty:
         # st.dataframe(tier_display, use_container_width=True)
         
         # Optional: Add a visual representation of the tiers using colored indicators
-        col1, col2, col3, col4, col5 = st.columns(5)
+        col1, col2, col3, col4 = st.columns(4)
         
         # Helper function to display tier with appropriate color
         def display_tier(column, category, tier):
@@ -117,7 +116,7 @@ if not df_tier_data_student_filtered.empty:
         display_tier(col2, 'Class Attendance', df_tier_data_student_filtered['Large Group Tier'].values[0])
         display_tier(col3, 'Small Group Attendance', df_tier_data_student_filtered['Small Group Tier'].values[0])
         display_tier(col4, 'Class Participation', df_tier_data_student_filtered['Class Participation Tier'].values[0])
-        display_tier(col5, 'Overall', df_tier_data_student_filtered['Final Tier'].values[0])
+    
 else:
     st.info("No tier assessment data available for this student.")
 
