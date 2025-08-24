@@ -74,63 +74,6 @@ df_tier_data_student_filtered = df_tier_data[df_tier_data['student_id'] == stude
 ## Create sections and render dashboard
 st.write(' ')
 st.write(' ')
-st.header('Practice Exam Scores')
-st.write('Students were asked to update us with practice exam schedules and scores throughout the program. This is a link to the [Texas JAMP Scholars | MCAT Exam Schedule & Scores Survey](https://forms.gle/pK1bGfvxZZQQvmo26) Here is a [list of responses to the survey as of March 3rd.](https://docs.google.com/spreadsheets/d/1PEhGrf5HiiX70Sb57KZtIPKThSno0o1MFXFJUDvhpuM/edit?usp=sharing) We update the information seen below on a weekly basis.')
-st.write(' ')
-
-st.dataframe(df_test_scores_student_filtered[['test_name','test_date','actual_exam_score']],use_container_width=True)
-st.write(' ')
-st.write(' ')
-
-point_exam_scores = alt.Chart(df_test_scores_student_filtered).mark_point().transform_fold(
-    fold=['actual_exam_score'],
-    as_=['variable','value']
-).encode(
-    x=alt.X(
-        'yearmonthdate(test_date):O',
-        axis=alt.Axis(
-            labelAngle=-45,
-            title='Test Date'
-        )
-    ),
-    y=alt.Y(
-        'value:Q',
-        axis=alt.Axis(
-            title='Practice Exam Score'
-        ),
-        scale=alt.Scale(domain=[470, 528])
-    ),
-    tooltip=[
-        alt.Tooltip('test_date:T', title='Test Date'),
-        alt.Tooltip('value:Q', title='Exam Score')
-    ],
-    color=alt.Color(
-        'variable:N',
-        legend=alt.Legend(
-            title='Exam Scores',
-            orient='bottom',
-            labelExpr="'Practice Exam Score'"
-        )
-    )
-)
-
-st.altair_chart(point_exam_scores,use_container_width=True)
-st.write(' ')
-st.write(' ')
-
-st.subheader('Practice Exam - Accuracy per Subject')
-st.write(
-    'The "Question Topic" column represents the various MCAT subjects tested in the Jack Westin Exams. '
-    '"Question Frequency" indicates the number of questions associated with each subject in these exams. '
-    '"Student Accuracy" is calculated as the percentage of correctly answered questions for a given subject, '
-    'based on the total number of questions attempted.'
-)
-exam_section = st.selectbox("Choose an exam section:", list(df_test_section_scores['Exam Section'].unique()))
-st.dataframe(
-    df_test_section_scores_student_filtered[df_test_section_scores_student_filtered['Exam Section'] == exam_section][['Exam Name','Question Topic','Question Frequency','Student Accuracy']].sort_values(by='Exam Name').reset_index(drop=True),
-    use_container_width=True)
-st.write(' ')
-st.write(' ')
 st.header('Student Tier Assessment')
 st.caption('The tiers listed below represent student data gathered throughout their time in our MCAT program, from June 2024 to now.')
 st.write(' ')
@@ -240,6 +183,78 @@ with col3:
     <div class="tier-criteria" style="color: #EF5350;">Participation (&lt;50%)</div> 
     <div class="tier-criteria" style="color: #EF5350;">Engagement (&lt;50%)</div>
     """, unsafe_allow_html=True)
+
+st.write(' ')
+st.write(' ')
+
+st.subheader('Practice Exam - Accuracy per Subject')
+st.write(
+    'The "Question Topic" column represents the various MCAT subjects tested in the Jack Westin Exams. '
+    '"Question Frequency" indicates the number of questions associated with each subject in these exams. '
+    '"Student Accuracy" is calculated as the percentage of correctly answered questions for a given subject, '
+    'based on the total number of questions attempted.'
+)
+exam_section = st.selectbox("Choose an exam section:", list(df_test_section_scores['Exam Section'].unique()))
+st.dataframe(
+    df_test_section_scores_student_filtered[df_test_section_scores_student_filtered['Exam Section'] == exam_section][['Exam Name','Question Topic','Question Frequency','Student Accuracy']].sort_values(by='Exam Name').reset_index(drop=True),
+    use_container_width=True)
+st.write(' ')
+st.write(' ')
+st.header('Practice Exam Scores')
+st.write('Students were asked to update us with practice exam schedules and scores throughout the program. This is a link to the [Texas JAMP Scholars | MCAT Exam Schedule & Scores Survey](https://forms.gle/pK1bGfvxZZQQvmo26) Here is a [list of responses to the survey as of March 3rd.](https://docs.google.com/spreadsheets/d/1PEhGrf5HiiX70Sb57KZtIPKThSno0o1MFXFJUDvhpuM/edit?usp=sharing) We update the information seen below on a weekly basis.')
+st.write(' ')
+
+st.dataframe(df_test_scores_student_filtered[['test_name','test_date','actual_exam_score']],use_container_width=True)
+st.write(' ')
+st.write(' ')
+
+point_exam_scores = alt.Chart(df_test_scores_student_filtered).mark_point().transform_fold(
+    fold=['actual_exam_score'],
+    as_=['variable','value']
+).encode(
+    x=alt.X(
+        'yearmonthdate(test_date):O',
+        axis=alt.Axis(
+            labelAngle=-45,
+            title='Test Date'
+        )
+    ),
+    y=alt.Y(
+        'value:Q',
+        axis=alt.Axis(
+            title='Practice Exam Score'
+        ),
+        scale=alt.Scale(domain=[470, 528])
+    ),
+    tooltip=[
+        alt.Tooltip('test_date:T', title='Test Date'),
+        alt.Tooltip('value:Q', title='Exam Score')
+    ],
+    color=alt.Color(
+        'variable:N',
+        legend=alt.Legend(
+            title='Exam Scores',
+            orient='bottom',
+            labelExpr="'Practice Exam Score'"
+        )
+    )
+)
+
+st.altair_chart(point_exam_scores,use_container_width=True)
+st.write(' ')
+st.write(' ')
+
+st.subheader('Practice Exam - Accuracy per Subject')
+st.write(
+    'The "Question Topic" column represents the various MCAT subjects tested in the Jack Westin Exams. '
+    '"Question Frequency" indicates the number of questions associated with each subject in these exams. '
+    '"Student Accuracy" is calculated as the percentage of correctly answered questions for a given subject, '
+    'based on the total number of questions attempted.'
+)
+exam_section = st.selectbox("Choose an exam section:", list(df_test_section_scores['Exam Section'].unique()))
+st.dataframe(
+    df_test_section_scores_student_filtered[df_test_section_scores_student_filtered['Exam Section'] == exam_section][['Exam Name','Question Topic','Question Frequency','Student Accuracy']].sort_values(by='Exam Name').reset_index(drop=True),
+    use_container_width=True)
 
 st.write(' ')
 st.write(' ')
