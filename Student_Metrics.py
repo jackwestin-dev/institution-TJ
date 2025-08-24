@@ -75,7 +75,7 @@ df_tier_data_student_filtered = df_tier_data[df_tier_data['student_id'] == stude
 st.write(' ')
 st.write(' ')
 st.header('Student Tier Assessment')
-st.caption('The tiers listed below represent student data gathered throughout their time in our MCAT program, from June 2024 to now.')
+st.caption('The tiers listed below represent student data gathered throughout their time in our MCAT program, from June 2025 to now.')
 st.write(' ')
 
 # Check if we have tier data for this student
@@ -187,7 +187,7 @@ with col3:
 st.write(' ')
 st.write(' ')
 st.header('Practice Exam Scores')
-st.write('Students were asked to update us with practice exam schedules and scores throughout the program. This is a link to the [Texas JAMP Scholars | MCAT Exam Schedule & Scores Survey](https://forms.gle/pK1bGfvxZZQQvmo26) Here is a [list of responses to the survey as of March 3rd.](https://docs.google.com/spreadsheets/d/1PEhGrf5HiiX70Sb57KZtIPKThSno0o1MFXFJUDvhpuM/edit?usp=sharing) We update the information seen below on a weekly basis.')
+st.write('Students were asked to update us with practice exam schedules and scores throughout the program. This is a link to the [Texas JAMP Scholars | MCAT Exam Schedule & Scores Survey](https://docs.google.com/spreadsheets/d/10YBmWD7qFD0fjbD-8TK1gxNMVpwJyTLtOFtT1huh-FI/edit?usp=sharing)')
 st.write(' ')
 
 st.dataframe(df_test_scores_student_filtered[['test_name','test_date','actual_exam_score']],use_container_width=True)
@@ -415,7 +415,7 @@ st.header('Attendance')
 st.write(
     'Below demonstrates the weekly percentage of attendance by students within our "All Student" and "Small Group" classes.\n\n'
     'For example, if there are two large classes and a student attends one of them, they would receive a 50% attendance rate for that week. '
-    'A data point with 0% indicates no attendance during that week, while the absence of a data point reflects that no classes were held that week. Here is the [MCAT class schedule for JAMP Scholars](https://drive.google.com/file/d/1ku3YESl2If9v3T-n40lVV-KH1QWRVtOr/view?usp=sharing)'
+    'A data point with 0% indicates no attendance during that week, while the absence of a data point reflects that no classes were held that week. Here is the [MCAT class schedule for JAMP Scholars](https://docs.google.com/document/d/1Ls6hA8GtfRgr983FUAIvxKAXMadUrdFswPeQHCfrgPo/edit?usp=sharing)'
 )
 st.write(' ')
 st.write(' ')
