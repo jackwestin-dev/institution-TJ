@@ -340,24 +340,75 @@ if dashboard_type == "Individual Student Dashboard":
     # Original Individual Student Dashboard Code
     
     ## Read data from CSV files (with error handling)
-    try:
-        df_engagement_attendance = pd.read_csv('./student-data/institution-1-engagement-data.csv',parse_dates=['start_date','end_date'])
-        df_test_scores = pd.read_csv('./student-data/institution-1-test-data.csv',parse_dates=['test_date'])
-        df_test_section_scores = pd.read_csv('./student-data/institution-1-2025-exam-data-jw-exams.csv')
-        df_tier_data = pd.read_csv('./student-data/tierdata.csv')
-        individual_data_available = True
-    except FileNotFoundError as e:
+    import os
+    
+    # Try multiple possible paths for deployment compatibility
+    data_paths = [
+        'student-data/',          # Local development
+        './student-data/',        # Explicit relative path
+        'student_data/',          # Alternative naming
+        './student_data/',        # Alternative with explicit relative
+        ''                        # Root directory fallback
+    ]
+    
+    individual_data_available = False
+    
+    for base_path in data_paths:
+        try:
+            # Test if all required files exist in this path
+            files_to_check = [
+                f'{base_path}institution-1-engagement-data.csv',
+                f'{base_path}institution-1-test-data.csv', 
+                f'{base_path}institution-1-2025-exam-data-jw-exams.csv',
+                f'{base_path}tierdata.csv'
+            ]
+            
+            # Check if all files exist
+            if all(os.path.exists(f) for f in files_to_check):
+                df_engagement_attendance = pd.read_csv(f'{base_path}institution-1-engagement-data.csv',parse_dates=['start_date','end_date'])
+                df_test_scores = pd.read_csv(f'{base_path}institution-1-test-data.csv',parse_dates=['test_date'])
+                df_test_section_scores = pd.read_csv(f'{base_path}institution-1-2025-exam-data-jw-exams.csv')
+                df_tier_data = pd.read_csv(f'{base_path}tierdata.csv')
+                individual_data_available = True
+                st.success(f"✅ Individual student data loaded from: {base_path if base_path else 'root directory'}")
+                break
+        except Exception as e:
+            continue
+    
+    if not individual_data_available:
         st.error(f"**Individual Student Dashboard Data Not Found**")
-        st.info("The Individual Student Dashboard requires the following files in a `student-data/` directory:")
+        st.info("The Individual Student Dashboard requires the following files:")
         st.markdown("""
+        **Required files (in student-data/ directory or root):**
         - `institution-1-engagement-data.csv`
         - `institution-1-test-data.csv`
         - `institution-1-2025-exam-data-jw-exams.csv`
         - `tierdata.csv`
         
-        Please upload these files or use the **MCAT Analysis Dashboard** which uses the available data files.
+        **Current directory contents:**
         """)
-        individual_data_available = False
+        
+        # Show current directory contents for debugging
+        current_files = []
+        try:
+            current_files = [f for f in os.listdir('.') if f.endswith('.csv')]
+            if current_files:
+                st.markdown("**CSV files in root directory:**")
+                for f in current_files:
+                    st.write(f"- {f}")
+            
+            if os.path.exists('student-data'):
+                student_files = [f for f in os.listdir('student-data') if f.endswith('.csv')]
+                if student_files:
+                    st.markdown("**CSV files in student-data/ directory:**")
+                    for f in student_files:
+                        st.write(f"- student-data/{f}")
+            else:
+                st.write("- student-data/ directory not found")
+        except:
+            st.write("- Unable to list directory contents")
+        
+        st.info("💡 **Tip:** Use the **MCAT Analysis Dashboard** which uses the available data files.")
     
     if individual_data_available:
         ## Create dashboard filters
@@ -744,17 +795,64 @@ else:
     st.header("MCAT Analysis Dashboard")
     st.subheader("Comprehensive analytics and insights for MCAT preparation success")
     
+    # Debug info for deployment troubleshooting
+    with st.expander("🔧 Debug: File System Info (for troubleshooting)"):
+        import os
+        st.write("**Current working directory:**", os.getcwd())
+        st.write("**Files in root directory:**")
+        try:
+            root_files = [f for f in os.listdir('.') if f.endswith('.csv')]
+            for f in root_files:
+                st.write(f"- {f}")
+        except:
+            st.write("- Unable to list root directory")
+        
+        st.write("**Subdirectories:**")
+        try:
+            subdirs = [d for d in os.listdir('.') if os.path.isdir(d)]
+            for d in subdirs:
+                st.write(f"- {d}/")
+                try:
+                    subfiles = [f for f in os.listdir(d) if f.endswith('.csv')]
+                    for f in subfiles:
+                        st.write(f"  - {d}/{f}")
+                except:
+                    st.write(f"  - Unable to list {d}/")
+        except:
+            st.write("- Unable to list subdirectories")
+    
     # Load and clean MCAT analysis data
     @st.cache_data
     def load_and_clean_data():
         """Load and clean the MCAT data"""
-        # Load CSV data for tier analysis
-        try:
-            csv_df = pd.read_csv('/Users/anastasiaperez/Downloads/JWcasestudies/data_outcomes_with_tiers.csv')
-            st.session_state.csv_data_available = True
-        except:
-            csv_df = None
+        # Load CSV data for tier analysis - try multiple paths for deployment compatibility
+        import os
+        csv_df = None
+        
+        # Try different possible file paths
+        possible_files = [
+            'data_outcomes_with_tiers.csv',
+            './data_outcomes_with_tiers.csv',
+            'data/data_outcomes_with_tiers.csv',
+            './data/data_outcomes_with_tiers.csv'
+        ]
+        
+        for file_path in possible_files:
+            try:
+                if os.path.exists(file_path):
+                    csv_df = pd.read_csv(file_path)
+                    st.session_state.csv_data_available = True
+                    break
+            except Exception as e:
+                continue
+        
+        if csv_df is None:
             st.session_state.csv_data_available = False
+            # Debug info when CSV loading fails
+            st.warning("⚠️ CSV data not loaded - insights analysis will be limited")
+        else:
+            # Debug info when CSV loads successfully  
+            st.success(f"✅ CSV data loaded successfully: {len(csv_df)} rows, {len(csv_df.columns)} columns")
         
         # Load data (replace with your file path or upload mechanism)
         data = {
@@ -803,8 +901,24 @@ else:
         
         return df, csv_df
 
+    # Add cache clearing button for debugging
+    if st.button("🔄 Clear Cache & Reload Data"):
+        st.cache_data.clear()
+        st.rerun()
+    
     # Load data
     df, csv_df = load_and_clean_data()
+    
+    # Show data loading status at the top
+    col1, col2 = st.columns(2)
+    with col1:
+        if csv_df is not None:
+            st.success(f"✅ Detailed Data: {len(csv_df)} records loaded")
+        else:
+            st.error("❌ Detailed Data: Not loaded")
+    
+    with col2:
+        st.info(f"📊 Basic Data: {len(df)} student records available")
     
     # Analysis Type Selection
     analysis_type = st.sidebar.radio(
@@ -991,7 +1105,16 @@ else:
                 """)
             
         else:
-            st.warning("Data not available for insights analysis.")
+            st.error("**Data not available for insights analysis**")
+            st.info("**Troubleshooting:** The Key Actionable Insights require the `data_outcomes_with_tiers.csv` file with detailed engagement data.")
+            st.markdown("""
+            **This section needs:**
+            - Student engagement data (class_participation, homework_participation)
+            - Attendance data (large/small session attendance)
+            - Tier classifications (Small Group Tier, Large Group Tier, etc.)
+            
+            **Current status:** CSV data loading failed. Check the debug section above.
+            """)
 
     elif analysis_type == "Exam Analysis":
         st.header("Exam Analysis")
@@ -1259,7 +1382,17 @@ else:
             st.info(f"**Baseline MCAT Analysis:** Higher baseline scores show different attendance patterns across tiers")
             
         else:
-            st.warning("Attendance analysis requires tier data which is not available.")
+            st.error("**Attendance analysis requires tier data which is not available**")
+            st.info("**Troubleshooting:** Attendance Analysis requires the `data_outcomes_with_tiers.csv` file.")
+            st.markdown("""
+            **This section needs:**
+            - Attendance data (num_attended_large_session, num_scheduled_large_session)
+            - Small group attendance (num_attended_small_session, num_scheduled_small_session)  
+            - Tier classifications (Large Group Tier, Small Group Tier)
+            - Baseline MCAT scores for correlation analysis
+            
+            **Current status:** CSV data loading failed. Check the debug section above.
+            """)
 
     elif analysis_type == "Performer Analysis":
         st.header("Performer Analysis")
@@ -1378,4 +1511,14 @@ else:
                 """)
             
         else:
-            st.warning("Performer analysis requires detailed engagement data which is not available.")
+            st.error("**Performer analysis requires detailed engagement data which is not available**")
+            st.info("**Troubleshooting:** Performer Analysis requires the `data_outcomes_with_tiers.csv` file.")
+            st.markdown("""
+            **This section needs:**
+            - Student performance data (class_accuracy, class_participation)
+            - Attendance data (large/small session attendance)
+            - Engagement metrics (homework_participation, completed_lessons)
+            - Question bank usage (total_completed_passages_discrete_sets)
+            
+            **Current status:** CSV data loading failed. Check the debug section above.
+            """)
