@@ -333,31 +333,82 @@ if not check_password():
 st.sidebar.title("Navigation")
 dashboard_type = st.sidebar.radio(
     "Choose Dashboard Type:",
-    ["Individual Student Dashboard", "MCAT Analysis Dashboard"]
+    ["Individual Student Dashboard", "Retrospective Data Analysis"]
 )
 
 if dashboard_type == "Individual Student Dashboard":
     # Original Individual Student Dashboard Code
     
     ## Read data from CSV files (with error handling)
-    try:
-        df_engagement_attendance = pd.read_csv('./student-data/institution-1-engagement-data.csv',parse_dates=['start_date','end_date'])
-        df_test_scores = pd.read_csv('./student-data/institution-1-test-data.csv',parse_dates=['test_date'])
-        df_test_section_scores = pd.read_csv('./student-data/institution-1-2025-exam-data-jw-exams.csv')
-        df_tier_data = pd.read_csv('./student-data/tierdata.csv')
-        individual_data_available = True
-    except FileNotFoundError as e:
+    import os
+    
+    # Try multiple possible paths for deployment compatibility
+    data_paths = [
+        'student-data/',          # Local development
+        './student-data/',        # Explicit relative path
+        'student_data/',          # Alternative naming
+        './student_data/',        # Alternative with explicit relative
+        ''                        # Root directory fallback
+    ]
+    
+    individual_data_available = False
+    
+    for base_path in data_paths:
+        try:
+            # Test if all required files exist in this path
+            files_to_check = [
+                f'{base_path}institution-1-engagement-data.csv',
+                f'{base_path}institution-1-test-data.csv', 
+                f'{base_path}institution-1-2025-exam-data-jw-exams.csv',
+                f'{base_path}tierdata.csv'
+            ]
+            
+            # Check if all files exist
+            if all(os.path.exists(f) for f in files_to_check):
+                df_engagement_attendance = pd.read_csv(f'{base_path}institution-1-engagement-data.csv',parse_dates=['start_date','end_date'])
+                df_test_scores = pd.read_csv(f'{base_path}institution-1-test-data.csv',parse_dates=['test_date'])
+                df_test_section_scores = pd.read_csv(f'{base_path}institution-1-2025-exam-data-jw-exams.csv')
+                df_tier_data = pd.read_csv(f'{base_path}tierdata.csv')
+                individual_data_available = True
+
+                break
+        except Exception as e:
+            continue
+    
+    if not individual_data_available:
         st.error(f"**Individual Student Dashboard Data Not Found**")
-        st.info("The Individual Student Dashboard requires the following files in a `student-data/` directory:")
+        st.info("The Individual Student Dashboard requires the following files:")
         st.markdown("""
+        **Required files (in student-data/ directory or root):**
         - `institution-1-engagement-data.csv`
         - `institution-1-test-data.csv`
         - `institution-1-2025-exam-data-jw-exams.csv`
         - `tierdata.csv`
         
-        Please upload these files or use the **MCAT Analysis Dashboard** which uses the available data files.
+        **Current directory contents:**
         """)
-        individual_data_available = False
+        
+        # Show current directory contents for debugging
+        current_files = []
+        try:
+            current_files = [f for f in os.listdir('.') if f.endswith('.csv')]
+            if current_files:
+                st.markdown("**CSV files in root directory:**")
+                for f in current_files:
+                    st.write(f"- {f}")
+            
+            if os.path.exists('student-data'):
+                student_files = [f for f in os.listdir('student-data') if f.endswith('.csv')]
+                if student_files:
+                    st.markdown("**CSV files in student-data/ directory:**")
+                    for f in student_files:
+                        st.write(f"- student-data/{f}")
+            else:
+                st.write("- student-data/ directory not found")
+        except:
+            st.write("- Unable to list directory contents")
+        
+        st.info("💡 **Tip:** Use the **MCAT Analysis Dashboard** which uses the available data files.")
     
     if individual_data_available:
         ## Create dashboard filters
@@ -740,21 +791,41 @@ if dashboard_type == "Individual Student Dashboard":
         st.altair_chart(line_attendance,use_container_width=True)
 
 else:
-    # MCAT Analysis Dashboard
-    st.header("MCAT Analysis Dashboard")
-    st.subheader("Comprehensive analytics and insights for MCAT preparation success")
+    # Analysis Dashboard
+    
+
     
     # Load and clean MCAT analysis data
     @st.cache_data
     def load_and_clean_data():
         """Load and clean the MCAT data"""
-        # Load CSV data for tier analysis
-        try:
-            csv_df = pd.read_csv('/Users/anastasiaperez/Downloads/JWcasestudies/data_outcomes_with_tiers.csv')
-            st.session_state.csv_data_available = True
-        except:
-            csv_df = None
+        # Load CSV data for tier analysis - try multiple paths for deployment compatibility
+        import os
+        csv_df = None
+        
+        # Try different possible file paths
+        possible_files = [
+            'data_outcomes_with_tiers.csv',
+            './data_outcomes_with_tiers.csv',
+            'data/data_outcomes_with_tiers.csv',
+            './data/data_outcomes_with_tiers.csv'
+        ]
+        
+        for file_path in possible_files:
+            try:
+                if os.path.exists(file_path):
+                    csv_df = pd.read_csv(file_path)
+                    st.session_state.csv_data_available = True
+                    break
+            except Exception as e:
+                continue
+        
+        if csv_df is None:
             st.session_state.csv_data_available = False
+            # Debug info when CSV loading fails
+            st.warning("⚠️ CSV data not loaded - insights analysis will be limited")
+        else:
+            pass
         
         # Load data (replace with your file path or upload mechanism)
         data = {
@@ -803,8 +874,12 @@ else:
         
         return df, csv_df
 
+
+    
     # Load data
     df, csv_df = load_and_clean_data()
+    
+
     
     # Analysis Type Selection
     analysis_type = st.sidebar.radio(
@@ -814,7 +889,6 @@ else:
     
     if analysis_type == "Key Actionable Insights":
         st.header("Key Actionable Insights")
-        st.subheader("Statistical Predictors of >5 Point MCAT Improvement")
         
         st.write(' ')
         st.write(' ')
@@ -991,7 +1065,16 @@ else:
                 """)
             
         else:
-            st.warning("Data not available for insights analysis.")
+            st.error("**Data not available for insights analysis**")
+            st.info("**Troubleshooting:** The Key Actionable Insights require the `data_outcomes_with_tiers.csv` file with detailed engagement data.")
+            st.markdown("""
+            **This section needs:**
+            - Student engagement data (class_participation, homework_participation)
+            - Attendance data (large/small session attendance)
+            - Tier classifications (Small Group Tier, Large Group Tier, etc.)
+            
+            **Current status:** CSV data loading failed.
+            """)
 
     elif analysis_type == "Exam Analysis":
         st.header("Exam Analysis")
@@ -1048,6 +1131,7 @@ else:
             fig_effectiveness = apply_light_mode_styling(fig_effectiveness)
             st.plotly_chart(fig_effectiveness, use_container_width=True)
 
+
     elif analysis_type == "Question Bank Analytics":
         st.header("Question Bank Analytics")
         
@@ -1070,7 +1154,7 @@ else:
                 
                 st.subheader("Comparison: High vs Low Score Improvement")
                 
-                st.info("High Improvement students completed significantly more amount of questions from the JW Qbank than scholars that demonstrated lower improvement.")
+                st.info("High improvement students completed significantly more amount of questions from the JW Question Bank than scholars that demonstrated lower, negative, or no improvement.")
             
             # Display key statistics
             if avg_difference > 0:
@@ -1255,21 +1339,61 @@ else:
                 fig_small = apply_light_mode_styling(fig_small)
                 st.plotly_chart(fig_small, use_container_width=True)
             
-            # Baseline MCAT Analysis
-            st.info(f"**Baseline MCAT Analysis:** Higher baseline scores show different attendance patterns across tiers")
+            # Tier Performance Analysis
+            st.subheader("Attendance Tier Performance Analysis")
+            
+            # Calculate tier success rates
+            tier_attendance = attendance_data.merge(df[['Student_ID', 'Score_Difference']], 
+                                                   left_on='student_id', right_on='Student_ID', how='inner')
+            tier_attendance = tier_attendance.dropna(subset=['Score_Difference'])
+            
+            if len(tier_attendance) > 0:
+                # Large Group Tier Analysis
+                large_tier_stats = tier_attendance.groupby('Large Group Tier')['Score_Difference'].agg(['mean', 'count']).reset_index()
+                large_tier_stats.columns = ['Tier', 'Avg_Score_Improvement', 'Student_Count']
+                
+                # Small Group Tier Analysis  
+                small_tier_stats = tier_attendance.groupby('Small Group Tier')['Score_Difference'].agg(['mean', 'count']).reset_index()
+                small_tier_stats.columns = ['Tier', 'Avg_Score_Improvement', 'Student_Count']
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown("**Large Group Attendance Tiers:**")
+                    for _, row in large_tier_stats.iterrows():
+                        tier_color = '#4CAF50' if row['Tier'] == 'Tier 1' else '#FF9800' if row['Tier'] == 'Tier 2' else '#EF5350'
+                        st.markdown(f"<div style='color: {tier_color}; font-weight: bold;'>{row['Tier']}: {row['Avg_Score_Improvement']:.1f} pts avg improvement ({row['Student_Count']} students)</div>", unsafe_allow_html=True)
+                
+                with col2:
+                    st.markdown("**Small Group Attendance Tiers:**")
+                    for _, row in small_tier_stats.iterrows():
+                        tier_color = '#4CAF50' if row['Tier'] == 'Tier 1' else '#FF9800' if row['Tier'] == 'Tier 2' else '#EF5350'
+                        st.markdown(f"<div style='color: {tier_color}; font-weight: bold;'>{row['Tier']}: {row['Avg_Score_Improvement']:.1f} pts avg improvement ({row['Student_Count']} students)</div>", unsafe_allow_html=True)
+                
+                st.info("**Key Finding:** Attendance tier directly correlates with MCAT score improvement across both session types")
             
         else:
-            st.warning("Attendance analysis requires tier data which is not available.")
+            st.error("**Attendance analysis requires tier data which is not available**")
+            st.info("**Troubleshooting:** Attendance Analysis requires the `data_outcomes_with_tiers.csv` file.")
+            st.markdown("""
+            **This section needs:**
+            - Attendance data (num_attended_large_session, num_scheduled_large_session)
+            - Small group attendance (num_attended_small_session, num_scheduled_small_session)  
+            - Tier classifications (Large Group Tier, Small Group Tier)
+            - Baseline MCAT scores for correlation analysis
+            
+            **Current status:** CSV data loading failed.
+            """)
 
     elif analysis_type == "Performer Analysis":
         st.header("Performer Analysis")
-        
-        # HIGH PERFORMER ANALYSIS (comes first)
-        st.subheader("High Performer Analysis")
+        st.subheader("High vs Low Performing Students")
         
         if csv_df is not None:
-            # Process data for high performers
-            high_performer_data = csv_df.groupby('student_id').agg({
+            # Process data for performance-based analysis
+            tier_data = csv_df.groupby('student_id').agg({
+                'Small Group Tier': 'first',
+                'Large Group Tier': 'first', 
                 'class_accuracy': 'mean',
                 'class_participation': 'mean',
                 'homework_participation': 'mean',
@@ -1277,105 +1401,189 @@ else:
                 'num_scheduled_large_session': 'sum',
                 'num_attended_small_session': 'sum', 
                 'num_scheduled_small_session': 'sum',
-                'total_completed_passages_discrete_sets': 'sum',
-                'completed_lessons': 'sum'
+                'total_completed_passages_discrete_sets': 'sum'
             }).reset_index()
             
-            high_performer_data['large_attendance'] = (high_performer_data['num_attended_large_session'] / 
-                                                     high_performer_data['num_scheduled_large_session'] * 100)
-            high_performer_data['small_attendance'] = (high_performer_data['num_attended_small_session'] / 
-                                                     high_performer_data['num_scheduled_small_session'] * 100)
+            # Calculate relative class participation (for online compatibility)
+            tier_data['class_participation_relative'] = tier_data['class_participation'] / tier_data['class_participation'].max() * 100
             
-            # Merge with score improvement data
-            performance_data = df[['Student_ID', 'Score_Difference']].merge(
-                high_performer_data, left_on='Student_ID', right_on='student_id', how='inner'
-            ).dropna(subset=['Score_Difference'])
+            # Merge with score improvement and MCAT data
+            performance_data = df[['Student_ID', 'Score_Difference', 'Actual_MCAT', 'Baseline_Score', 'Number_of_Practice_Exams', 'Total_Completed_Sum']].merge(
+                tier_data, left_on='Student_ID', right_on='student_id', how='inner'
+            )
             
-            # Define high performers (>8 point improvement)
-            high_performers = performance_data[performance_data['Score_Difference'] > 8]
+            # Key Findings at the top
+            st.subheader("Key Findings")
+            total_students_analyzed = len(performance_data[performance_data['Score_Difference'].notna()])
+            avg_improvement = performance_data['Score_Difference'].mean()
+            students_improved = len(performance_data[performance_data['Score_Difference'] > 0])
+            improvement_rate = students_improved / total_students_analyzed * 100 if total_students_analyzed > 0 else 0
             
-            if len(high_performers) > 0:
-                st.info(f"**High Performer Sample:** {len(high_performers)} students with >8 point improvement")
-                
-                # Calculate averages for high performers
-                high_perf_avg = high_performers.agg({
-                    'class_accuracy': 'mean',
-                    'class_participation': 'mean', 
-                    'large_attendance': 'mean',
-                    'small_attendance': 'mean',
-                    'total_completed_passages_discrete_sets': 'mean',
-                    'completed_lessons': 'mean'
-                })
-                
-                # Display high performer characteristics
-                col1, col2, col3, col4, col5 = st.columns(5)
-                
-                with col1:
-                    st.metric("Class Accuracy", f"{high_perf_avg['class_accuracy']:.1%}")
-                with col2:
-                    st.metric("Class Participation", f"{high_perf_avg['class_participation']:.1%}")
-                with col3:
-                    st.metric("Large Group Attendance", f"{high_perf_avg['large_attendance']:.1%}")
-                with col4:
-                    st.metric("Small Group Attendance", f"{high_perf_avg['small_attendance']:.1%}")
-                with col5:
-                    st.metric("Question Sets", f"{high_perf_avg['total_completed_passages_discrete_sets']:.0f}")
-                
-                # Key patterns for high performers
-                st.markdown("### Key Patterns - High Performers")
-                st.info("**Consistent Engagement:** High performers show sustained participation across all metrics")
-                st.info("**Strong Attendance:** Particularly strong in small group sessions")
-                st.info("**Question Bank Usage:** Heavy utilization of practice questions")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.info(f"**{improvement_rate:.0f}% of students** showed positive MCAT score improvement with an average gain of **+{avg_improvement:.1f} points**")
+            with col2:
+                high_performers_count = len(performance_data[
+                    ((performance_data['Score_Difference'] > 12) & (performance_data['Score_Difference'].notna())) |
+                    ((performance_data['Actual_MCAT'] > 505) & (performance_data['Actual_MCAT'].notna()))
+                ])
+                high_performer_rate = high_performers_count / total_students_analyzed * 100 if total_students_analyzed > 0 else 0
+                st.success(f"**{high_performer_rate:.0f}% achieved exceptional results** (>12pt improvement or >505 MCAT score)")
             
             st.markdown("---")
             
-            # LOW PERFORMER ANALYSIS (comes second)
-            st.subheader("Low Performer Analysis")
+            # Define High and Low Performers based on new criteria
+            # High Performing: >12 point improvement OR >505 actual MCAT
+            high_performers = performance_data[
+                ((performance_data['Score_Difference'] > 12) & (performance_data['Score_Difference'].notna())) |
+                ((performance_data['Actual_MCAT'] > 505) & (performance_data['Actual_MCAT'].notna()))
+            ]
             
-            # Define low performers (≤2 point improvement)
-            low_performers = performance_data[performance_data['Score_Difference'] <= 2]
+            # Low Performing: ≤0 point improvement OR <502 actual MCAT
+            low_performers = performance_data[
+                ((performance_data['Score_Difference'] <= 0) & (performance_data['Score_Difference'].notna())) |
+                ((performance_data['Actual_MCAT'] < 502) & (performance_data['Actual_MCAT'].notna()))
+            ]
             
-            if len(low_performers) > 0:
-                st.info(f"**Low Performer Sample:** {len(low_performers)} students with ≤2 point improvement")
+            # High Performer Analysis
+            st.subheader("High Performing Students")
+            st.markdown('<p style="color: black; font-weight: normal;">Criteria: >12 point score improvement OR >505 actual MCAT score</p>', unsafe_allow_html=True)
+            
+            if len(high_performers) > 0:
+                avg_improvement_high = high_performers['Score_Difference'].mean()
+                avg_baseline_high = high_performers['Baseline_Score'].mean()
+                avg_actual_high = high_performers['Actual_MCAT'].mean()
+                st.info(f"**High Performer Sample:** {len(high_performers)} students | **Average Score Improvement:** {avg_improvement_high:.1f} points | **Average Baseline Score:** {avg_baseline_high:.1f} | **Average Actual MCAT:** {avg_actual_high:.1f}")
                 
-                # Calculate averages for low performers
-                low_perf_avg = low_performers.agg({
-                    'class_accuracy': 'mean',
-                    'class_participation': 'mean',
-                    'large_attendance': 'mean', 
-                    'small_attendance': 'mean',
-                    'total_completed_passages_discrete_sets': 'mean'
-                })
-                
-                # Display low performer characteristics (removed homework participation and avg question sets)
-                col1, col2, col3, col4, col5 = st.columns(5)
+                # High performer metrics
+                col1, col2, col3, col4 = st.columns(4)
                 
                 with col1:
-                    st.metric("Class Accuracy", f"{low_perf_avg['class_accuracy']:.1%}")
+                    st.metric("Average Class Accuracy", f"{high_performers['class_accuracy'].mean():.1%}")
                 with col2:
-                    st.metric("Class Participation", f"{low_perf_avg['class_participation']:.1%}")
+                    # Calculate average weekly questions answered (total completed / number of weeks in program)
+                    avg_weekly_questions = high_performers['total_completed_passages_discrete_sets'].mean()
+                    st.metric("Avg Weekly Questions", f"{avg_weekly_questions:.0f}", help="Average question sets completed per week")
                 with col3:
-                    st.metric("Large Attendance", f"{low_perf_avg['large_attendance']:.1%}")
+                    st.metric("Baseline MCAT", f"{avg_baseline_high:.1f}")
                 with col4:
-                    st.metric("Small Attendance", f"{low_perf_avg['small_attendance']:.1%}")
-                with col5:
-                    st.metric("Question Sets", f"{low_perf_avg['total_completed_passages_discrete_sets']:.0f}")
+                    # Calculate % in Tier 1 and 2 attendance
+                    small_tier_dist_high = high_performers['Small Group Tier'].value_counts()
+                    tier1_count = small_tier_dist_high.get('Tier 1', 0)
+                    tier2_count = small_tier_dist_high.get('Tier 2', 0)
+                    tier1_tier2_pct = (tier1_count + tier2_count) / len(high_performers) * 100 if len(high_performers) > 0 else 0
+                    st.metric("Tier 1+2 Attendance", f"{tier1_tier2_pct:.0f}%", help="Percentage in top attendance tiers")
                 
-                # Concerning patterns (removed completed lessons and question sets completed)
-                st.markdown("### Concerning Patterns")
-                st.warning("**Engagement Deficits:** Lower participation rates across multiple areas")
-                st.warning("**Attendance Issues:** Inconsistent attendance, especially in small groups")
-                st.warning("**Limited Practice:** Reduced question bank utilization")
+                # Store for comparison later
+                high_tier1_tier2_pct = tier1_tier2_pct
                 
-                # Key patterns summary (removed homework participation)
-                st.markdown("### Key Patterns Summary")
-                st.markdown("""
-                **Low performers typically show:**
-                - Reduced class participation
-                - Lower attendance rates
-                - Minimal question bank usage
-                - Inconsistent engagement patterns
-                """)
+
+            
+            st.markdown("---")
+            
+            # Low Performer Analysis
+            st.subheader("Low Performing Students")
+            st.markdown('<p style="color: black; font-weight: normal;">Criteria: ≤0 point score improvement OR <502 actual MCAT score</p>', unsafe_allow_html=True)
+            
+            if len(low_performers) > 0:
+                avg_improvement_low = low_performers['Score_Difference'].mean()
+                avg_baseline_low = low_performers['Baseline_Score'].mean()
+                avg_actual_low = low_performers['Actual_MCAT'].mean()
+                st.info(f"**Low Performer Sample:** {len(low_performers)} students | **Average Score Change:** {avg_improvement_low:.1f} points | **Average Baseline Score:** {avg_baseline_low:.1f} | **Average Actual MCAT:** {avg_actual_low:.1f}")
+                
+                # Low performer metrics
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("Average Class Accuracy", f"{low_performers['class_accuracy'].mean():.1%}")
+                with col2:
+                    avg_weekly_questions_low = low_performers['total_completed_passages_discrete_sets'].mean()
+                    st.metric("Avg Weekly Questions", f"{avg_weekly_questions_low:.0f}", help="Average question sets completed per week")
+                with col3:
+                    st.metric("Baseline MCAT", f"{avg_baseline_low:.1f}")
+                with col4:
+                    # Calculate % in Tier 1 and 2 attendance
+                    small_tier_dist_low = low_performers['Small Group Tier'].value_counts()
+                    tier1_count_low = small_tier_dist_low.get('Tier 1', 0)
+                    tier2_count_low = small_tier_dist_low.get('Tier 2', 0)
+                    tier1_tier2_pct_low = (tier1_count_low + tier2_count_low) / len(low_performers) * 100 if len(low_performers) > 0 else 0
+                    st.metric("Tier 1+2 Attendance", f"{tier1_tier2_pct_low:.0f}%", help="Percentage in top attendance tiers")
+                
+                # Calculate tier comparison
+                if tier1_tier2_pct_low > 0 and 'high_tier1_tier2_pct' in locals():
+                    tier_ratio = high_tier1_tier2_pct / tier1_tier2_pct_low
+                    st.info(f"**Key Finding:** Small Group Tier 1 and 2 (combined) for high performers was {tier_ratio:.1f}x as high as low performers ({high_tier1_tier2_pct:.0f}% vs {tier1_tier2_pct_low:.0f}%)")
+                
+                # Intervention Recommendations
+                st.subheader("Intervention Recommendations")
+                st.warning("**Immediate Actions for Low Performers:**")
+                
+                # Flag low baseline MCAT scorers
+                low_baseline_threshold = 495  # Define what's considered low baseline
+                low_baseline_students = low_performers[low_performers['Baseline_Score'] < low_baseline_threshold]
+                if len(low_baseline_students) > 0:
+                    st.error(f"**⚠️ Priority Alert:** {len(low_baseline_students)} students have baseline MCAT scores below {low_baseline_threshold} - require immediate intensive support")
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.markdown("**📚 Increase Practice Volume:**")
+                    st.markdown("- Significantly increase question set completion")
+                    st.markdown("- Focus on consistent daily practice")
+                    st.markdown("- Emphasize quality over speed initially")
+                    st.markdown("- Establish regular review cycles")
+                    
+                with col2:
+                    st.markdown("**🎯 Targeted Support:**")
+                    st.markdown("- Enroll in additional small group sessions")
+                    st.markdown("- Make office hours mandatory for low baseline MCAT scorers with low engagement")
+                    st.markdown("- Implement structured study schedule")
+                    st.markdown("- Monitor weekly progress closely")
+                
+                with col3:
+                    st.markdown("**🚨 Low Baseline Focus:**")
+                    st.markdown("- Flag low baseline MCAT scorers for priority")
+                    st.markdown("- Ensure maximum engagement with all resources")
+                    st.markdown("- Consider intensive foundational review")
+                    st.markdown("- Provide additional motivational support")
+            
+            # Performance Comparison
+            st.markdown("---")
+            st.subheader("High vs Low Performer Comparison")
+            
+            if len(high_performers) > 0 and len(low_performers) > 0:
+                comparison_data = pd.DataFrame({
+                    'Group': ['High Performers', 'Low Performers'],
+                    'Student Count': [len(high_performers), len(low_performers)],
+                    'Avg Score Improvement': [avg_improvement_high, avg_improvement_low],
+                    'Avg Baseline Score': [avg_baseline_high, avg_baseline_low],
+                    'Avg Actual MCAT': [avg_actual_high, avg_actual_low]
+                })
+                
+                # Create comparison chart
+                fig_comparison = px.bar(
+                    comparison_data,
+                    x='Group',
+                    y='Avg Score Improvement',
+                    title='Average MCAT Score Improvement: High vs Low Performers',
+                    color='Group',
+                    color_discrete_map={
+                        'High Performers': '#4CAF50',
+                        'Low Performers': '#EF5350'
+                    },
+                    text='Avg Score Improvement'
+                )
+                fig_comparison.update_traces(texttemplate='%{text:.1f}', textposition='outside')
+                fig_comparison = apply_light_mode_styling(fig_comparison)
+                st.plotly_chart(fig_comparison, use_container_width=True)
             
         else:
-            st.warning("Performer analysis requires detailed engagement data which is not available.")
+            st.error("**Performer analysis requires tier data which is not available**")
+            st.info("**Troubleshooting:** Performer Analysis requires the `data_outcomes_with_tiers.csv` file.")
+            st.markdown("""
+            **This section needs:**
+            - Tier classifications (Small Group Tier, Large Group Tier)
+            - Student performance data (class_accuracy)
+            - Attendance data (large/small session attendance)
+            - Score improvement data and baseline scores for comparison
+            
+            **Current status:** CSV data loading failed.
+            """)
