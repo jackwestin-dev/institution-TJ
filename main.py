@@ -333,10 +333,10 @@ if not check_password():
 st.sidebar.title("Navigation")
 dashboard_type = st.sidebar.radio(
     "Choose Dashboard Type:",
-    ["Individual Student Dashboard", "Retrospective Data Analysis"]
+    ["Individual Student Dashboard (EY25)", "Retrospective Data Analysis (EY24)"]
 )
 
-if dashboard_type == "Individual Student Dashboard":
+if dashboard_type == "Individual Student Dashboard (EY25)":
     # Original Individual Student Dashboard Code
     
     ## Read data from CSV files (with error handling)
@@ -376,8 +376,8 @@ if dashboard_type == "Individual Student Dashboard":
             continue
     
     if not individual_data_available:
-        st.error(f"**Individual Student Dashboard Data Not Found**")
-        st.info("The Individual Student Dashboard requires the following files:")
+        st.error(f"**Individual Student Dashboard (EY25) Data Not Found**")
+        st.info("The Individual Student Dashboard (EY25) requires the following files:")
         st.markdown("""
         **Required files (in student-data/ directory or root):**
         - `institution-1-engagement-data.csv`
