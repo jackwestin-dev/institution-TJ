@@ -1,5 +1,4 @@
-﻿v,,,,,,,,,,,,,,,
-week,start_date,end_date,student_id,cars_accuracy,sciences_accuracy,class_accuracy,completed_lessons,total_completed_passages_discrete_sets,score_trends_on_completed_dailies,num_attended_large_session,num_scheduled_large_session,num_attended_small_session,num_scheduled_small_session,class_participation,homework_participation
+﻿week,start_date,end_date,student_id,cars_accuracy,sciences_accuracy,class_accuracy,completed_lessons,total_completed_passages_discrete_sets,score_trends_on_completed_dailies,num_attended_large_session,num_scheduled_large_session,num_attended_small_session,num_scheduled_small_session,class_participation,homework_participation
 1,6/2/2025,6/8/2025,1,1,0.75,0.97,12,7,0.79,2,2,,,1,1
 1,6/2/2025,6/8/2025,2,0.58,0.88,0.83,7,6,0.78,2,2,,,1,1
 1,6/2/2025,6/8/2025,3,,0.88,0.88,0,3,0.88,2,2,,,0.33,0
