@@ -375,8 +375,14 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
             files_exist = [os.path.exists(f) for f in files_to_check]
             if all(files_exist):
                 # Try to read the files
-                df_engagement_attendance = pd.read_csv(f'{base_path}institution-1-engagement-data.csv', parse_dates=['start_date','end_date'])
-                df_test_scores = pd.read_csv(f'{base_path}institution-1-test-data.csv',parse_dates=['test_date'])
+                df_engagement_attendance = pd.read_csv(f'{base_path}institution-1-engagement-data.csv')
+                # Explicitly convert date columns to datetime (more reliable across environments)
+                df_engagement_attendance['start_date'] = pd.to_datetime(df_engagement_attendance['start_date'])
+                df_engagement_attendance['end_date'] = pd.to_datetime(df_engagement_attendance['end_date'])
+                
+                df_test_scores = pd.read_csv(f'{base_path}institution-1-test-data.csv')
+                df_test_scores['test_date'] = pd.to_datetime(df_test_scores['test_date'])
+                
                 df_test_section_scores = pd.read_csv(f'{base_path}institution-1-2025-exam-data-jw-exams.csv')
                 df_tier_data = pd.read_csv(f'{base_path}tierdata.csv')
                 individual_data_available = True
