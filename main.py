@@ -342,16 +342,24 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
     ## Read data from CSV files (with error handling)
     import os
     
+    # Get the directory where this script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
     # Try multiple possible paths for deployment compatibility
     data_paths = [
-        'student-data/',          # Local development
-        './student-data/',        # Explicit relative path
-        'student_data/',          # Alternative naming
-        './student_data/',        # Alternative with explicit relative
-        ''                        # Root directory fallback
+        os.path.join(script_dir, 'student-data/'),     # Absolute path to student-data
+        'student-data/',                                 # Relative from current dir
+        './student-data/',                               # Explicit relative path
+        os.path.join(script_dir, 'student_data/'),     # Alternative naming (absolute)
+        'student_data/',                                 # Alternative naming (relative)
+        './student_data/',                               # Alternative with explicit relative
+        script_dir + '/',                                # Script directory itself
+        ''                                               # Root directory fallback
     ]
     
     individual_data_available = False
+    successful_path = None
+    error_log = []
     
     for base_path in data_paths:
         try:
@@ -364,15 +372,23 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
             ]
             
             # Check if all files exist
-            if all(os.path.exists(f) for f in files_to_check):
-                df_engagement_attendance = pd.read_csv(f'{base_path}institution-1-engagement-data.csv',parse_dates=['start_date','end_date'])
+            files_exist = [os.path.exists(f) for f in files_to_check]
+            if all(files_exist):
+                # Try to read the files
+                df_engagement_attendance = pd.read_csv(f'{base_path}institution-1-engagement-data.csv', parse_dates=['start_date','end_date'])
                 df_test_scores = pd.read_csv(f'{base_path}institution-1-test-data.csv',parse_dates=['test_date'])
                 df_test_section_scores = pd.read_csv(f'{base_path}institution-1-2025-exam-data-jw-exams.csv')
                 df_tier_data = pd.read_csv(f'{base_path}tierdata.csv')
                 individual_data_available = True
-
+                successful_path = base_path
                 break
+            else:
+                # Log which files are missing for this path
+                missing = [files_to_check[i] for i, exists in enumerate(files_exist) if not exists]
+                if len(missing) < len(files_to_check):  # Only log if some files exist
+                    error_log.append(f"Path '{base_path}': Missing {len(missing)} files")
         except Exception as e:
+            error_log.append(f"Path '{base_path}': Error - {str(e)}")
             continue
     
     if not individual_data_available:
@@ -391,22 +407,36 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
         # Show current directory contents for debugging
         current_files = []
         try:
+            st.write(f"**Current working directory:** `{os.getcwd()}`")
+            st.write(f"**Script directory:** `{script_dir}`")
+            st.write("")
+            
+            # Show error log if we have any
+            if error_log:
+                st.markdown("**🔍 Debug: Attempted paths and errors:**")
+                for error in error_log:
+                    st.write(f"- {error}")
+                st.write("")
+            
             current_files = [f for f in os.listdir('.') if f.endswith('.csv')]
             if current_files:
                 st.markdown("**CSV files in root directory:**")
                 for f in current_files:
                     st.write(f"- {f}")
             
-            if os.path.exists('student-data'):
-                student_files = [f for f in os.listdir('student-data') if f.endswith('.csv')]
-                if student_files:
-                    st.markdown("**CSV files in student-data/ directory:**")
-                    for f in student_files:
-                        st.write(f"- student-data/{f}")
-            else:
-                st.write("- student-data/ directory not found")
-        except:
-            st.write("- Unable to list directory contents")
+            # Check student-data in multiple locations
+            for check_path in ['student-data', os.path.join(script_dir, 'student-data')]:
+                if os.path.exists(check_path):
+                    student_files = [f for f in os.listdir(check_path) if f.endswith('.csv')]
+                    if student_files:
+                        st.markdown(f"**CSV files in `{check_path}/` directory:**")
+                        for f in student_files:
+                            st.write(f"- {check_path}/{f}")
+            
+            if not os.path.exists('student-data') and not os.path.exists(os.path.join(script_dir, 'student-data')):
+                st.write("- student-data/ directory not found in current dir or script dir")
+        except Exception as e:
+            st.write(f"- Unable to list directory contents: {str(e)}")
         
         st.info("💡 **Tip:** Use the **MCAT Analysis Dashboard** which uses the available data files.")
     
@@ -803,12 +833,19 @@ else:
         import os
         csv_df = None
         
+        # Get the directory where this script is located
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        
         # Try different possible file paths
         possible_files = [
-            'data_outcomes_with_tiers.csv',
-            './data_outcomes_with_tiers.csv',
-            'data/data_outcomes_with_tiers.csv',
-            './data/data_outcomes_with_tiers.csv'
+            os.path.join(script_dir, 'data_outcomes_with_tiers.csv'),          # Absolute path in script dir
+            os.path.join(script_dir, 'student-data', 'data_outcomes_with_tiers.csv'),  # Absolute path in student-data
+            'data_outcomes_with_tiers.csv',                                     # Relative from current dir
+            './data_outcomes_with_tiers.csv',                                   # Explicit relative
+            'student-data/data_outcomes_with_tiers.csv',                        # In student-data folder
+            './student-data/data_outcomes_with_tiers.csv',                      # Explicit student-data
+            'data/data_outcomes_with_tiers.csv',                                # In data folder
+            './data/data_outcomes_with_tiers.csv'                               # Explicit data folder
         ]
         
         for file_path in possible_files:
