@@ -479,7 +479,7 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
         ## Create sections and render dashboard
         st.write(' ')
         st.write(' ')
-        st.header('Student Tier Assessment')
+        st.header('Student Tier Assessment - Updated Through 10/26/25')
         st.caption('The tiers listed below represent student data gathered throughout their time in our MCAT program, from June 2025 to now.')
         st.write(' ')
 
@@ -557,8 +557,9 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
 
         st.write(' ')
         st.write(' ')
-        st.header('Practice Exam Scores')
+        st.header('Practice Exam Scores - Updated Through 10/26/25')
         st.write('Students were asked to update us with practice exam schedules and scores throughout the program. This is a link to the [Texas JAMP Scholars | MCAT Exam Schedule & Scores Survey](https://docs.google.com/spreadsheets/d/10YBmWD7qFD0fjbD-8TK1gxNMVpwJyTLtOFtT1huh-FI/edit?usp=sharing)')
+        st.write('FOUR EXAMS ARE DUE BEFORE THE YEARS END: JW EXAM 1 - 08/10 due date, AAMC FREE SAMPLE TEST (UNSCORED) - 09/21 due date, JW EXAM 2 - 11/04 due date, and JW EXAM 3 - 12/29 due date. Students are coached in small groups how to schedule their practice exam according to their due dates, and submit that schedule in the link above.')
         st.write(' ')
 
         st.dataframe(df_test_scores_student_filtered[['test_name','test_date','actual_exam_score']],use_container_width=True)
@@ -616,7 +617,7 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
         st.write(' ')
         st.write(' ')
 
-        st.header('Engagement')
+        st.header('Engagement - Updated Through 10/26/25')
         st.subheader('Self-Learning with Jack Westin Course or Question Bank')
         st.write('This graph displays the number of video lessons or assignments within the Self-Paced JW Complete MCAT Course completed by the student per week')
         st.write(' ')
