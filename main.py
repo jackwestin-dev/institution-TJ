@@ -559,7 +559,7 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
         st.write(' ')
         st.header('Practice Exam Scores - Updated Through 10/26/25')
         st.write('Students were asked to update us with practice exam schedules and scores throughout the program. This is a link to the [Texas JAMP Scholars | MCAT Exam Schedule & Scores Survey](https://docs.google.com/spreadsheets/d/10YBmWD7qFD0fjbD-8TK1gxNMVpwJyTLtOFtT1huh-FI/edit?usp=sharing)')
-        st.write('FOUR EXAMS ARE DUE BEFORE THE YEARS END: JW EXAM 1 - 08/10 due date, AAMC FREE SAMPLE TEST (UNSCORED) - 09/21 due date, JW EXAM 2 - 11/04 due date, and JW EXAM 3 - 12/29 due date. Students are coached in small groups how to schedule their practice exam according to their due dates, and submit that schedule in the link above.')
+        st.write('FOUR EXAMS ARE DUE BEFORE THE YEARS END: JW EXAM 1 - 08/10 due date, AAMC FREE SAMPLE TEST (UNSCORED) - 09/21 due date, JW EXAM 2 - 11/04 due date, and JW EXAM 3 - 12/29 due date. Students are coached in small groups on how to schedule their practice exam according to their due dates, and submit that schedule in the link above. We require eight practice exams to be reported, with four taken in the fall of 2025. During multiple small-group sessions, we coach students on spacing out their practice exams and which exams to take. We also coach them on how to learn most effectively and adapt their study schedules based on their performance. For example, if they are testing in January, they should be ahead of the program test schedule and be using AAMC exams. ')
         st.write(' ')
 
         st.dataframe(df_test_scores_student_filtered[['test_name','test_date','actual_exam_score']],use_container_width=True)
