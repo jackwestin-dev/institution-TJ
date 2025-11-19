@@ -479,7 +479,7 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
         ## Create sections and render dashboard
         st.write(' ')
         st.write(' ')
-        st.header('Student Tier Assessment - Updated Through 10/26/25')
+        st.header('Student Tier Assessment - Exam Scores & Survey Tiers Updated Through 11/18, Attendance and Participation Updated Through 10/26/25')
         st.caption('The tiers listed below represent student data gathered throughout their time in our MCAT program, from June 2025 to now.')
         st.write(' ')
 
