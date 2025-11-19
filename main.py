@@ -484,13 +484,13 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
         st.write(' ')
 
         st.subheader('Data Sources')
-st.markdown('[Exam Reporting Survey](https://docs.google.com/spreadsheets/d/10YBmWD7qFD0fjbD-8TK1gxNMVpwJyTLtOFtT1huh-FI/edit?gid=1992640725#gid=1992640725)')
-st.markdown('[Exam Date Reporting Survey](https://docs.google.com/spreadsheets/d/1YPr1qJVHucONXrwj4A1Y7ZPcHANwZKbzrQgunhfG-3k/edit?resourcekey=&gid=26178575#gid=26178575)')
-st.markdown('[AAMC Free Sample Test Score Survey](https://docs.google.com/spreadsheets/d/1mWguodGM_ZPRJIH1MSj81mOt2tWbYVIcYMval1Th9eU/edit?gid=727058546#gid=727058546)')
-st.markdown('[Student Check-In Survey (09-29)](https://docs.google.com/spreadsheets/d/1ew8uTdn-jBv4cdF0VGBHrF651jMyPEZ1wGDrHHwKhw0/edit?resourcekey=&gid=1382509198#gid=1382509198)')
-st.markdown('[Student Check-In Survey (10-06)](https://docs.google.com/spreadsheets/d/1d3NpWke-0RXnMxmc-wQFLziQ_EGKsk0yYXNkl6h8hvc/edit?resourcekey=&gid=1260768789#gid=1260768789)')
-st.markdown('[Student Check-In Survey (10-13)](https://docs.google.com/spreadsheets/d/1WJaQA3xsbz_CFqqWNCI3jX5VlhlrQVFZQhei1dFQoi0/edit?resourcekey=&gid=1700985679#gid=1700985679)')
-st.write(' ')
+        st.markdown('[Exam Reporting Survey](https://docs.google.com/spreadsheets/d/10YBmWD7qFD0fjbD-8TK1gxNMVpwJyTLtOFtT1huh-FI/edit?gid=1992640725#gid=1992640725)')
+        st.markdown('[Exam Date Reporting Survey](https://docs.google.com/spreadsheets/d/1YPr1qJVHucONXrwj4A1Y7ZPcHANwZKbzrQgunhfG-3k/edit?resourcekey=&gid=26178575#gid=26178575)')
+        st.markdown('[AAMC Free Sample Test Score Survey](https://docs.google.com/spreadsheets/d/1mWguodGM_ZPRJIH1MSj81mOt2tWbYVIcYMval1Th9eU/edit?gid=727058546#gid=727058546)')
+        st.markdown('[Student Check-In Survey (09-29)](https://docs.google.com/spreadsheets/d/1ew8uTdn-jBv4cdF0VGBHrF651jMyPEZ1wGDrHHwKhw0/edit?resourcekey=&gid=1382509198#gid=1382509198)')
+        st.markdown('[Student Check-In Survey (10-06)](https://docs.google.com/spreadsheets/d/1d3NpWke-0RXnMxmc-wQFLziQ_EGKsk0yYXNkl6h8hvc/edit?resourcekey=&gid=1260768789#gid=1260768789)')
+        st.markdown('[Student Check-In Survey (10-13)](https://docs.google.com/spreadsheets/d/1WJaQA3xsbz_CFqqWNCI3jX5VlhlrQVFZQhei1dFQoi0/edit?resourcekey=&gid=1700985679#gid=1700985679)')
+        st.write(' ')
 
         # Check if we have tier data for this student
         if not df_tier_data_student_filtered.empty:
