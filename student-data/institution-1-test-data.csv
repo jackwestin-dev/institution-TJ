@@ -1,4 +1,4 @@
-﻿student_id,test_name,test_date,actual_exam_score,low_predicted_exam_score,high_predicted_exam_score
+student_id,test_name,test_date,actual_exam_score,low_predicted_exam_score,high_predicted_exam_score
 1,JW Exam 1,2025-08-10,499,,
 4,JW Exam 1,2025-08-10,490,,
 5,JW Exam 1,2025-08-10,493,,
@@ -219,7 +219,7 @@
 16,Anticipated Exam Date,2026-01-23,,,
 98,Anticipated Exam Date,2026-01-10,,,
 46,Anticipated Exam Date,2026-03-20,,,
-d,Anticipated Exam Date,2026-01-15,,,
+76,Anticipated Exam Date,2026-01-15,,,
 113,Anticipated Exam Date,2026-01-23,,,
 67,Anticipated Exam Date,2026-01-10,,,
 91,Anticipated Exam Date,2026-02-13,,,
@@ -333,4 +333,3 @@ d,Anticipated Exam Date,2026-01-15,,,
 8,AAMC Free Sample Test (Unscored),2025-11-06,496,,
 110,AAMC Free Sample Test (Unscored),2025-11-06,497,,
 128,Anticipated Exam Date,2026-01-23,,,
-,,,,,
