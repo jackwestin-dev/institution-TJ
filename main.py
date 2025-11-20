@@ -364,7 +364,7 @@ if not check_password():
 st.sidebar.title("Navigation")
 dashboard_type = st.sidebar.radio(
     "Choose Dashboard Type:",
-    ["Individual Student Dashboard EY25", "Retrospective Data Analysis (EY24)", "Students by JFD"]
+    ["Individual Student Dashboard EY25", "Students by JFD", "Retrospective Data Analysis (EY24)"]
 )
 
 if dashboard_type == "Individual Student Dashboard EY25":
@@ -477,10 +477,6 @@ if dashboard_type == "Individual Student Dashboard EY25":
         st.header('Student Tier Assessment')
         st.caption('The tiers listed below represent student data gathered throughout their time in our MCAT program, from June 2025 to now.')
         st.write(' ')
-        st.write(' ')
-        st.caption('Survey and Exams Updated on 11/18')
-        st.caption('Attendance and Participation Data - Updated on 10/26')
-        st.write(' ')
 
         # Check if we have tier data for this student
         if not df_tier_data_student_filtered.empty:
@@ -556,18 +552,7 @@ if dashboard_type == "Individual Student Dashboard EY25":
 
         st.write(' ')
         st.write(' ')
-
-        st.subheader('Current Surveys Provided to Students')
-        st.markdown('[Exam Reporting Survey](https://docs.google.com/spreadsheets/d/10YBmWD7qFD0fjbD-8TK1gxNMVpwJyTLtOFtT1huh-FI/edit?gid=1992640725#gid=1992640725)')
-        st.markdown('[Exam Date Reporting Survey](https://docs.google.com/spreadsheets/d/1YPr1qJVHucONXrwj4A1Y7ZPcHANwZKbzrQgunhfG-3k/edit?resourcekey=&gid=26178575#gid=26178575)')
-        st.markdown('[AAMC Free Sample Test Score Survey](https://docs.google.com/spreadsheets/d/1mWguodGM_ZPRJIH1MSj81mOt2tWbYVIcYMval1Th9eU/edit?gid=727058546#gid=727058546)')
-        st.markdown('[Student Check-In Survey (09-29)](https://docs.google.com/spreadsheets/d/1ew8uTdn-jBv4cdF0VGBHrF651jMyPEZ1wGDrHHwKhw0/edit?resourcekey=&gid=1382509198#gid=1382509198)')
-        st.markdown('[Student Check-In Survey (10-06)](https://docs.google.com/spreadsheets/d/1d3NpWke-0RXnMxmc-wQFLziQ_EGKsk0yYXNkl6h8hvc/edit?resourcekey=&gid=1260768789#gid=1260768789)')
-        st.markdown('[Student Check-In Survey (10-13)](https://docs.google.com/spreadsheets/d/1WJaQA3xsbz_CFqqWNCI3jX5VlhlrQVFZQhei1dFQoi0/edit?resourcekey=&gid=1700985679#gid=1700985679)')
-        st.write(' ')
-        
-        st.write(' ')
-        st.header('Practice Exam Scores - Updated on 11/18')
+        st.header('Practice Exam Scores')
         st.write('Students were asked to update us with practice exam schedules and scores throughout the program. This is a link to the [Texas JAMP Scholars | MCAT Exam Schedule & Scores Survey](https://docs.google.com/spreadsheets/d/10YBmWD7qFD0fjbD-8TK1gxNMVpwJyTLtOFtT1huh-FI/edit?usp=sharing)')
         st.write(' ')
 
@@ -838,12 +823,6 @@ if dashboard_type == "Individual Student Dashboard EY25":
 
 elif dashboard_type == "Students by JFD":
     st.header("Students by JFD")
-    st.write(' ')
-    
-    st.subheader("Survey and Exams Updated on 11/18")
-    st.subheader("Attendance and Participation Data – Updated on 10/26")
-
-    st.write(' ')
 
     jfd_df = load_jfd_data()
 
@@ -905,14 +884,18 @@ elif dashboard_type == "Students by JFD":
         else:
             st.info("No students in this category.")
 
-    st.header("Final List of All JFD Students")
-    st.write("This list includes all students who fall into at least one of the JFD categories above.")
-    
-    if all_jfd_student_indices:
-        final_df = filtered_jfd_df.loc[sorted(list(all_jfd_student_indices))].sort_values('student_id')
-        st.dataframe(final_df[display_cols])
+    # Display the complete list for the selected JFD
+    if selected_jfd == 'All JFDs':
+        st.header("Complete List of All Students")
+        st.write("This list includes all students from the dataset, regardless of their category.")
     else:
-        st.info("No students fall into any of the JFD categories.")
+        st.header(f"Complete Student List for JFD {selected_jfd}")
+        st.write(f"This list includes all students for JFD {selected_jfd}, regardless of their category.")
+    
+    if not filtered_jfd_df.empty:
+        st.dataframe(filtered_jfd_df[display_cols].sort_values('student_id'))
+    else:
+        st.info(f"No students found for JFD {selected_jfd}.")
 
 else:
     # Analysis Dashboard
