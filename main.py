@@ -564,13 +564,8 @@ if dashboard_type == "Individual Student Dashboard EY25":
         
         st.write(' ')
         st.header('Practice Exam Scores')
+        st.subheader('8 Exams are Required for the JW MCAT Course, 4 Are Due by December 31, 2025')
         st.write('Students were asked to update us with practice exam schedules and scores throughout the program. This is a link to the [Texas JAMP Scholars | MCAT Exam Schedule & Scores Survey](https://docs.google.com/spreadsheets/d/10YBmWD7qFD0fjbD-8TK1gxNMVpwJyTLtOFtT1huh-FI/edit?usp=sharing)')
-        st.write(' ')
-        st.write(' ')
-
-        st.subheader('8 Exams are Required for the JW MCAT Course')
-        st.subheader('4 Are Due by December 31, 2025')
-
         st.write('The following due dates were provided within the Live class assignment tabs: JW Exam 1 - Aug 10th, Free Sample Test (AAMC): Sept 21st, JW Exam 2: Nov 4th, AAMC Exam 1 or JW Exam 3 (Depending on Test Date): Dec 29th')
         st.write('We recommended students use all AAMC exams, and at least one JW exam. They have 7 AAMC exams and 6 JW exams they can use. We have used small group sessions to help reinforce this and show them how to space out their practice exams, which exams to prioritize, and most importantly, how to review them and adjust study schedules as they review them.')
         st.write(' ')
