@@ -475,7 +475,9 @@ if dashboard_type == "Individual Student Dashboard EY25":
         st.write(' ')
         st.write(' ')
         st.header('Student Tier Assessment')
-        st.caption('The tiers listed below represent student data gathered throughout their time in our MCAT program, from June 2025 to now.')
+        st.write(' ')
+        st.subheader('Exam Reporting and Survey Tier Updated on 11/18')
+        st.subheader('Attendance and Participation Updated through 10/26')
         st.write(' ')
 
         # Check if we have tier data for this student
@@ -551,10 +553,33 @@ if dashboard_type == "Individual Student Dashboard EY25":
             """, unsafe_allow_html=True)
 
         st.write(' ')
+        st.subheader('Current Student Surveys')
+        st.markdown('[Exam Reporting Survey](https://docs.google.com/spreadsheets/d/10YBmWD7qFD0fjbD-8TK1gxNMVpwJyTLtOFtT1huh-FI/edit?gid=1992640725#gid=1992640725)')
+        st.markdown('[Exam Date Reporting Survey](https://docs.google.com/spreadsheets/d/1YPr1qJVHucONXrwj4A1Y7ZPcHANwZKbzrQgunhfG-3k/edit?resourcekey=&gid=26178575#gid=26178575)')
+        st.markdown('[AAMC Free Sample Test Score Survey](https://docs.google.com/spreadsheets/d/1mWguodGM_ZPRJIH1MSj81mOt2tWbYVIcYMval1Th9eU/edit?gid=727058546#gid=727058546)')
+        st.markdown('[Student Check-In Survey (09-29)](https://docs.google.com/spreadsheets/d/1ew8uTdn-jBv4cdF0VGBHrF651jMyPEZ1wGDrHHwKhw0/edit?resourcekey=&gid=1382509198#gid=1382509198)')
+        st.markdown('[Student Check-In Survey (10-06)](https://docs.google.com/spreadsheets/d/1d3NpWke-0RXnMxmc-wQFLziQ_EGKsk0yYXNkl6h8hvc/edit?resourcekey=&gid=1260768789#gid=1260768789)')
+        st.markdown('[Student Check-In Survey (10-13)](https://docs.google.com/spreadsheets/d/1WJaQA3xsbz_CFqqWNCI3jX5VlhlrQVFZQhei1dFQoi0/edit?resourcekey=&gid=1700985679#gid=1700985679)')
+        st.write(' ')
+        
         st.write(' ')
         st.header('Practice Exam Scores')
         st.write('Students were asked to update us with practice exam schedules and scores throughout the program. This is a link to the [Texas JAMP Scholars | MCAT Exam Schedule & Scores Survey](https://docs.google.com/spreadsheets/d/10YBmWD7qFD0fjbD-8TK1gxNMVpwJyTLtOFtT1huh-FI/edit?usp=sharing)')
         st.write(' ')
+        st.write(' ')
+
+        st.subheader('8 Exams are Required for the JW MCAT Course')
+        st.subheader('4 Are Due by December 31, 2025')
+
+        st.write('The following due dates were provided within the Live class assignment tabs:')
+        st.write('- JW Exam 1: Aug 10th')
+        st.write('- Free Sample Test (AAMC): Sept 21st')
+        st.write('- JW Exam 2: Nov 4th')
+        st.write('- AAMC Exam 1 or JW Exam 3 (Depending on Test Date): Dec 29th')
+
+        st.write(' ')
+
+        st.write('We recommended students use all AAMC exams, and at least one JW exam. They have 7 AAMC exams and 6 JW exams they can use. We have used small group sessions to help reinforce this and show them how to space out their practice exams, which exams to prioritize, and most importantly, how to review them and adjust study schedules as they review them.')
 
         st.dataframe(df_test_scores_student_filtered[['test_name','test_date','actual_exam_score']],use_container_width=True)
         st.write(' ')
@@ -823,6 +848,14 @@ if dashboard_type == "Individual Student Dashboard EY25":
 
 elif dashboard_type == "Students by JFD":
     st.header("Students by JFD")
+    st.subheader("Exam and Survey Tier Updated on 11/18")
+    st.subheader("Attendance and Participation Data Updated on 10/26")
+    st.caption("**Category 1: No Reported Scores** — Students who have not submitted any valid practice exam or MCAT score.")
+    st.caption("**Category 2: Students <502 & No Anticipated Exam Date** — Students scoring below 502 who have not reported an upcoming MCAT exam date.")
+    st.caption("**Category 3: <495 & Tier 3 Across All Metrics** — Students scoring below 495 who are Tier 3 in all engagement and participation metrics.")
+    st.caption("**Category 4: <495 & Survey Tier 3** — Students scoring below 495 who have not submitted survey updates or progress reports.")
+    st.caption("**Category 5: 495–500 & Small Group Tier 3** — Students scoring between 495–500 who are not attending their assigned small group sessions.")
+    st.caption("**Category 6: <495 & Large Group Tier 3** — Students scoring below 495 who are not attending required large group classes.")
 
     jfd_df = load_jfd_data()
 
