@@ -839,8 +839,10 @@ if dashboard_type == "Individual Student Dashboard EY25":
 elif dashboard_type == "Students by JFD":
     st.header("Students by JFD")
     st.write(' ')
-    st.caption('Survey and Exams Updated on 11/18')
-    st.caption('Attendance and Participation Data - Updated on 10/26')
+    
+    st.subheader("Survey and Exams Updated on 11/18")
+    st.subheader("Attendance and Participation Data – Updated on 10/26")
+
     st.write(' ')
 
     jfd_df = load_jfd_data()
