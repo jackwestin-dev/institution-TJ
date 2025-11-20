@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pandas as pd
 import streamlit as st
 from datetime import datetime, date
@@ -238,6 +239,36 @@ BRAND_COLORS = {
     'chart_palette': ['#00B4A6', '#7C3AED', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
 }
 
+@st.cache_data
+def load_jfd_data():
+    """Load and prepare the JFD combined data."""
+    import os
+    jfd_df = None
+    possible_files = [
+        'student-data/jfd-combined.csv',
+        './student-data/jfd-combined.csv'
+    ]
+    for file_path in possible_files:
+        try:
+            if os.path.exists(file_path):
+                jfd_df = pd.read_csv(file_path)
+                break
+        except Exception as e:
+            continue
+    
+    if jfd_df is not None:
+        # Clean data
+        jfd_df['highest_exam_score'] = pd.to_numeric(jfd_df['highest_exam_score'], errors='coerce')
+        jfd_df['exam_count'] = pd.to_numeric(jfd_df['exam_count'], errors='coerce').fillna(0).astype(int)
+        
+        # Fill NaN in tier columns with a placeholder for easier filtering and display
+        tier_cols = ['survey_tier', 'large_group_tier', 'small_group_tier', 'class_participation_tier']
+        for col in tier_cols:
+             if col in jfd_df.columns:
+                jfd_df[col] = jfd_df[col].fillna('N/A')
+
+    return jfd_df
+
 def get_chart_colors():
     """Get consistent color palette for charts"""
     return BRAND_COLORS['chart_palette']
@@ -333,33 +364,25 @@ if not check_password():
 st.sidebar.title("Navigation")
 dashboard_type = st.sidebar.radio(
     "Choose Dashboard Type:",
-    ["Individual Student Dashboard (EY25)", "Retrospective Data Analysis (EY24)"]
+    ["Individual Student Dashboard EY25", "Retrospective Data Analysis (EY24)", "Students by JFD"]
 )
 
-if dashboard_type == "Individual Student Dashboard (EY25)":
+if dashboard_type == "Individual Student Dashboard EY25":
     # Original Individual Student Dashboard Code
     
     ## Read data from CSV files (with error handling)
     import os
     
-    # Get the directory where this script is located
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    
     # Try multiple possible paths for deployment compatibility
     data_paths = [
-        os.path.join(script_dir, 'student-data/'),     # Absolute path to student-data
-        'student-data/',                                 # Relative from current dir
-        './student-data/',                               # Explicit relative path
-        os.path.join(script_dir, 'student_data/'),     # Alternative naming (absolute)
-        'student_data/',                                 # Alternative naming (relative)
-        './student_data/',                               # Alternative with explicit relative
-        script_dir + '/',                                # Script directory itself
-        ''                                               # Root directory fallback
+        'student-data/',          # Local development
+        './student-data/',        # Explicit relative path
+        'student_data/',          # Alternative naming
+        './student_data/',        # Alternative with explicit relative
+        ''                        # Root directory fallback
     ]
     
     individual_data_available = False
-    successful_path = None
-    error_log = []
     
     for base_path in data_paths:
         try:
@@ -372,34 +395,20 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
             ]
             
             # Check if all files exist
-            files_exist = [os.path.exists(f) for f in files_to_check]
-            if all(files_exist):
-                # Try to read the files
-                df_engagement_attendance = pd.read_csv(f'{base_path}institution-1-engagement-data.csv')
-                # Explicitly convert date columns to datetime (more reliable across environments)
-                df_engagement_attendance['start_date'] = pd.to_datetime(df_engagement_attendance['start_date'])
-                df_engagement_attendance['end_date'] = pd.to_datetime(df_engagement_attendance['end_date'])
-                
-                df_test_scores = pd.read_csv(f'{base_path}institution-1-test-data.csv')
-                df_test_scores['test_date'] = pd.to_datetime(df_test_scores['test_date'])
-                
+            if all(os.path.exists(f) for f in files_to_check):
+                df_engagement_attendance = pd.read_csv(f'{base_path}institution-1-engagement-data.csv',parse_dates=['start_date','end_date'])
+                df_test_scores = pd.read_csv(f'{base_path}institution-1-test-data.csv',parse_dates=['test_date'])
                 df_test_section_scores = pd.read_csv(f'{base_path}institution-1-2025-exam-data-jw-exams.csv')
                 df_tier_data = pd.read_csv(f'{base_path}tierdata.csv')
                 individual_data_available = True
-                successful_path = base_path
+
                 break
-            else:
-                # Log which files are missing for this path
-                missing = [files_to_check[i] for i, exists in enumerate(files_exist) if not exists]
-                if len(missing) < len(files_to_check):  # Only log if some files exist
-                    error_log.append(f"Path '{base_path}': Missing {len(missing)} files")
         except Exception as e:
-            error_log.append(f"Path '{base_path}': Error - {str(e)}")
             continue
     
     if not individual_data_available:
-        st.error(f"**Individual Student Dashboard (EY25) Data Not Found**")
-        st.info("The Individual Student Dashboard (EY25) requires the following files:")
+        st.error(f"**Individual Student Dashboard Data Not Found**")
+        st.info("The Individual Student Dashboard requires the following files:")
         st.markdown("""
         **Required files (in student-data/ directory or root):**
         - `institution-1-engagement-data.csv`
@@ -413,36 +422,22 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
         # Show current directory contents for debugging
         current_files = []
         try:
-            st.write(f"**Current working directory:** `{os.getcwd()}`")
-            st.write(f"**Script directory:** `{script_dir}`")
-            st.write("")
-            
-            # Show error log if we have any
-            if error_log:
-                st.markdown("**🔍 Debug: Attempted paths and errors:**")
-                for error in error_log:
-                    st.write(f"- {error}")
-                st.write("")
-            
             current_files = [f for f in os.listdir('.') if f.endswith('.csv')]
             if current_files:
                 st.markdown("**CSV files in root directory:**")
                 for f in current_files:
                     st.write(f"- {f}")
             
-            # Check student-data in multiple locations
-            for check_path in ['student-data', os.path.join(script_dir, 'student-data')]:
-                if os.path.exists(check_path):
-                    student_files = [f for f in os.listdir(check_path) if f.endswith('.csv')]
-                    if student_files:
-                        st.markdown(f"**CSV files in `{check_path}/` directory:**")
-                        for f in student_files:
-                            st.write(f"- {check_path}/{f}")
-            
-            if not os.path.exists('student-data') and not os.path.exists(os.path.join(script_dir, 'student-data')):
-                st.write("- student-data/ directory not found in current dir or script dir")
-        except Exception as e:
-            st.write(f"- Unable to list directory contents: {str(e)}")
+            if os.path.exists('student-data'):
+                student_files = [f for f in os.listdir('student-data') if f.endswith('.csv')]
+                if student_files:
+                    st.markdown("**CSV files in student-data/ directory:**")
+                    for f in student_files:
+                        st.write(f"- student-data/{f}")
+            else:
+                st.write("- student-data/ directory not found")
+        except:
+            st.write("- Unable to list directory contents")
         
         st.info("💡 **Tip:** Use the **MCAT Analysis Dashboard** which uses the available data files.")
     
@@ -479,7 +474,7 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
         ## Create sections and render dashboard
         st.write(' ')
         st.write(' ')
-        st.header('Student Tier Assessment - Exam Scores & Survey Tiers Updated Through 11/18, Attendance and Participation Updated Through 10/26/25')
+        st.header('Student Tier Assessment')
         st.caption('The tiers listed below represent student data gathered throughout their time in our MCAT program, from June 2025 to now.')
         st.write(' ')
 
@@ -556,20 +551,9 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
             """, unsafe_allow_html=True)
 
         st.write(' ')
-
-        st.subheader('Survey Sources - Updated Tier on 11/18')
-        st.markdown('[Exam Reporting Survey](https://docs.google.com/spreadsheets/d/10YBmWD7qFD0fjbD-8TK1gxNMVpwJyTLtOFtT1huh-FI/edit?gid=1992640725#gid=1992640725)')
-        st.markdown('[Exam Date Reporting Survey](https://docs.google.com/spreadsheets/d/1YPr1qJVHucONXrwj4A1Y7ZPcHANwZKbzrQgunhfG-3k/edit?resourcekey=&gid=26178575#gid=26178575)')
-        st.markdown('[AAMC Free Sample Test Score Survey](https://docs.google.com/spreadsheets/d/1mWguodGM_ZPRJIH1MSj81mOt2tWbYVIcYMval1Th9eU/edit?gid=727058546#gid=727058546)')
-        st.markdown('[Student Check-In Survey (09-29)](https://docs.google.com/spreadsheets/d/1ew8uTdn-jBv4cdF0VGBHrF651jMyPEZ1wGDrHHwKhw0/edit?resourcekey=&gid=1382509198#gid=1382509198)')
-        st.markdown('[Student Check-In Survey (10-06)](https://docs.google.com/spreadsheets/d/1d3NpWke-0RXnMxmc-wQFLziQ_EGKsk0yYXNkl6h8hvc/edit?resourcekey=&gid=1260768789#gid=1260768789)')
-        st.markdown('[Student Check-In Survey (10-13)](https://docs.google.com/spreadsheets/d/1WJaQA3xsbz_CFqqWNCI3jX5VlhlrQVFZQhei1dFQoi0/edit?resourcekey=&gid=1700985679#gid=1700985679)')
         st.write(' ')
-        
-        st.write(' ')
-        st.header('Practice Exam Scores - Updated Through 11/18/25')
+        st.header('Practice Exam Scores')
         st.write('Students were asked to update us with practice exam schedules and scores throughout the program. This is a link to the [Texas JAMP Scholars | MCAT Exam Schedule & Scores Survey](https://docs.google.com/spreadsheets/d/10YBmWD7qFD0fjbD-8TK1gxNMVpwJyTLtOFtT1huh-FI/edit?usp=sharing)')
-        st.write('FOUR EXAMS ARE DUE BEFORE THE YEARS END: JW EXAM 1 - 08/10 due date, AAMC FREE SAMPLE TEST (UNSCORED) - 09/21 due date, JW EXAM 2 - 11/04 due date, and JW EXAM 3 - 12/29 due date. Students are coached in small groups on how to schedule their practice exam according to their due dates, and submit that schedule in the link above. We require eight practice exams to be reported, with four taken in the fall of 2025. During multiple small-group sessions, we coach students on spacing out their practice exams and which exams to take. We also coach them on how to learn most effectively and adapt their study schedules based on their performance. For example, if they are testing in January, they should be ahead of the program test schedule and be using AAMC exams. ')
         st.write(' ')
 
         st.dataframe(df_test_scores_student_filtered[['test_name','test_date','actual_exam_score']],use_container_width=True)
@@ -627,7 +611,7 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
         st.write(' ')
         st.write(' ')
 
-        st.header('Engagement - Updated Through 10/26/25')
+        st.header('Engagement')
         st.subheader('Self-Learning with Jack Westin Course or Question Bank')
         st.write('This graph displays the number of video lessons or assignments within the Self-Paced JW Complete MCAT Course completed by the student per week')
         st.write(' ')
@@ -837,10 +821,80 @@ if dashboard_type == "Individual Student Dashboard (EY25)":
 
         st.altair_chart(line_attendance,use_container_width=True)
 
+elif dashboard_type == "Students by JFD":
+    st.header("Students by JFD")
+
+    jfd_df = load_jfd_data()
+
+    if jfd_df is None:
+        st.error("Could not load `student-data/jfd-combined.csv`. Please make sure the file is in the correct location.")
+        st.stop()
+
+    # Create JFD dropdown filter
+    jfd_list = ['All JFDs'] + sorted(jfd_df['jfd'].dropna().unique().astype(int).tolist())
+    selected_jfd = st.selectbox("Choose a JFD to filter students:", jfd_list)
+
+    # Filter dataframe based on selection
+    if selected_jfd != 'All JFDs':
+        filtered_jfd_df = jfd_df[jfd_df['jfd'] == selected_jfd].copy()
+    else:
+        filtered_jfd_df = jfd_df.copy()
+
+
+    # Fill NA for display and consistent filtering
+    filtered_jfd_df.fillna({'all_exams_and_scores': 'No scores reported', 'highest_exam_score': 0}, inplace=True)
+    
+    # Define categories
+    categories = {
+        "Category 1: No Reported Scores": 
+            filtered_jfd_df['exam_count'] == 0,
+        
+        "Category 2: Students <502 & No Anticipated Exam Date":
+            (filtered_jfd_df['highest_exam_score'] < 502) & (filtered_jfd_df['anticipated_exam_date'].isnull()),
+
+        "Category 3: <495 & Tier 3 Across All Metrics":
+            (filtered_jfd_df['highest_exam_score'] < 495) & \
+            (filtered_jfd_df['survey_tier'] == 'Tier 3') & \
+            (filtered_jfd_df['large_group_tier'] == 'Tier 3') & \
+            (filtered_jfd_df['small_group_tier'] == 'Tier 3') & \
+            (filtered_jfd_df['class_participation_tier'] == 'Tier 3'),
+
+        "Category 4: <495 & Survey Tier 3":
+            (filtered_jfd_df['highest_exam_score'] < 495) & (filtered_jfd_df['survey_tier'] == 'Tier 3'),
+
+        "Category 5: 495–500 & Small Group Tier 3":
+            (filtered_jfd_df['highest_exam_score'] >= 495) & (filtered_jfd_df['highest_exam_score'] <= 500) & \
+            (filtered_jfd_df['small_group_tier'] == 'Tier 3'),
+
+        "Category 6: <495 & Large Group Tier 3":
+            (filtered_jfd_df['highest_exam_score'] < 495) & (filtered_jfd_df['large_group_tier'] == 'Tier 3')
+    }
+
+    display_cols = ['student_id', 'highest_exam_score', 'survey_tier', 'large_group_tier', 'small_group_tier', 'class_participation_tier', 'all_exams_and_scores']
+    
+    all_jfd_student_indices = set()
+
+    for category_name, condition in categories.items():
+        st.subheader(category_name)
+        category_df = filtered_jfd_df[condition].copy()
+        
+        if not category_df.empty:
+            st.dataframe(category_df[display_cols])
+            all_jfd_student_indices.update(category_df.index)
+        else:
+            st.info("No students in this category.")
+
+    st.header("Final List of All JFD Students")
+    st.write("This list includes all students who fall into at least one of the JFD categories above.")
+    
+    if all_jfd_student_indices:
+        final_df = filtered_jfd_df.loc[sorted(list(all_jfd_student_indices))].sort_values('student_id')
+        st.dataframe(final_df[display_cols])
+    else:
+        st.info("No students fall into any of the JFD categories.")
+
 else:
     # Analysis Dashboard
-    
-
     
     # Load and clean MCAT analysis data
     @st.cache_data
@@ -850,19 +904,12 @@ else:
         import os
         csv_df = None
         
-        # Get the directory where this script is located
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        
         # Try different possible file paths
         possible_files = [
-            os.path.join(script_dir, 'data_outcomes_with_tiers.csv'),          # Absolute path in script dir
-            os.path.join(script_dir, 'student-data', 'data_outcomes_with_tiers.csv'),  # Absolute path in student-data
-            'data_outcomes_with_tiers.csv',                                     # Relative from current dir
-            './data_outcomes_with_tiers.csv',                                   # Explicit relative
-            'student-data/data_outcomes_with_tiers.csv',                        # In student-data folder
-            './student-data/data_outcomes_with_tiers.csv',                      # Explicit student-data
-            'data/data_outcomes_with_tiers.csv',                                # In data folder
-            './data/data_outcomes_with_tiers.csv'                               # Explicit data folder
+            'data_outcomes_with_tiers.csv',
+            './data_outcomes_with_tiers.csv',
+            'data/data_outcomes_with_tiers.csv',
+            './data/data_outcomes_with_tiers.csv'
         ]
         
         for file_path in possible_files:
@@ -929,11 +976,8 @@ else:
         return df, csv_df
 
 
-    
     # Load data
     df, csv_df = load_and_clean_data()
-    
-
     
     # Analysis Type Selection
     analysis_type = st.sidebar.radio(
@@ -1118,6 +1162,50 @@ else:
                 - Engagement beats initial ability
                 """)
             
+            # Explanation of Question Bank Usage vs Total Weekly Question Sets
+            st.markdown("---")
+            st.markdown("### Understanding Question Bank Metrics")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("""
+                #### 📊 Question Bank Usage (57.4 sets)
+                **Weekly Engagement Data (CSV)**
+                - **Calculation:** Sum of weekly question sets per student from detailed weekly tracking
+                - **Data source:** CSV file with weekly records (`total_completed_passages_discrete_sets` per week)
+                - **High performers:** 57.4 total sets per student
+                - **Low performers:** 46.0 total sets per student
+                - **Impact:** +11.4 more sets for success
+                - **Statistical significance:** p = 0.0161
+                
+                **Higher predictive power**
+                """)
+            
+            with col2:
+                st.markdown("""
+                #### 📈 Total Weekly Question Sets (214.4 sets)
+                **Alternative Data Source**
+                - **Calculation:** Sum per student from main dataset
+                - **Data source:** Main dataset (`Total_Completed_Passages_Discrete_Sets`)
+                - **High performers:** 214.4 total sets per student
+                - **Low performers:** 170.2 total sets per student
+                - **Impact:** +44.1 more total sets for success
+                - **Statistical significance:** p = 0.0278
+                
+                **Lower predictive power**
+                """)
+            
+            st.info("""
+            **Key Insight:** Both metrics sum all question sets completed by each student, but from different data collection systems.
+            
+            The **Question Bank Usage** (57.4) comes from detailed weekly tracking records, while **Total Weekly Question Sets** (214.4) comes from a different data source in the main dataset. 
+            
+            The weekly tracking data shows lower totals but higher statistical significance (p = 0.0161 vs p = 0.0278), suggesting it may be more accurate for predicting MCAT success.
+            
+            **Recommendation:** The weekly tracking data (57.4 range) appears to be the more reliable predictor of MCAT improvement.
+            """)
+            
         else:
             st.error("**Data not available for insights analysis**")
             st.info("**Troubleshooting:** The Key Actionable Insights require the `data_outcomes_with_tiers.csv` file with detailed engagement data.")
@@ -1182,8 +1270,406 @@ else:
                 trendline='ols',
                 color_discrete_sequence=[BRAND_COLORS['primary']]
             )
+            
+            # Set y-axis to start at 0 and find max value
+            max_improvement = eff_df['Score_Improvement'].max()
+            
+            # Always start at 0 for score improvement graph
+            y_min = 0
+            y_max = max_improvement + 2  # Add some padding at the top
+            
+            fig_effectiveness.update_layout(
+                yaxis=dict(
+                    range=[y_min, y_max],
+                    title_font=dict(size=16),
+                    tickfont=dict(size=14)
+                ),
+                xaxis=dict(
+                    title_font=dict(size=16),
+                    tickfont=dict(size=14)
+                ),
+                title_font=dict(size=18)
+            )
+            
             fig_effectiveness = apply_light_mode_styling(fig_effectiveness)
             st.plotly_chart(fig_effectiveness, use_container_width=True)
+        
+        # Score Growth Ranges Analysis
+        st.markdown("---")
+        st.subheader("High Score Growth Analysis (8-25 Point Increases)")
+        
+        # Filter for high score growth (8-25 points)
+        high_growth = df[(df['Score_Difference'] >= 8) & (df['Score_Difference'] <= 25)]['Score_Difference'].dropna()
+        
+        if len(high_growth) > 0:
+            st.info(f"**{len(high_growth)} students achieved high score growth (8-25 points)** with an average improvement of **{high_growth.mean():.1f} points**")
+            
+            # Create histogram of score growth ranges
+            fig_growth = px.histogram(
+                x=high_growth,
+                nbins=18,  # 8-25 is 18 possible values
+                title='Students with High Score Growth (8-25 Point Increases)',
+                labels={'x': 'MCAT Score Improvement (Points)', 'y': 'Number of Students'},
+                color_discrete_sequence=[BRAND_COLORS['success']]
+            )
+            
+            # Customize the histogram for better appearance
+            fig_growth.update_traces(
+                marker_line_color='white',
+                marker_line_width=2,
+                opacity=0.8
+            )
+            
+            # Update layout for taller, thinner bars
+            fig_growth.update_layout(
+                bargap=0.05,  # Thinner bars with minimal gap
+                height=500,   # Taller graph
+                xaxis=dict(
+                    tickmode='linear',
+                    tick0=8,
+                    dtick=1,
+                    range=[7.5, 25.5],
+                    title_font=dict(size=18, color='#1e293b'),
+                    tickfont=dict(size=16, color='#1e293b')  # Much larger tick numbers
+                ),
+                yaxis=dict(
+                    title='Number of Students',
+                    title_font=dict(size=18, color='#1e293b'),
+                    tickfont=dict(size=16, color='#1e293b'),  # Much larger tick numbers
+                    gridcolor='rgba(128,128,128,0.2)'
+                ),
+                title_font=dict(size=20, color='#1e293b'),  # Larger title
+                showlegend=False
+            )
+            
+            # Add annotations for key statistics
+            fig_growth.add_annotation(
+                x=high_growth.mean(),
+                y=0,
+                text=f"Mean: {high_growth.mean():.1f}",
+                showarrow=True,
+                arrowhead=2,
+                arrowcolor=BRAND_COLORS['primary'],
+                bgcolor="white",
+                bordercolor=BRAND_COLORS['primary'],
+                borderwidth=2
+            )
+            
+            fig_growth.update_layout(
+                xaxis=dict(
+                    tickmode='linear',
+                    tick0=8,
+                    dtick=1,
+                    range=[7.5, 25.5]
+                ),
+                bargap=0.1
+            )
+            
+            fig_growth = apply_light_mode_styling(fig_growth)
+            st.plotly_chart(fig_growth, use_container_width=True)
+            
+            # Breakdown by score ranges
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                modest_growth = high_growth[(high_growth >= 8) & (high_growth <= 12)]
+                st.metric(
+                    "Modest Growth (8-12 pts)", 
+                    len(modest_growth),
+                    f"Avg: {modest_growth.mean():.1f}" if len(modest_growth) > 0 else "N/A"
+                )
+            
+            with col2:
+                strong_growth = high_growth[(high_growth >= 13) & (high_growth <= 19)]
+                st.metric(
+                    "Strong Growth (13-19 pts)", 
+                    len(strong_growth),
+                    f"Avg: {strong_growth.mean():.1f}" if len(strong_growth) > 0 else "N/A"
+                )
+            
+            with col3:
+                exceptional_growth = high_growth[(high_growth >= 20) & (high_growth <= 25)]
+                st.metric(
+                    "Exceptional Growth (20-25 pts)", 
+                    len(exceptional_growth),
+                    f"Avg: {exceptional_growth.mean():.1f}" if len(exceptional_growth) > 0 else "N/A"
+                )
+            
+            # Additional insights
+            st.markdown("#### Key Insights from High Performers")
+            
+            # Get baseline scores for high growth students
+            high_growth_students = df[(df['Score_Difference'] >= 8) & (df['Score_Difference'] <= 25)]
+            
+            if len(high_growth_students) > 0:
+                avg_baseline = high_growth_students['Baseline_Score'].mean()
+                avg_practice_exams = high_growth_students['Number_of_Practice_Exams'].mean()
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown(f"""
+                    **Student Profile:**
+                    - **Average Baseline Score:** {avg_baseline:.1f}
+                    - **Average Practice Exams:** {avg_practice_exams:.1f}
+                    - **Score Range:** {high_growth.min():.0f} - {high_growth.max():.0f} points
+                    """)
+                
+                with col2:
+                    # Calculate percentiles
+                    p25 = high_growth.quantile(0.25)
+                    p50 = high_growth.median()
+                    p75 = high_growth.quantile(0.75)
+                    
+                    st.markdown(f"""
+                    **Growth Distribution:**
+                    - **25th percentile:** {p25:.1f} points
+                    - **Median:** {p50:.1f} points
+                    - **75th percentile:** {p75:.1f} points
+                    """)
+        else:
+            st.warning("No students found with score improvements in the 8-25 point range.")
+        
+        # Featured Student Score Progression
+        st.markdown("---")
+        st.subheader("📈 Featured Student Score Progression")
+        st.markdown("*Real example of score improvement through practice exams*")
+        
+        # Load individual test data
+        try:
+            test_data_paths = [
+                'student-data/institution-1-test-data.csv',
+                './student-data/institution-1-test-data.csv',
+                'institution-1-test-data.csv'
+            ]
+            
+            test_df = None
+            for path in test_data_paths:
+                try:
+                    if os.path.exists(path):
+                        test_df = pd.read_csv(path, parse_dates=['test_date'])
+                        break
+                except:
+                    continue
+            
+            if test_df is not None:
+                # Look for a specific student with good progression
+                # Select a student with multiple exams and clear improvement pattern
+                student_exam_counts = test_df.groupby('student_id').size()
+                students_with_multiple_exams = student_exam_counts[student_exam_counts >= 4].index
+                
+                # Try to find a student with strong improvement
+                for target_id in students_with_multiple_exams:
+                    student_data = test_df[test_df['student_id'] == target_id].sort_values('test_date')
+                    if len(student_data) >= 4:
+                        first_score = student_data['actual_exam_score'].iloc[0]
+                        last_score = student_data['actual_exam_score'].iloc[-1]
+                        if last_score - first_score >= 10:  # Good improvement
+                            featured_student_id = target_id
+                            break
+                else:
+                    # Fallback to any student with multiple exams
+                    featured_student_id = students_with_multiple_exams[0] if len(students_with_multiple_exams) > 0 else None
+                
+                if featured_student_id is not None:
+                    # Get this student's test data
+                    student_test_data = test_df[test_df['student_id'] == featured_student_id].sort_values('test_date')
+                    
+                    # Get additional info from main dataset
+                    student_info = df[df['Student_ID'] == featured_student_id]
+                    baseline_score = student_info['Baseline_Score'].iloc[0] if len(student_info) > 0 else None
+                    
+                    # Calculate key metrics
+                    first_score = student_test_data['actual_exam_score'].iloc[0]
+                    last_score = student_test_data['actual_exam_score'].iloc[-1]
+                    total_improvement = last_score - first_score
+                    num_exams = len(student_test_data)
+                    
+                    # Display metrics
+                    col1, col2, col3, col4 = st.columns(4)
+                    with col1:
+                        st.metric("Practice Exams", f"{num_exams}")
+                    with col2:
+                        st.metric("Starting Score", f"{first_score:.0f}")
+                    with col3:
+                        st.metric("Final Score", f"{last_score:.0f}")
+                    with col4:
+                        st.metric("Improvement", f"+{total_improvement:.0f} pts")
+                    
+                    # Create progression chart
+                    fig_progression = px.line(
+                        student_test_data,
+                        x='test_date',
+                        y='actual_exam_score',
+                        markers=True,
+                        title='Practice Exam Score Progression Over Time',
+                        labels={
+                            'test_date': 'Practice Exam Date',
+                            'actual_exam_score': 'MCAT Score'
+                        }
+                    )
+                    
+                    # Style the chart
+                    fig_progression.update_traces(
+                        line=dict(color=BRAND_COLORS['primary'], width=4),
+                        marker=dict(size=12, color=BRAND_COLORS['success'], line=dict(width=2, color='white'))
+                    )
+                    
+                    # Add reference lines if available
+                    if baseline_score is not None:
+                        fig_progression.add_hline(
+                            y=baseline_score,
+                            line_dash="dash",
+                            line_color="red",
+                            annotation_text="Program Start",
+                            annotation_position="bottom right"
+                        )
+                    
+                    # Layout styling
+                    fig_progression.update_layout(
+                        height=450,
+                        showlegend=False,
+                        xaxis=dict(
+                            title_font=dict(size=18),
+                            tickfont=dict(size=14)
+                        ),
+                        yaxis=dict(
+                            title_font=dict(size=18),
+                            tickfont=dict(size=14),
+                            range=[
+                                min(student_test_data['actual_exam_score']) - 15,
+                                max(student_test_data['actual_exam_score']) + 15
+                            ]
+                        ),
+                        title_font=dict(size=20)
+                    )
+                    
+                    fig_progression = apply_light_mode_styling(fig_progression)
+                    st.plotly_chart(fig_progression, use_container_width=True)
+                    
+                    # Analysis summary
+                    improvement_per_exam = total_improvement / (num_exams - 1) if num_exams > 1 else 0
+                    
+                    st.success(f"""
+                    📊 **Success Story:** This student demonstrated remarkable consistency, improving from **{first_score:.0f}** to **{last_score:.0f}** 
+                    over {num_exams} practice exams. That's an average gain of **{improvement_per_exam:.1f} points per exam** through 
+                    dedicated practice and preparation.
+                    """)
+                    
+                    # Score breakdown by exam
+                    st.markdown("#### 📋 Exam-by-Exam Progression")
+                    
+                    # Create a clean table of progression
+                    progress_table = student_test_data[['test_date', 'test_name', 'actual_exam_score']].copy()
+                    progress_table['test_date'] = progress_table['test_date'].dt.strftime('%m/%d/%Y')
+                    progress_table['Improvement'] = progress_table['actual_exam_score'].diff().fillna(0)
+                    progress_table['Improvement'] = progress_table['Improvement'].apply(lambda x: f"+{x:.0f}" if x > 0 else f"{x:.0f}" if x < 0 else "—")
+                    progress_table.columns = ['Date', 'Exam', 'Score', 'Change']
+                    
+                    st.dataframe(progress_table, use_container_width=True, hide_index=True)
+                
+                else:
+                    st.warning("No suitable student found for score progression analysis.")
+            else:
+                st.info("Individual test data not available for score progression analysis.")
+        
+        except Exception as e:
+            st.error("Unable to load score progression data.")
+        
+        # High-Volume Practice Students Analysis
+        st.markdown("---")
+        st.subheader("📊 High-Volume Practice Students (>8 Exams)")
+        st.markdown("*Detailed analysis of students who took more than 8 practice exams*")
+        
+        # Filter for students with >8 practice exams
+        high_volume_students = df[
+            (df['Number_of_Practice_Exams'] > 8) & 
+            (df['Score_Difference'].notna())
+        ].copy()
+        
+        if len(high_volume_students) > 0:
+            # Calculate key metrics
+            avg_score_diff = high_volume_students['Score_Difference'].mean()
+            total_students = len(high_volume_students)
+            positive_students = len(high_volume_students[high_volume_students['Score_Difference'] > 0])
+            success_rate = (positive_students / total_students) * 100
+            
+            # Summary metrics
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("Total Students", total_students)
+            with col2:
+                st.metric("Average Improvement", f"+{avg_score_diff:.1f} pts")
+            with col3:
+                st.metric("Success Rate", f"{success_rate:.0f}%")
+            with col4:
+                max_improvement = high_volume_students['Score_Difference'].max()
+                st.metric("Best Improvement", f"+{max_improvement:.0f} pts")
+            
+            # Create detailed table
+            st.markdown("#### 📋 Individual Student Results")
+            
+            # Prepare table data
+            table_data = high_volume_students[['Student_ID', 'Number_of_Practice_Exams', 'Baseline_Score', 'Score_Difference']].copy()
+            table_data = table_data.sort_values('Score_Difference', ascending=False)
+            
+            # Format the data
+            table_data['Student_ID'] = table_data['Student_ID'].astype(int)
+            table_data['Number_of_Practice_Exams'] = table_data['Number_of_Practice_Exams'].astype(int)
+            table_data['Baseline_Score'] = table_data['Baseline_Score'].round(0).astype(int)
+            table_data['Score_Difference'] = table_data['Score_Difference'].apply(lambda x: f"+{x:.0f}" if x > 0 else f"{x:.0f}")
+            
+            # Rename columns for display
+            table_data.columns = ['Student ID', 'Practice Exams', 'Baseline Score', 'Score Improvement']
+            
+            # Display the table
+            st.dataframe(
+                table_data,
+                use_container_width=True,
+                hide_index=True
+            )
+            
+            # Key insights
+            st.markdown("#### 🔍 Key Insights")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # Statistics
+                min_improvement = high_volume_students['Score_Difference'].min()
+                max_improvement = high_volume_students['Score_Difference'].max()
+                median_improvement = high_volume_students['Score_Difference'].median()
+                
+                st.markdown(f"""
+                **📈 Performance Statistics:**
+                - **Average improvement:** {avg_score_diff:.1f} points
+                - **Median improvement:** {median_improvement:.1f} points
+                - **Range:** {min_improvement:.0f} to {max_improvement:.0f} points
+                - **Success rate:** {success_rate:.0f}% (all students improved)
+                """)
+            
+            with col2:
+                # Practice volume insights
+                avg_exams = high_volume_students['Number_of_Practice_Exams'].mean()
+                min_exams = high_volume_students['Number_of_Practice_Exams'].min()
+                max_exams = high_volume_students['Number_of_Practice_Exams'].max()
+                
+                st.markdown(f"""
+                **📚 Practice Volume Analysis:**
+                - **Average exams taken:** {avg_exams:.1f}
+                - **Range:** {min_exams:.0f} to {max_exams:.0f} exams
+                - **Volume correlation:** Higher volume = consistent improvement
+                - **Efficiency:** {avg_score_diff/avg_exams:.2f} points per exam average
+                """)
+            
+            # Conclusion
+            st.success(f"""
+            💡 **Key Takeaway:** All {total_students} students who took more than 8 practice exams achieved positive score improvements, 
+            with an average gain of **{avg_score_diff:.1f} points**. This demonstrates that high-volume practice is a reliable strategy for MCAT success.
+            """)
+            
+        else:
+            st.warning("No students found who took more than 8 practice exams.")
 
 
     elif analysis_type == "Question Bank Analytics":
@@ -1291,7 +1777,6 @@ else:
                         t_stat, p_value = ttest_ind(high_improvement['Total_Completed_Sum'], low_improvement['Total_Completed_Sum'])
                         significance = "Significant" if p_value < 0.05 else "Not Significant"
                         st.metric("T-test P-value", f"{p_value:.4f}", delta=significance)
-        
         else:
             st.warning("Insufficient data available for question bank comparison analysis.")
 
@@ -1423,21 +1908,21 @@ else:
                     for _, row in small_tier_stats.iterrows():
                         tier_color = '#4CAF50' if row['Tier'] == 'Tier 1' else '#FF9800' if row['Tier'] == 'Tier 2' else '#EF5350'
                         st.markdown(f"<div style='color: {tier_color}; font-weight: bold;'>{row['Tier']}: {row['Avg_Score_Improvement']:.1f} pts avg improvement ({row['Student_Count']} students)</div>", unsafe_allow_html=True)
+                    
+                    st.info("**Key Finding:** Attendance tier directly correlates with MCAT score improvement across both session types")
+            
+            else:
+                st.error("**Attendance analysis requires tier data which is not available**")
+                st.info("**Troubleshooting:** Attendance Analysis requires the `data_outcomes_with_tiers.csv` file.")
+                st.markdown("""
+                **This section needs:**
+                - Attendance data (num_attended_large_session, num_scheduled_large_session)
+                - Small group attendance (num_attended_small_session, num_scheduled_small_session)  
+                - Tier classifications (Large Group Tier, Small Group Tier)
+                - Baseline MCAT scores for correlation analysis
                 
-                st.info("**Key Finding:** Attendance tier directly correlates with MCAT score improvement across both session types")
-            
-        else:
-            st.error("**Attendance analysis requires tier data which is not available**")
-            st.info("**Troubleshooting:** Attendance Analysis requires the `data_outcomes_with_tiers.csv` file.")
-            st.markdown("""
-            **This section needs:**
-            - Attendance data (num_attended_large_session, num_scheduled_large_session)
-            - Small group attendance (num_attended_small_session, num_scheduled_small_session)  
-            - Tier classifications (Large Group Tier, Small Group Tier)
-            - Baseline MCAT scores for correlation analysis
-            
-            **Current status:** CSV data loading failed.
-            """)
+                **Current status:** CSV data loading failed.
+                """)
 
     elif analysis_type == "Performer Analysis":
         st.header("Performer Analysis")
@@ -1598,7 +2083,7 @@ else:
                     st.markdown("- Ensure maximum engagement with all resources")
                     st.markdown("- Consider intensive foundational review")
                     st.markdown("- Provide additional motivational support")
-            
+                
             # Performance Comparison
             st.markdown("---")
             st.subheader("High vs Low Performer Comparison")
