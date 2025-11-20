@@ -476,8 +476,7 @@ if dashboard_type == "Individual Student Dashboard EY25":
         st.write(' ')
         st.header('Student Tier Assessment')
         st.write(' ')
-        st.subheader('Exam Reporting and Survey Tier Updated on 11/18')
-        st.subheader('Attendance and Participation Updated through 10/26')
+        st.subheader('Exam Reporting and Survey Tier Updated on 11/18, Attendance and Participation Updated through 10/26')
         st.write(' ')
 
         # Check if we have tier data for this student
