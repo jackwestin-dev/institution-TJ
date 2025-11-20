@@ -554,6 +554,7 @@ if dashboard_type == "Individual Student Dashboard EY25":
         st.write(' ')
         st.subheader('Current Student Surveys')
         st.markdown('[Exam Reporting Survey](https://docs.google.com/spreadsheets/d/10YBmWD7qFD0fjbD-8TK1gxNMVpwJyTLtOFtT1huh-FI/edit?gid=1992640725#gid=1992640725)')
+        st.markdown('[Science Content Diagnostic Survey)](https://docs.google.com/spreadsheets/d/1ozZfFntJ-j5laqJ0JYdS4ZIoFWb8A4Yc3QedHL6IF54/edit?usp=sharing)')
         st.markdown('[Exam Date Reporting Survey](https://docs.google.com/spreadsheets/d/1YPr1qJVHucONXrwj4A1Y7ZPcHANwZKbzrQgunhfG-3k/edit?resourcekey=&gid=26178575#gid=26178575)')
         st.markdown('[AAMC Free Sample Test Score Survey](https://docs.google.com/spreadsheets/d/1mWguodGM_ZPRJIH1MSj81mOt2tWbYVIcYMval1Th9eU/edit?gid=727058546#gid=727058546)')
         st.markdown('[Student Check-In Survey (09-29)](https://docs.google.com/spreadsheets/d/1ew8uTdn-jBv4cdF0VGBHrF651jMyPEZ1wGDrHHwKhw0/edit?resourcekey=&gid=1382509198#gid=1382509198)')
