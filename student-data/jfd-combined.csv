@@ -77,7 +77,7 @@ student_id,jamp_school,survey_tier,large_group_tier,small_group_tier,class_parti
 76,20.0,Tier 2,Tier 1,Tier 1,Tier 1,2026-01-23,496.0,"JW Exam 1: 494.0, AAMC Free Sample Test (Unscored): 489.0, JW MCAT Practice Exam 2: 496.0, JW Exam 2: 496.0",4,0,0,0,0,0,0,20.0
 77,3.0,Tier 3,Tier 1,Tier 3,Tier 1,2026-01-15,501.0,JW Exam 2: 501.0,1,0,0,0,0,0,0,3.0
 78,3.0,Tier 2,Tier 1,Tier 1,Tier 1,,502.0,JW Exam 1: 502.0,1,0,0,0,0,0,0,3.0
-79,3.0,Tier 2,Tier 3,Tier 3,Tier 3,2026-01-09,506.0,"Test Taken Wasn't Clarified: 506.0, JW Exam 2: 496.0",2,0,0,0,0,0,0,3.0
+79,3.0,Tier 2,Tier 1,Tier 1,Tier 1,2026-01-09,506.0,"Test Taken Wasn't Clarified: 506.0, JW Exam 2: 496.0",2,0,0,0,0,0,0,3.0
 80,9.0,Tier 3,Tier 2,Tier 3,Tier 3,,497.0,JW Exam 1: 497.0,1,0,1,0,0,1,0,9.0
 81,2.0,Tier 3,Tier 3,Tier 3,Tier 2,2026-01-15,497.0,"JW Exam 1: 494.0, JW Exam 2: 497.0",2,0,0,0,0,1,0,2.0
 82,2.0,Tier 3,Tier 1,Tier 2,Tier 3,2025-01-23,0.0,JW Exam 1: 0.0,1,0,0,0,1,0,0,2.0
