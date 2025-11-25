@@ -1,5 +1,5 @@
 student_id,Survey Tier,Large Group Tier,Small Group Tier,Class Participation Tier
-1,Tier 3,Tier 1,Tier 2,Tier 1
+1,Tier 3,Tier 2,Tier 2,Tier 2
 2,Tier 3,Tier 3,Tier 3,Tier 3
 3,Tier 3,Tier 3,Tier 3,Tier 3
 4,Tier 3,Tier 2,Tier 3,Tier 2
@@ -77,7 +77,7 @@ student_id,Survey Tier,Large Group Tier,Small Group Tier,Class Participation Tie
 76,Tier 2,Tier 1,Tier 1,Tier 1
 77,Tier 3,Tier 1,Tier 3,Tier 1
 78,Tier 2,Tier 1,Tier 1,Tier 1
-79,Tier 2,Tier 3,Tier 3,Tier 3
+79,Tier 2,Tier 1,Tier 1,Tier 1
 80,Tier 3,Tier 2,Tier 3,Tier 3
 81,Tier 3,Tier 3,Tier 3,Tier 2
 82,Tier 3,Tier 1,Tier 2,Tier 3
