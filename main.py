@@ -624,7 +624,7 @@ if dashboard_type == "Individual Student Dashboard EY25":
         st.write(' ')
         st.write(' ')
 
-        st.header('Engagement')
+        st.header('Engagement - Updated Through 11/16')
         st.subheader('Self-Learning with Jack Westin Course or Question Bank')
         st.write('This graph displays the number of video lessons or assignments within the Self-Paced JW Complete MCAT Course completed by the student per week')
         st.write(' ')
