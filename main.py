@@ -624,8 +624,8 @@ if dashboard_type == "Individual Student Dashboard EY25":
         st.write(' ')
         st.write(' ')
 
-        st.header('Engagement - Updated Through 11/16')
-        st.subheader('Self-Learning with Jack Westin Course or Question Bank')
+        st.header('Engagement')
+        st.subheader('Self-Learning with Jack Westin Course or Question Bank - Updated through 11/16')
         st.write('This graph displays the number of video lessons or assignments within the Self-Paced JW Complete MCAT Course completed by the student per week')
         st.write(' ')
         st.write(' ')
@@ -667,7 +667,7 @@ if dashboard_type == "Individual Student Dashboard EY25":
         st.write(' ')
         st.write(' ')
 
-        st.subheader('Completed Question Sets')
+        st.subheader('Completed Question Sets - Updated Through 11/16')
         st.write('This graph displays the number of question sets completed within our question bank per week. Question sets usually range between 5 to 10 questions, and can be discrete or passage-based questions.')
         st.write(' ')
         st.write(' ')
@@ -695,7 +695,7 @@ if dashboard_type == "Individual Student Dashboard EY25":
 
         st.altair_chart(line_question_sets,use_container_width=True)
 
-        st.header('Participation')
+        st.header('Participation - Updated Through 10/26')
         st.subheader('Class and Homework Participation')
         st.write(
             '"Class Participation" represents the percentage of class activities students engaged in each week. Here is a [video sample of an in-class activity](https://www.loom.com/share/48b383838811401892a38e17761c4993?sid=3d3e7dc2-b294-4b73-b1c6-8d78e6e0b6e8) a student can participate in. It should also be noted we did not track participation in class polls.\n\n'
@@ -743,7 +743,7 @@ if dashboard_type == "Individual Student Dashboard EY25":
 
         st.write(' ')
         st.write(' ')
-        st.header('Performance')
+        st.header('Performance - Updated through 11/16')
         st.subheader('Average Accuracy (%) on Question Sets Per Week')
         st.write(
             'During Session Practice: "In-Class Questions" refer to a student\'s accuracy percentage for question sets specifically given during class. '
