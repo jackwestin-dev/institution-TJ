@@ -476,7 +476,7 @@ if dashboard_type == "Individual Student Dashboard EY25":
         st.write(' ')
         st.header('Student Tier Assessment')
         st.write(' ')
-        st.subheader('Exam Reporting and Survey Tier Updated on 11/18, Attendance and Participation Updated through 10/26')
+        st.subheader('Exam Reporting and Attendance Tier Updated on 12/04 and Survey Tier Updated on 11/18, Participation Updated through 10/26')
         st.write(' ')
 
         # Check if we have tier data for this student
@@ -836,7 +836,7 @@ if dashboard_type == "Individual Student Dashboard EY25":
 
 elif dashboard_type == "Students by JFD":
     st.header("Students by JFD")
-    st.subheader("Exam and Survey Tier Updated on 11/18,Attendance and Participation Data Updated on 10/26")
+    st.subheader("Exam Reporting and Attendance Tier Updated on 12/04,  Survey Tier Updated on 11/18, and Participation Data Updated on 10/26")
     st.caption("**Category 1: No Reported Scores** — Students who have not submitted any valid practice exam or MCAT score. **Category 2: Students <502 & No Anticipated Exam Date** — Students scoring below 502 who have not reported an upcoming MCAT exam date. **Category 3: <495 & Tier 3 Across All Metrics** — Students scoring below 495 who are Tier 3 in all engagement and participation metrics. **Category 4: <495 & Survey Tier 3** — Students scoring below 495 who have not submitted survey updates or progress reports. **Category 5: 495–500 & Small Group Tier 3** — Students scoring between 495–500 who are not attending their assigned small group sessions. **Category 6: <495 & Large Group Tier 3** — Students scoring below 495 who are not attending required large group classes.")
 
     jfd_df = load_jfd_data()
