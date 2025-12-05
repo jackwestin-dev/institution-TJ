@@ -12,7 +12,7 @@ student_id,jamp_school,survey_tier,large_group_tier,small_group_tier,class_parti
 11,5.0,Tier 2,Tier 1,Tier 1,Tier 2,2026-03-07,497.0,JW Exam 1: 497.0,1,0,0,0,0,0,0,5.0
 12,8.0,Tier 3,Tier 1,Tier 1,Tier 1,2026-04-24,494.0,"JW Exam 1: 494.0, JW Exam 2: 489.0",2,0,0,0,0,0,0,8.0
 13,9.0,Tier 1,Tier 1,Tier 1,Tier 2,2026-02-13,504.0,"JW Exam 1: 498.0, AAMC Free Sample Test (Unscored): 499.0, JW Exam 2: 504.0",3,0,0,0,0,0,0,9.0
-14,3.0,Tier 3,Tier 1,Tier 1,Tier 2,2026-01-23,496.0,JW Exam 1: 496,0,1,0,0,0,0,0,3.0
+14,3.0,Tier 3,Tier 1,Tier 1,Tier 2,2026-01-23,496.0,JW Exam 1: 496,0,0,0,0,0,0,0,3.0
 15,3.0,Tier 3,Tier 1,Tier 2,Tier 1,,506.0,"JW Exam 1: 498.0, AAMC Free Sample Test (Unscored): 500.0, JW Exam 2: 506.0",3,0,0,0,0,0,0,3.0
 16,6.0,Tier 3,Tier 1,Tier 1,Tier 1,2026-01-23,497.0,"JW Exam 1: 488.0, JW Exam 2: 497.0",2,0,0,0,0,0,0,6.0
 17,4.0,Tier 1,Tier 1,Tier 1,Tier 1,2026-03-07,503.0,"JW Exam 1: 502.0, AAMC Free Sample Test (Unscored): 502.0, JW Exam 2: 503.0",3,0,0,0,0,0,0,4.0
@@ -55,8 +55,8 @@ student_id,jamp_school,survey_tier,large_group_tier,small_group_tier,class_parti
 54,4.0,Tier 1,Tier 1,Tier 1,Tier 1,2026-01-10,497.0,"JW Exam 1: 496.0, AAMC Free Sample Test (Unscored): 494.0, JW Exam 2: 497.0",3,0,0,0,0,0,0,4.0
 55,8.0,Tier 3,Tier 1,Tier 1,Tier 1,2026-01-10,498.0,JW Exam 1: 498.0,1,0,0,0,0,0,0,8.0
 56,15.0,Tier 3,Tier 3,Tier 3,Tier 3,,0,,0,1,1,0,0,0,0,15.0
-57,3.0,Tier 3,Tier 2,Tier 3,Tier 3,2026-04-24,493.0,JW Exam 1: 493,0,1,0,0,0,0,0,3.0
-58,3.0,Tier 3,Tier 2,Tier 3,Tier 3,2026-04-24,483.0,AAMC Free Practice Exam: 483,0,1,0,0,0,0,0,3.0
+57,3.0,Tier 3,Tier 2,Tier 3,Tier 3,2026-04-24,493.0,JW Exam 1: 493,0,0,0,0,0,0,0,3.0
+58,3.0,Tier 3,Tier 2,Tier 3,Tier 3,2026-04-24,483.0,AAMC Free Practice Exam: 483,0,0,0,0,0,0,0,3.0
 59,9.0,Tier 3,Tier 1,Tier 1,Tier 2,,496.0,JW Exam 1: 496.0,1,0,1,0,0,1,0,9.0
 60,9.0,Tier 1,Tier 1,Tier 2,Tier 1,2026-04-25,503.0,"JW Exam 1: 500.0, AAMC Free Sample Test (Unscored): 502.0, JW Full Length 2: 503.0, JW Exam 2: 503.0, JW Exam 3: 504.0",5,0,0,0,0,0,0,9.0
 61,3.0,Tier 1,Tier 1,Tier 1,Tier 1,2026-03-07,501.0,"JW Exam 1: 494.0, AAMC Free Sample Test (Unscored): 492.0, AAMC Free Sample Test (Unscored): 501.0, JW Exam 2: 496.0",4,0,0,0,0,0,0,3.0
@@ -104,7 +104,7 @@ student_id,jamp_school,survey_tier,large_group_tier,small_group_tier,class_parti
 103,2.0,Tier 3,Tier 2,Tier 3,Tier 2,,491.0,"JW Exam 1: 491.0, AAMC Free Sample Test (Unscored): 491.0",2,0,1,0,1,0,1,2.0
 104,14.0,Tier 1,Tier 1,Tier 2,Tier 1,2026-02-13,489.0,"JW Exam 1: 0.0, AAMC Free Sample Test (Unscored): 489.0",2,0,0,0,1,0,0,14.0
 105,9.0,Tier 1,Tier 1,Tier 1,Tier 1,2026-03-07,499.0,"JW Exam 1: 499.0, AAMC Free Sample Test (Unscored): 492.0, JW Exam 2: 495.0",3,0,0,0,0,0,0,9.0
-106,,Tier 3,Tier 3,Tier 3,Tier 3,2026-01-23,489.0,AAMC Free Sample Test (unscored): 489,0,1,0,0,0,0,0,
+106,,Tier 3,Tier 3,Tier 3,Tier 3,2026-01-23,489.0,AAMC Free Sample Test (unscored): 489,0,0,0,0,0,0,0,
 107,6.0,Tier 2,Tier 1,Tier 1,Tier 1,,496.0,"JW Exam 1: 493.0, JW Exam 2: 496.0",2,0,1,0,0,0,0,6.0
 108,23.0,Tier 3,Tier 1,Tier 2,Tier 3,2026-04-24,498.0,"JW Exam 1: 492.0, JW Exam 2: 498.0",2,0,0,0,0,1,0,23.0
 109,9.0,Tier 3,Tier 1,Tier 1,Tier 1,2026-02-13,,,1,0,0,0,1,0,0,9.0
@@ -142,7 +142,7 @@ student_id,jamp_school,survey_tier,large_group_tier,small_group_tier,class_parti
 141,3.0,Tier 3,Tier 1,Tier 3,Tier 3,,0,,0,1,1,0,0,0,0,3.0
 142,1.0,Tier 3,Tier 1,Tier 3,Tier 2,2026-04-24,482.0,"JW Exam 1: 482.0, AAMC (unspecified): 502",1,0,0,0,1,0,0,1.0
 143,24.0,Tier 3,Tier 1,Tier 2,Tier 1,2026-01-10,490.0,JW Exam 1: 490.0,1,0,0,0,1,0,0,24.0
-144,15.0,Tier 3,Tier 1,Tier 3,Tier 3,2026-01-23,502,JW exam 1: 502,0,1,0,0,0,0,0,15.0
+144,15.0,Tier 3,Tier 1,Tier 3,Tier 3,2026-01-23,502,JW exam 1: 502,0,0,0,0,0,0,0,15.0
 145,22.0,Tier 3,Tier 1,Tier 2,Tier 2,2026-01-15,492.0,JW Exam 1: 492.0,1,0,0,0,1,0,0,22.0
 146,15.0,Tier 3,Tier 1,Tier 3,Tier 1,2026-01-15,489.0,"JW Exam 1: 489.0, JW Exam 2: 499",1,0,0,0,1,0,0,15.0
 147,25.0,Tier 3,Tier 1,Tier 1,Tier 1,2026-01-15,,,0,1,0,0,0,0,0,25.0
@@ -150,7 +150,7 @@ student_id,jamp_school,survey_tier,large_group_tier,small_group_tier,class_parti
 149,3.0,Tier 1,Tier 1,Tier 1,Tier 1,2026-01-09,507.0,"JW Exam 1: 500.0, AAMC Free Sample Test (Unscored): 506.0, JW Exam 2: 507.0",3,0,0,0,0,0,0,3.0
 150,15.0,Tier 3,Tier 2,Tier 3,Tier 3,,499.0,JW Exam 1: 499.0,1,0,1,0,0,1,0,15.0
 151,3.0,Tier 1,Tier 1,Tier 2,Tier 1,2026-01-10,500.0,JW Exam 1: 500.0,1,0,0,0,0,0,0,3.0
-152,,Tier 1,Tier 1,Tier 2,Tier 1,2026-01-23,506,JW Exam 1: 506,0,1,0,0,0,0,0,
-153,32.0,Tier 1,Tier 1,Tier 1,Tier 1,2026-01-09,502,"JW Exam 1: 501, AAMC Practice Exam 1 (Unscored): 502",0,1,0,0,0,0,0,32.0
+152,,Tier 1,Tier 1,Tier 2,Tier 1,2026-01-23,506,JW Exam 1: 506,0,0,0,0,0,0,0,
+153,32.0,Tier 1,Tier 1,Tier 1,Tier 1,2026-01-09,502,"JW Exam 1: 501, AAMC Practice Exam 1 (Unscored): 502",0,0,0,0,0,0,0,32.0
 154,20.0,Tier 3,Tier 3,Tier 3,Tier 3,,0,,0,1,0,0,0,0,0,20.0
 155,,Tier 3,Tier 3,Tier 3,Tier 3,,0,,0,1,0,0,0,0,0,
