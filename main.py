@@ -859,30 +859,25 @@ elif dashboard_type == "Students by JFD":
     # Fill NA for display and consistent filtering
     filtered_jfd_df.fillna({'all_exams_and_scores': 'No scores reported', 'highest_exam_score': 0}, inplace=True)
     
-    # Define categories
+    # Define categories using pre-computed category flag columns from CSV
     categories = {
         "Category 1: No Reported Scores": 
-            filtered_jfd_df['exam_count'] == 0,
+            filtered_jfd_df['category_1'] == 1,
         
         "Category 2: Students <502 & No Anticipated Exam Date":
-            (filtered_jfd_df['highest_exam_score'] < 502) & (filtered_jfd_df['anticipated_exam_date'].isnull()),
+            filtered_jfd_df['category_2'] == 1,
 
         "Category 3: <495 & Tier 3 Across All Metrics":
-            (filtered_jfd_df['highest_exam_score'] < 495) & \
-            (filtered_jfd_df['survey_tier'] == 'Tier 3') & \
-            (filtered_jfd_df['large_group_tier'] == 'Tier 3') & \
-            (filtered_jfd_df['small_group_tier'] == 'Tier 3') & \
-            (filtered_jfd_df['class_participation_tier'] == 'Tier 3'),
+            filtered_jfd_df['category_3'] == 1,
 
         "Category 4: <495 & Survey Tier 3":
-            (filtered_jfd_df['highest_exam_score'] < 495) & (filtered_jfd_df['survey_tier'] == 'Tier 3'),
+            filtered_jfd_df['category_4'] == 1,
 
         "Category 5: 495–500 & Small Group Tier 3":
-            (filtered_jfd_df['highest_exam_score'] >= 495) & (filtered_jfd_df['highest_exam_score'] <= 500) & \
-            (filtered_jfd_df['small_group_tier'] == 'Tier 3'),
+            filtered_jfd_df['category_5'] == 1,
 
         "Category 6: <495 & Large Group Tier 3":
-            (filtered_jfd_df['highest_exam_score'] < 495) & (filtered_jfd_df['large_group_tier'] == 'Tier 3')
+            filtered_jfd_df['category_6'] == 1
     }
 
     display_cols = ['student_id', 'highest_exam_score', 'survey_tier', 'large_group_tier', 'small_group_tier', 'class_participation_tier', 'all_exams_and_scores']
