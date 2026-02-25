@@ -1,0 +1,10 @@
+streamlit
+pandas
+pymupdf
+plotly
+altair
+numpy
+seaborn
+matplotlib
+scipy
+statsmodels
