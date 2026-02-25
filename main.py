@@ -371,12 +371,12 @@ if not check_password():
 st.sidebar.title("Navigation")
 view_mode = st.sidebar.radio(
     "View",
-    ["Current Status EY25", "Individual Student Data - EY25", "EY 26 Programming"],
+    ["Current Status EY25", "Individual Student Data - EY25", "EY25 Summer Retester Cohort", "EY 26 Programming"],
     label_visibility="visible",
 )
 
-# Student roster reference (dropdown at top of page) — hidden on EY 26 Programming
-if view_mode != "EY 26 Programming":
+# Student roster reference (dropdown at top of page) — hidden on EY26/EY25 Summer programming pages
+if view_mode not in ("EY 26 Programming", "EY25 Summer Retester Cohort"):
     roster_path = None
     for path in ['roster.csv', './roster.csv']:
         if os.path.exists(path):
@@ -883,6 +883,98 @@ if view_mode == "Individual Student Data - EY25":
         )
 
         st.altair_chart(line_engagement, use_container_width=True)
+
+elif view_mode == "EY25 Summer Retester Cohort":
+    # -------------------------------------------------------------------------
+    # EY25 Summer Retester Cohort (JFD-facing; format similar to EY26 Programming)
+    # Ahmed may adjust copy or exam dates below.
+    # -------------------------------------------------------------------------
+    st.title("EY25 Summer Retester Cohort")
+    st.write(" ")
+
+    # Green box on top: flexibility and goal (no brief update)
+    st.markdown("""
+    <div style="padding: 0.75rem 1rem; margin: 0.5rem 0; border-left: 4px solid #059669; background-color: #ecfdf5; border-radius: 0 6px 6px 0; font-size: 1rem; line-height: 1.45;">
+    <p style="margin: 0 0 0.4rem 0;"><strong>Class days and times are flexible.</strong> For instance:</p>
+    <ul style="margin: 0.25rem 0 0.4rem 1.25rem; padding-left: 0.5rem;">
+    <li>A Monday–Wednesday class in the morning can be switched to a Tuesday–Thursday class in the evening.</li>
+    <li>A three-day-per-week program that has four classes can be changed to a four-day-per-week program that has four classes.<br><span style="display: block; margin-left: 1.5rem; margin-top: 0.25rem;"><strong>The number of classes per week stays the same.</strong></span></li>
+    </ul>
+    <p style="margin: 0.4rem 0 0.25rem 0;">Practice exam timing is also flexible: we can move mandatory practice exam due dates around. These are our recommendations, but they're flexible.</p>
+    <p style="margin: 0.5rem 0 0.25rem 0;"><strong>Goal:</strong> Finalize scheduling by end of March for EY25 so we can ensure proper instructor headcount.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.write(" ")
+
+    # Intro bullets (including EY24 cohort and attendance)
+    st.markdown("""
+    - Designed for scholars sitting for summer AAMC exams.
+    - Aligns with official AAMC test dates and historical second-attempt trends.
+    - Includes built-in benchmarking and structured exam pacing.
+    - 85% of students in the EY24 cohort had taken their exam by the end of July. Attendance tended to drop prior to exam dates. That makes sense. Students value the breathing room between class and their next exam to have the week to focus on preparing for it.
+    """)
+    st.write(" ")
+
+    # Recommended requirements (above tabs)
+    st.info("**Second Attempt recommended requirements** — Students must complete **3 full-length exams** between their first and second attempts. This ensures adequate benchmarking and readiness.")
+    st.write(" ")
+    st.markdown("**Summer Program Student recommended requirements**")
+    st.markdown("- 1 full-length exam completed before the start of the summer program.")
+    st.markdown("- 2 additional full-length exams completed during the summer.")
+    st.markdown("- *Exception:* Students testing June 12 or June 13 may have adjusted requirements due to limited timeline.")
+    st.write(" ")
+
+    # Tabs: Option 1 | Option 2 (Option not Model)
+    opt1_tab, opt2_tab = st.tabs(["Option 1", "Option 2"])
+
+    with opt1_tab:
+        st.markdown("**Structure**")
+        st.markdown("- Three Large Group classes weekly (2 hours each).")
+        st.markdown("- No class on double AAMC exam weeks.")
+        st.markdown("- Two Small Group sessions weekly (1 hour each).")
+        st.markdown("- Program dates: June 1 – July 27.")
+
+    with opt2_tab:
+        st.markdown("**Structure**")
+        st.markdown("- 1 Large Group class weekly (2 hours).")
+        st.markdown("- First week of June and July include 2 Large Group classes.")
+        st.markdown("- 1 Small Group session weekly.")
+        st.markdown("- Program dates: June 1 – July 27.")
+
+    st.write(" ")
+    # Comparison note at bottom
+    st.markdown("""
+    <div style="padding: 0.75rem 1rem; margin: 0.5rem 0; border-left: 4px solid #64748b; background-color: #f8fafc; border-radius: 0 6px 6px 0;">
+    <strong>Comparison</strong> — Option 1 prioritizes structured exam benchmarking and formal study breaks. Option 2 prioritizes consistent weekly cadence with lighter pacing.
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Optional: retaker cohort PDF (add retaker_cohort_side_by_side.pdf to ey25_summer_assets/ to display)
+    EY25_SUMMER_ASSETS = "ey25_summer_assets"
+    EY25_SUMMER_PDF = os.path.join(EY25_SUMMER_ASSETS, "retaker_cohort_side_by_side.pdf")
+    _cursor_retaker = os.path.expanduser("~/Library/Application Support/Cursor/User/workspaceStorage/bd0c71989d537611b6a480339d820d09/pdfs/2845df9b-0ed3-4dca-90f4-21c9b04b9f17/retaker cohort side by side.pdf")
+    if not os.path.exists(EY25_SUMMER_PDF) and os.path.exists(_cursor_retaker):
+        os.makedirs(EY25_SUMMER_ASSETS, exist_ok=True)
+        try:
+            shutil.copy2(_cursor_retaker, EY25_SUMMER_PDF)
+        except Exception:
+            pass
+    if os.path.exists(EY25_SUMMER_PDF):
+        st.write(" ")
+        st.subheader("Retaker cohort calendar")
+        try:
+            import fitz
+            doc = fitz.open(EY25_SUMMER_PDF)
+            for i in range(len(doc)):
+                page = doc.load_page(i)
+                mat = fitz.Matrix(2.0, 2.0)
+                pix = page.get_pixmap(matrix=mat, alpha=False)
+                img_bytes = pix.tobytes("png")
+                st.image(io.BytesIO(img_bytes), use_container_width=True)
+            doc.close()
+        except Exception:
+            st.caption("PDF available in app assets; enable PyMuPDF to view.")
+    st.write(" ")
 
 elif view_mode == "EY 26 Programming":
     # -------------------------------------------------------------------------
