@@ -1660,7 +1660,7 @@ elif view_mode == "Current Status EY25":
                 resp_table = pd.DataFrame({'student_id': sorted(intervened_ids)})
                 resp_table['Responded'] = resp_table['student_id'].isin(responded_ids).map({True: 'Yes', False: 'No'})
                 resp_table = resp_table.merge(most_recent, on='student_id', how='left')
-                resp_table['most_recent_score'] = resp_table['most_recent_score'].astype(object).fillna('—')
+                resp_table['most_recent_score'] = resp_table['most_recent_score'].apply(lambda x: str(int(x)) if pd.notna(x) else '—')
                 # Practice exam count (from test data)
                 exam_count = test_df.groupby('student_id').size().reset_index(name='practice_exam_count')
                 resp_table = resp_table.merge(exam_count, on='student_id', how='left')
