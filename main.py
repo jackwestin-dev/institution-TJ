@@ -389,11 +389,11 @@ st.sidebar.title("Navigation")
 view_mode = st.sidebar.radio(
     "View",
     [
+        "EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention",
         "Current Status EY25",
         "Individual Student Data - EY25",
         "EY25 Summer Retester Cohort",
         "EY 26 Programming",
-        "EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention",
     ],
     label_visibility="visible",
 )
