@@ -1593,16 +1593,17 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
     intervention_df = detail_sorted[detail_sorted['Score Outcome'] != 'Passing']
     passing_df      = detail_sorted[detail_sorted['Score Outcome'] == 'Passing']
 
-    # ── Students Needing Intervention ─────────────────────────────────────────
-    st.markdown("#### Students Needing Intervention")
-    st.caption("Missing score or First Attempt below 502 — sorted by urgency within tier. Tiers were tracked for attendance and participation from March 2nd onward. Exam tiers were tracked since the beginning of the program.")
+    # Split intervention into non-April and April exam dates
+    def _is_april(sid):
+        date_str = first_exam_date_map.get(int(sid), '—')
+        return str(date_str).startswith('4')
 
-    if intervention_df.empty:
-        st.success("All students with reported scores are passing (≥502).")
-    else:
-        # Table 1 — Tier overview
+    intervention_non_april = intervention_df[~intervention_df['Student ID'].apply(_is_april)]
+    intervention_april     = intervention_df[intervention_df['Student ID'].apply(_is_april)]
+
+    def _render_intervention_tables(df_subset):
         tier_rows = []
-        for _, row in intervention_df.iterrows():
+        for _, row in df_subset.iterrows():
             sid = int(row['Student ID'])
             score = row['First Attempt']
             score_display = str(int(score)) if pd.notna(score) else "—"
@@ -1623,9 +1624,8 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
         st.markdown(df_tier_table.to_html(escape=False, index=False), unsafe_allow_html=True)
         st.write(" ")
 
-        # Table 2 — Engagement & score detail
         detail_rows = []
-        for _, row in intervention_df.iterrows():
+        for _, row in df_subset.iterrows():
             score = row['First Attempt']
             score_display = str(int(score)) if pd.notna(score) else "—"
             next_date = str(row.get('Next Attempt Date', ''))
@@ -1642,6 +1642,26 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
             })
         df_detail_table = pd.DataFrame(detail_rows)
         st.markdown(df_detail_table.to_html(escape=False, index=False), unsafe_allow_html=True)
+
+    # ── Students Needing Intervention ─────────────────────────────────────────
+    st.markdown("#### Students Needing Intervention")
+    st.caption("Missing score or First Attempt below 502 — sorted by urgency within tier. Tiers were tracked for attendance and participation from March 2nd onward. Exam tiers were tracked since the beginning of the program.")
+
+    if intervention_non_april.empty:
+        st.success("All non-April students with reported scores are passing (≥502).")
+    else:
+        _render_intervention_tables(intervention_non_april)
+
+    st.write(" ")
+
+    # ── April Test-Takers Needing Intervention ────────────────────────────────
+    st.markdown("#### April Test-Takers Needing Intervention")
+    st.caption("Students with a first exam date in April — missing score or First Attempt below 502.")
+
+    if intervention_april.empty:
+        st.success("No April test-takers require intervention.")
+    else:
+        _render_intervention_tables(intervention_april)
 
     st.write(" ")
 
