@@ -1596,15 +1596,15 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
     intervention_df = detail_sorted[detail_sorted['Score Outcome'] != 'Passing']
     passing_df      = detail_sorted[detail_sorted['Score Outcome'] == 'Passing']
 
-    # Split intervention into non-April and April exam dates
-    def _is_april(sid):
+    # Split intervention: Jan/Feb only vs March+April
+    def _is_march_or_april(sid):
         date_str = first_exam_date_map.get(int(sid), '—')
-        return str(date_str).startswith('4')
+        return str(date_str).startswith('3') or str(date_str).startswith('4')
 
-    intervention_non_april = intervention_df[~intervention_df['Student ID'].apply(_is_april)]
-    intervention_april     = intervention_df[intervention_df['Student ID'].apply(_is_april)]
+    intervention_early   = intervention_df[~intervention_df['Student ID'].apply(_is_march_or_april)]
+    intervention_mar_apr = intervention_df[intervention_df['Student ID'].apply(_is_march_or_april)]
 
-    def _render_intervention_tables(df_subset):
+    def _render_tier_table(df_subset):
         tier_rows = []
         for _, row in df_subset.iterrows():
             sid = int(row['Student ID'])
@@ -1614,7 +1614,6 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
             next_date = next_date if next_date.strip() not in ('', 'nan') else "—"
             tier_rows.append({
                 'Student ID':              sid,
-                'Overall Tier':            tier_badge(row['Overall Tier']),
                 'Exam Tier':               tier_badge(row['Exam Tier']),
                 'Attendance Tier':         tier_badge(row['Attendance Tier']),
                 'Participation Tier':      tier_badge(row['Participation Tier']),
@@ -1627,44 +1626,44 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
         st.markdown(df_tier_table.to_html(escape=False, index=False), unsafe_allow_html=True)
         st.write(" ")
 
-        detail_rows = []
-        for _, row in df_subset.iterrows():
-            score = row['First Attempt']
-            score_display = str(int(score)) if pd.notna(score) else "—"
-            next_date = str(row.get('Next Attempt Date', ''))
-            next_date = next_date if next_date.strip() not in ('', 'nan') else "—"
-            detail_rows.append({
-                'Student ID':        int(row['Student ID']),
-                'Exams Reported':    int(row['exam_count']),
-                'Attendance':        f"{row['Class Attendance']:.1%}",
-                'Participation':     f"{row['Class Participation']:.1%}",
-                'In-Class Accuracy': f"{row['In-Class Accuracy']:.1%}",
-                'First Attempt':     score_display,
-                'Score Outcome':     outcome_badge(row['Score Outcome']),
-                'Next Attempt Date': next_date,
-            })
-        df_detail_table = pd.DataFrame(detail_rows)
-        st.markdown(df_detail_table.to_html(escape=False, index=False), unsafe_allow_html=True)
+        with st.expander("Engagement detail", expanded=False):
+            detail_rows = []
+            for _, row in df_subset.iterrows():
+                score = row['First Attempt']
+                score_display = str(int(score)) if pd.notna(score) else "—"
+                next_date = str(row.get('Next Attempt Date', ''))
+                next_date = next_date if next_date.strip() not in ('', 'nan') else "—"
+                detail_rows.append({
+                    'Student ID':        int(row['Student ID']),
+                    'Exams Reported':    int(row['exam_count']),
+                    'Attendance':        f"{row['Class Attendance']:.1%}",
+                    'Participation':     f"{row['Class Participation']:.1%}",
+                    'In-Class Accuracy': f"{row['In-Class Accuracy']:.1%}",
+                    'First Attempt':     score_display,
+                    'Score Outcome':     outcome_badge(row['Score Outcome']),
+                    'Next Attempt Date': next_date,
+                })
+            df_detail_table = pd.DataFrame(detail_rows)
+            st.markdown(df_detail_table.to_html(escape=False, index=False), unsafe_allow_html=True)
 
     # ── Students Needing Intervention ─────────────────────────────────────────
     st.markdown("#### Students Needing Intervention")
     st.caption("Missing score or First Attempt below 502 — sorted by urgency within tier. Tiers were tracked for attendance and participation from March 2nd onward. Exam tiers were tracked since the beginning of the program.")
 
-    if intervention_non_april.empty:
-        st.success("All non-April students with reported scores are passing (≥502).")
+    if intervention_early.empty:
+        st.success("All students with reported scores are passing (≥502).")
     else:
-        _render_intervention_tables(intervention_non_april)
+        _render_tier_table(intervention_early)
 
     st.write(" ")
 
-    # ── April Test-Takers Needing Intervention ────────────────────────────────
-    st.markdown("#### April Test-Takers Needing Intervention")
-    st.caption("Students with a first exam date in April — missing score or First Attempt below 502.")
+    # ── March and April Test-Taker Standings ──────────────────────────────────
+    st.markdown("#### March and April Test-Taker Standings")
 
-    if intervention_april.empty:
-        st.success("No April test-takers require intervention.")
+    if intervention_mar_apr.empty:
+        st.success("No March or April test-takers require intervention.")
     else:
-        _render_intervention_tables(intervention_april)
+        _render_tier_table(intervention_mar_apr)
 
     st.write(" ")
 
@@ -1688,3 +1687,118 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
                 })
             df_passing = pd.DataFrame(passing_rows)
             st.markdown(df_passing.to_html(escape=False, index=False), unsafe_allow_html=True)
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # PREDICTIONS
+    # ══════════════════════════════════════════════════════════════════════════
+    st.write(" ")
+    st.subheader("Predictions")
+
+    # Build numeric highest practice score map (student_id → float)
+    highest_practice_numeric = {}
+    if test_df_c is not None and not test_df_c.empty:
+        practice_mask_p = (
+            ~test_df_c['test_name'].isin(['First Attempt', 'Second Exam Attempt',
+                                          'Anticipated Test Date', 'Anticipated Exam Date']) &
+            pd.to_numeric(test_df_c['actual_exam_score'], errors='coerce').between(472, 528)
+        )
+        ps = test_df_c[practice_mask_p].copy()
+        ps['actual_exam_score'] = pd.to_numeric(ps['actual_exam_score'], errors='coerce')
+        highest_practice_numeric = ps.groupby('student_id')['actual_exam_score'].max().to_dict()
+
+    # Only students who have a practice score
+    students_with_practice = {sid: score for sid, score in highest_practice_numeric.items()}
+    total_with_practice = len(students_with_practice)
+    above_502 = sum(1 for s in students_with_practice.values() if s > 502)
+    pct_above = above_502 / total_with_practice if total_with_practice > 0 else 0
+
+    st.metric(
+        label="Scholars with highest practice score > 502",
+        value=f"{pct_above:.1%}",
+        help=f"{above_502} of {total_with_practice} students who have taken at least one practice exam"
+    )
+
+    st.write(" ")
+
+    # Bar chart: March / April / May
+    # Logic:
+    #   - Students with NO first attempt score → placed in their first exam date month
+    #     (March or April) using their highest practice score as the predictor.
+    #   - Students WITH a first attempt score → placed in their Next Attempt Date month
+    #     (April or May) using their actual first attempt score as the predictor.
+    chart_data = []
+
+    def _practice_group(score):
+        if score > 502:   return '> 502 (Passing)'
+        if score >= 495:  return '495–501 (Borderline)'
+        return '< 495 (Below)'
+
+    # Build lookup: student_id → (first_attempt_score, next_attempt_date) from convata_df
+    convata_lookup = {}
+    if not convata_df.empty:
+        for _, r in convata_df.iterrows():
+            sid_c = int(r['Student ID'])
+            fa = r.get('First Attempt', None)
+            fa_numeric = pd.to_numeric(fa, errors='coerce')
+            nd = str(r.get('Next Attempt Date', '')).strip()
+            convata_lookup[sid_c] = (fa_numeric, nd)
+
+    month_prefix_map = {'3': 'March', '4': 'April', '5': 'May'}
+
+    for sid, practice_score in students_with_practice.items():
+        sid_int = int(sid)
+        fa_score, next_date = convata_lookup.get(sid_int, (float('nan'), ''))
+
+        if pd.notna(fa_score):
+            # Student has taken an exam — use first attempt score + next attempt date month
+            nd_prefix = next_date.split('/')[0] if '/' in next_date else ''
+            month = month_prefix_map.get(nd_prefix)
+            score_to_use = fa_score
+        else:
+            # Student has not yet taken an exam — use highest practice score + first exam date month
+            date_str = str(first_exam_date_map.get(sid_int, '—'))
+            fd_prefix = date_str.split('/')[0] if '/' in date_str else ''
+            month = month_prefix_map.get(fd_prefix)
+            score_to_use = practice_score
+
+        if month:
+            chart_data.append({'Month': month, 'Group': _practice_group(score_to_use)})
+
+    if chart_data:
+        chart_df = pd.DataFrame(chart_data)
+        month_order = ['March', 'April', 'May']
+        group_order = ['> 502 (Passing)', '495–501 (Borderline)', '< 495 (Below)']
+        chart_df['Month'] = pd.Categorical(chart_df['Month'], categories=month_order, ordered=True)
+        grouped = chart_df.groupby(['Month', 'Group'], observed=True).size().reset_index(name='Count')
+
+        st.markdown("**Score Outlook by Exam Month**")
+        st.caption(
+            "For students who have not yet tested, bars reflect their highest practice exam score "
+            "and are placed in their scheduled first exam month (March or April). "
+            "For students who have already tested and have a next attempt scheduled, bars reflect "
+            "their actual first attempt score and are placed in their next attempt month (April or May)."
+        )
+
+        fig_pred = px.bar(
+            grouped,
+            x='Month',
+            y='Count',
+            color='Group',
+            barmode='group',
+            color_discrete_map={
+                '> 502 (Passing)':      '#4CAF50',
+                '495–501 (Borderline)': '#FF9800',
+                '< 495 (Below)':        '#EF5350',
+            },
+            labels={'Count': 'Number of Students', 'Group': 'Score'},
+            category_orders={'Month': month_order, 'Group': group_order},
+        )
+        fig_pred.update_layout(
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font_color='#1e293b',
+            legend_title_text='Score',
+        )
+        st.plotly_chart(fig_pred, use_container_width=True)
+    else:
+        st.info("No score data available for March, April, or May test-takers.")
