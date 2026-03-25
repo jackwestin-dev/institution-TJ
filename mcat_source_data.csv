@@ -1,0 +1,144 @@
+student_id,last,first,college,first_exam_date,first_exam_score,second_exam_date,category
+143.0,Abdulla,Yageen,Univ of Texas at Arlington,1/10/26,voided score,5/8/26,voided
+46.0,Abraham,Hannah,Texas A&M Univ,3/20/26,,—,took_no_score
+110.0,Adhikari,Sadbhav,Southern Methodist Univ,1/23/26,507,—,passing
+89.0,Adlouni,Nahla,Texas A&M Univ,4/10/26,,—,future
+20.0,Akinloye,Chelsea,Univ of Texas at Austin,1/10/26,487,—,below_495
+37.0,Al-amyan,Fatima,Univ of Houston,3/20/26,,—,took_no_score
+27.0,Almallahi,Dana,Lamar Univ,4/10/26,,—,future
+98.0,Al-Omari,Zaid,Univ of Texas at Austin,1/10/26,508,—,passing
+41.0,Alshammari,Hajir,Univ of Texas at Dallas,3/7/26,,—,took_no_score
+10.0,Antony,Anto,Univ of Texas at Austin,1/10/26,516,—,passing
+91.0,Araniva,Natalia,Trinity Univ,2/13/26,493,5/14/01,below_495
+45.0,Aregay,Hanna,Univ of Texas at Austin,4/25/26,,—,future
+22.0,Armenta,Crystal,Univ of Texas at El Paso,1/23/26,480,—,below_495
+113.0,Asif,Sana,Univ of Texas at Dallas,1/23/26,512,—,passing
+31.0,Avila,Diana,Texas Christian Univ,4/11/26,,—,future
+67.0,Ayad,Karin,Texas Woman's Univ,1/10/26,485,—,below_495
+90.0,Bastani,Nastaran,Univ of Texas at Austin,2/13/26,496,5/8/26,borderline
+52.0,Basurto,Irasema,Univ of Texas Rio Grande Valley,3/7/26,,—,took_no_score
+15.0,Bolanos Bonilla,Abigail,Univ of Texas at Austin,3/7/26,,—,took_no_score
+69.0,Bullen,Khaylia,Univ of Texas at Arlington,1/9/26,492,5/22/26,below_495
+97.0,Carrasco-Rubio,Omar,Univ of Texas at Austin,3/20/26,,—,took_no_score
+62.0,Castillo,Joel,Houston Christian Univ,4/25/26,,—,future
+19.0,Cervantes,Magaly,Howard Payne Univ,1/23/26,481,—,below_495
+122.0,Chakrabarty,Sonakshi,Texas Tech Univ,1/9/26,502,5/22/26,passing
+115.0,Chellali,Sarah,Southern Methodist Univ,2/13/26,501,4/24/26,borderline
+121.0,Clay,Skyler,Univ of Houston,1/15/26,494,5/22/26,below_495
+125.0,Colvin,Taylor,Texas A&M Univ,1/23/26,493,5/8/26,below_495
+82.0,Cruz,Monica,Univ of Texas at El Paso,1/23/26,477,—,below_495
+17.0,Cruz,Brianna,Texas Tech Univ,3/7/26,,—,took_no_score
+74.0,Dang,Lily,Univ of Texas at Austin,2/13/26,,—,took_no_score
+26.0,Dang,Daisy,Univ of Texas at Austin,1/10/26,503,—,passing
+71.0,Diaz,Luis,Texas A&M Univ,2/13/26,486,—,below_495
+28.0,Elizondo,Daniel,Univ of North Texas,1/15/26,488,—,below_495
+,Escalera- Mack,Alexia,Texas Tech Univ,3/20/26,,—,took_no_score
+138.0,Fadipe,Ogooluwa,Univ of Texas at Austin,1/23/26,499,—,borderline
+70.0,Fernandez,Kyana,Univ of Texas at Austin,4/10/26,,—,future
+111.0,Gaballa,Salma,Univ of Houston,1/23/26,514,—,passing
+142.0,Gao,Weitong,Baylor Univ,4/25/26,,—,future
+84.0,Garcia,Maylee,Texas Woman's Univ,1/15/26,486,5/9/26,below_495
+93.0,Garza,Nathalie,Univ of Texas at Austin,4/10/26,,—,future
+40.0,Gomez,Gabrielle,Univ of Texas at El Paso,1/15/26,486,5/9/26,below_495
+72.0,Gutierrez,Eduardo,Univ of Texas at El Paso,1/15/26,494,5/2/26,below_495
+8.0,Ho,Andy,Univ of Texas at Austin,1/10/26,499,—,borderline
+29.0,Hoag,Desiree,Texas A&M Univ,3/7/26,,—,took_no_score
+128.0,Hoang,Tien,Univ of Texas at Austin,1/23/26,500,—,borderline
+21.0,Hudson,Caleb,Midwestern State Univ,4/25/26,,—,future
+57.0,Hussain,Jannat,Univ of Texas at Austin,4/25/26,,—,future
+47.0,Huynh,Cindy,Texas A&M Univ,3/7/26,,—,took_no_score
+64.0,Ingram,Jonathan,Univ of Texas at El Paso,1/15/26,510,—,passing
+75.0,Irhabi,Mohamed,Lamar Univ,1/15/26,492,—,below_495
+124.0,Jaber,Tarik,Baylor Univ,8/23/25,514,—,passing
+66.0,Jimenez,Karentt,Texas State Univ,2/13/26,501,—,borderline
+151.0,Jocis,Brianna,Univ of Texas at Austin,1/10/26,478,5/22/26,below_495
+63.0,John,Amy,Univ of Texas at Austin,4/11/26,,—,future
+56.0,Jovan,Jaden,Univ of Texas at Dallas,4/25/26,,—,future
+33.0,Khan,Elias,Univ of Texas at Dallas,2/13/26,514,—,passing
+68.0,Knight,Kateria,Univ of Texas at Austin,4/25/26,,—,future
+80.0,Le,Mary,Texas A&M Univ,4/25/26,,—,future
+,Lee,Soohyun (Anna),Univ of Texas at Austin (was alt),1/10/26,509,—,passing
+5.0,Limaye,Ananya,Angelo State Univ,3/20/26,,—,took_no_score
+,Limon,Michelle,Texas State Univ (was alt),4/25/26,,—,future
+136.0,Lozano,Valeria,Univ of Texas at San Antonio,2/13/26,478,5/2/26,below_495
+104.0,Lundy,Presley,Univ of North Texas,2/13/26,499,5/22/26,borderline
+61.0,Luo,Jiaying,Univ of Texas at Austin,3/20/26,,—,took_no_score
+73.0,Ma,Lilya,Univ of Texas at Austin,1/10/26,516,—,passing
+76.0,Maas,Lucie,Texas State Univ,1/15/26,495,5/22/26,borderline
+60.0,Marroquin,Jesus,Texas A&M Univ,4/25/26,,—,future
+2.0,Martinez,Alexandra,Univ of Texas at El Paso,1/23/26,476,—,below_495
+13.0,Martinez,Augusta,Texas A&M Univ,2/13/26,,—,took_no_score
+,Maya Gonzalez,David,Texas State Univ,4/10/26,,—,future
+126.0,Mbagwu,Taylor,University of St Thomas - TX,2/13/26,511,—,passing
+150.0,Mehretab,Yovia,Univ of Texas at Dallas,1/23/26,508,—,passing
+95.0,Mejia,Nicole,Univ of Texas at Austin,1/10/26,506,—,passing
+7.0,Michael,Adiam,Univ of Texas at Tyler,4/10/26,,—,future
+135.0,Moreno Cruz,Valentina,Univ of Texas at Austin,3/20/26,,—,took_no_score
+77.0,Nevarez,Marco,Univ of Texas at Austin,1/15/26,494,5/9/26,below_495
+130.0,Ngo-Nguyen,Travi,Univ of Texas at Austin,4/11/26,,—,future
+139.0,Nguyen,Hoang Bao Tran,Texas A&M Univ,3/20/26,,—,took_no_score
+101.0,Nguyen,Patrice,Univ of Houston,1/15/26,509,—,passing
+139.0,Nguyen,Vicky,Univ of Texas at Austin,1/10/26,502,—,passing
+44.0,Nguyen,Huong,Univ of Texas at Austin,1/23/26,490,—,below_495
+102.0,Nguyen,Philip,Univ of Texas at Austin,1/10/26,514,—,passing
+139.0,Nguyen,Ryan,Univ of Texas at Austin (was alt),1/23/26,506,—,passing
+85.0,Nooruddin,Mahira,Trinity Univ,1/23/26,512,—,passing
+132.0,Ofoeyeno,Toritseju,Univ of Texas at Austin,3/20/26,,—,took_no_score
+50.0,Oko,Owoka,Univ of Texas at Austin,4/25/26,,—,future
+11.0,Oladiran,Aramide,Angelo State Univ,3/7/26,,—,took_no_score
+99.0,Onwumere,Chidimma,Univ of Texas at Austin,3/7/26,,—,took_no_score
+100.0,Paine,Joel,Univ of Texas at Austin,2/13/26,513,—,passing
+129.0,Parker,Tirzah,Trinity Univ,3/7/26,,—,took_no_score
+120.0,Patel,Shiv,Univ of Texas at Austin,1/10/26,495,5/14/26,borderline
+96.0,Patel,Nikhil,Sam Houston State Univ,4/24/26,,—,future
+79.0,Paykar,Maryam,Univ of Texas at Austin,1/10/26,501,—,borderline
+148.0,Perez-Perez,Yoel,Univ of Texas at Austin,1/10/26,517,—,passing
+18.0,Pesina,Celeste,Univ of Texas at Austin,4/24/26,,—,future
+92.0,Pham,Natalie,Texas A&M Univ,1/10/26,492,—,below_495
+103.0,Pinon,Makena,Univ of Texas at El Paso,1/15/26,481,5/2/26,below_495
+134.0,Plazas Anez,Valeria,Univ of Texas at Austin,1/23/26,509,—,passing
+,Rahman,Zahin,William Marsh Rice Univ (was alt),9/4/25,526,—,passing
+36.0,Rambo,Ezmiranda,Univ of Texas at Tyler,1/10/26,488,5/8/26,below_495
+1.0,Ramirez,Miriam,Baylor Univ,4/10/26,,—,future
+4.0,Ramirez,Alan,Texas Tech Univ,4/24/26,,—,future
+59.0,Ramirez Mendoza,Jennifer,Texas A&M Univ,1/9/26,486,—,below_495
+78.0,Rasaili,Mariya,Univ of Texas at Austin,3/20/26,,—,took_no_score
+38.0,Rivera,Florestella,Univ of Texas Rio Grande Valley,2/13/26,483,—,below_495
+107.0,Rodriguez,Michelle,Univ of Texas Rio Grande Valley,1/23/26,489,—,below_495
+141.0,Ruiz Davila,Viridiana,Univ of Texas at Austin,1/15/26,483,5/9/26,below_495
+14.0,Sajeesh,Babitta,Univ of Texas at Austin,1/23/26,493,—,below_495
+112.0,Salazar,Samuel,Texas A&M Univ,4/10/26,,—,future
+58.0,Sanders,Janaesia,Univ of Texas at Austin,4/24/26,,—,future
+114.0,Santos Ventura,Yuliana,Univ of Houston - Downtown,4/24/26,,—,future
+117.0,Sarabia,Sarah-Esther,Univ of Texas at San Antonio,1/23/26,487,—,below_495
+116.0,Serrano,Karen,Univ of Texas of the Permian Basin,2/13/26,497,—,borderline
+105.0,Serrano,Rachel,Texas A&M Univ,3/7/26,,—,took_no_score
+81.0,Serrano,Max,Univ of Texas at El Paso,1/15/26,487,—,below_495
+118.0,Sheets,William,Univ of Texas at Tyler,1/9/26,504,—,passing
+119.0,Shehata,Nour,Univ of Houston,2/13/26,,—,took_no_score
+6.0,Sinno,Amani,Univ of Texas Rio Grande Valley,4/24/26,,—,future
+88.0,Smith,Mykiah,Texas State Univ,3/7/26,,—,took_no_score
+49.0,Solis,Iliana,Univ of North Texas,1/10/26,497,5/2/26,borderline
+123.0,Subedi,Isha,Univ of Texas at Austin,4/10/26,,—,future
+108.0,Tahir,Reen,Texas Woman's Univ,4/25/26,,—,future
+127.0,Tariq,Hareem,Univ of Texas at Austin,3/20/26,,—,took_no_score
+153.0,Tedross,David,Univ of Houston Clear Lake (was alt),1/9/26,501,—,borderline
+144.0,Tefera,Yekidan,Univ of Texas at Dallas,1/23/26,509,—,passing
+109.0,Temesgen,Ruhamah,Texas A&M Univ,4/11/26,,—,future
+23.0,Thomas,Caitlynn,Wm Marsh Rice Univ,3/7/26,,—,took_no_score
+137.0,Torres,Valerie,University of North Texas at Dallas,—,,—,no_date
+35.0,Tovar,Evelyn,Texas A&M International Univ,4/11/26,,—,future
+24.0,Tran,Cynthia,Univ of Texas at Austin,2/13/26,,—,took_no_score
+12.0,Tran,Audrey,University of St Thomas - TX,4/24/26,,—,future
+55.0,Tran,Jacqueline,University of St Thomas - TX,1/10/26,493,—,below_495
+133.0,Tran,Jonathan,Southern Methodist Univ,1/23/26,511,—,passing
+94.0,Uwakwe,Nicole,Univ of Texas at Austin,1/10/26,494,—,below_495
+9.0,Valadez,Angelica,Univ of Texas at El Paso,1/15/26,484,5/22/26,below_495
+53.0,Vences,Isaac,Univ of Texas at Austin,1/9/26,507,—,passing
+,Verbeck,Jurnee,Southwestern (was alt),1/10/26,503,—,passing
+,Vizcaino-Duran,Juan,Univ of Texas Rio Grande Valley,2/13/26,500,—,borderline
+152.0,Vu,Nguyen (My),Univ of Texas at Austin,1/23/26,505,—,passing
+145.0,Wilson,Haylee,Stephen F. Austin State Univ,1/23/26,497,—,borderline
+149.0,Youn,Jay,Univ of Texas at Austin,1/9/26,513,—,passing
+25.0,Zhai,Christine,Univ of Texas at Austin,1/10/26,506,5/9/26,passing
+86.0,Zoubi,Mohammad,Southern Methodist Univ,1/15/26,519,—,passing
