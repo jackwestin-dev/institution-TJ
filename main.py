@@ -1351,6 +1351,30 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
     st.header("EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention")
     st.write(" ")
 
+    st.markdown("""
+    <div class="tier-flex">
+        <div class="tier-column">
+            <div class="tier1-text">Tier 1 Students</div>
+            <div class="tier-criteria" style="color: #4CAF50;">Tier 1: &gt;5 exams reported</div>
+            <div class="tier-criteria" style="color: #4CAF50;">Attendance in Large Group Sessions (&gt;70%)</div>
+            <div class="tier-criteria" style="color: #4CAF50;">Attendance in Small Group Sessions (&gt;70%)</div>
+        </div>
+        <div class="tier-column">
+            <div class="tier2-text">Tier 2 Students</div>
+            <div class="tier-criteria" style="color: #FF9800;">Tier 2: 3-4 exams reported</div>
+            <div class="tier-criteria" style="color: #FF9800;">Attendance in Large Group Sessions (50-69%)</div>
+            <div class="tier-criteria" style="color: #FF9800;">Attendance in Small Group Sessions (50-69%)</div>
+        </div>
+        <div class="tier-column">
+            <div class="tier3-text">Tier 3 Students</div>
+            <div class="tier-criteria" style="color: #EF5350;">Tier 3: &lt;2 exams reported</div>
+            <div class="tier-criteria" style="color: #EF5350;">Attendance in Large Group Sessions (&lt;49%)</div>
+            <div class="tier-criteria" style="color: #EF5350;">Attendance in Small Group Sessions (&lt;49%)</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.write(" ")
+
     # ── Tier thresholds (documented here for transparency) ─────────────────────
     # Exam tier:        ≥5 = Tier 1 | 3-4 = Tier 2 | <3 = Tier 3
     # Attendance tier:  >70% = Tier 1 | 50-69% = Tier 2 | <50% = Tier 3
