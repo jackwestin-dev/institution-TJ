@@ -1437,13 +1437,18 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
         except Exception:
             continue
 
-    # ── Compute exam counts ────────────────────────────────────────────────────
+    # ── Compute exam counts and highest practice score ─────────────────────────
+    highest_practice_map = {}
     if test_df_c is not None and not test_df_c.empty:
         practice_mask = (
             ~test_df_c['test_name'].isin(['First Attempt', 'Second Exam Attempt',
                                           'Anticipated Test Date', 'Anticipated Exam Date']) &
             pd.to_numeric(test_df_c['actual_exam_score'], errors='coerce').between(472, 528)
         )
+        practice_scores_c = test_df_c[practice_mask].copy()
+        practice_scores_c['actual_exam_score'] = pd.to_numeric(practice_scores_c['actual_exam_score'], errors='coerce')
+        highest_practice_map = practice_scores_c.groupby('student_id')['actual_exam_score'].max().apply(lambda x: str(int(x))).to_dict()
+
         exam_counts_c = (
             test_df_c[practice_mask]
             .groupby('student_id')
@@ -1517,10 +1522,12 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
             if pd.notna(sid):
                 first_exam_date_map[int(sid)] = d if d not in ('', 'nan', '—') else '—'
             if str(mr.get('category', '')).strip() == 'took_no_score':
+                _sid_int = int(sid) if pd.notna(sid) else None
                 took_no_score_list.append({
-                    'Student ID':    int(sid) if pd.notna(sid) else '—',
-                    '1st Exam Date': d if d not in ('', 'nan') else '—',
-                    'College':       mr.get('college', ''),
+                    'Student ID':              _sid_int if _sid_int else '—',
+                    '1st Exam Date':           d if d not in ('', 'nan') else '—',
+                    'Highest Practice Score':  highest_practice_map.get(_sid_int, '—') if _sid_int else '—',
+                    'College':                 mr.get('college', ''),
                 })
 
     # ══════════════════════════════════════════════════════════════════════════
@@ -1605,14 +1612,15 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
             next_date = str(row.get('Next Attempt Date', ''))
             next_date = next_date if next_date.strip() not in ('', 'nan') else "—"
             tier_rows.append({
-                'Student ID':         sid,
-                'Overall Tier':       tier_badge(row['Overall Tier']),
-                'Exam Tier':          tier_badge(row['Exam Tier']),
-                'Attendance Tier':    tier_badge(row['Attendance Tier']),
-                'Participation Tier': tier_badge(row['Participation Tier']),
-                '1st Exam Date':      first_exam_date_map.get(sid, '—'),
-                'First Attempt':      score_display,
-                'Next Attempt Date':  next_date,
+                'Student ID':              sid,
+                'Overall Tier':            tier_badge(row['Overall Tier']),
+                'Exam Tier':               tier_badge(row['Exam Tier']),
+                'Attendance Tier':         tier_badge(row['Attendance Tier']),
+                'Participation Tier':      tier_badge(row['Participation Tier']),
+                'Highest Practice Score':  highest_practice_map.get(sid, '—'),
+                '1st Exam Date':           first_exam_date_map.get(sid, '—'),
+                'First Attempt':           score_display,
+                'Next Attempt Date':       next_date,
             })
         df_tier_table = pd.DataFrame(tier_rows)
         st.markdown(df_tier_table.to_html(escape=False, index=False), unsafe_allow_html=True)
