@@ -393,13 +393,13 @@ view_mode = st.sidebar.radio(
         "Individual Student Data - EY25",
         "EY25 Summer Retester Cohort",
         "EY 26 Programming",
-        "Convata Partner Report",
+        "Spring EY25 Realtime Results",
     ],
     label_visibility="visible",
 )
 
 # Student roster reference (collapsed expander) — hidden on programming/partner pages
-if view_mode not in ("EY 26 Programming", "EY25 Summer Retester Cohort", "Convata Partner Report"):
+if view_mode not in ("EY 26 Programming", "EY25 Summer Retester Cohort", "Spring EY25 Realtime Results"):
     roster_path = None
     for path in ['roster.csv', './roster.csv']:
         if os.path.exists(path):
@@ -1345,11 +1345,17 @@ elif view_mode == "EY 26 Programming":
     st.write(" ")
 
 # ══════════════════════════════════════════════════════════════════════════════
-# VIEW: Convata Partner Report
+# VIEW: Spring EY25 Realtime Results
 # ══════════════════════════════════════════════════════════════════════════════
-elif view_mode == "Convata Partner Report":
-    st.header("Convata Partner Report")
+elif view_mode == "Spring EY25 Realtime Results":
+    st.header("Spring EY25 Realtime Results")
     st.write(" ")
+
+    # ── Tier thresholds (documented here for transparency) ─────────────────────
+    # Exam tier:        ≥5 = Tier 1 | 3-4 = Tier 2 | <3 = Tier 3
+    # Attendance tier:  >70% = Tier 1 | 50-69% = Tier 2 | <50% = Tier 3
+    # Participation tier: ≥60% = Tier 1 | 40-59% = Tier 2 | <40% = Tier 3
+    # Overall tier:     worst of the three above
 
     # ── Load convata_data.csv ──────────────────────────────────────────────────
     convata_df = None
@@ -1363,7 +1369,7 @@ elif view_mode == "Convata Partner Report":
 
     if convata_df is None or convata_df.empty:
         st.info(
-            "Data not found. Add **convata_data.csv** to the project folder to see the Convata Partner Report.\n\n"
+            "Data not found. Add **convata_data.csv** to the project folder to see the Spring EY25 Realtime Results.\n\n"
             "Expected columns: Student ID, Name Surname, Email, Class Attendance, Class Participation, "
             "In-Class Accuracy, First Attempt, Next Attempt Date"
         )
@@ -1426,43 +1432,52 @@ elif view_mode == "Convata Partner Report":
     else:
         convata_df['exam_count'] = 0
 
-    # ── Compute tiers ──────────────────────────────────────────────────────────
-    att_thresh = {'tier1_min': 0.70, 'tier2_min': 0.40}
-    par_thresh = {'tier1_min': 0.70, 'tier2_min': 0.40}
+    # ── Tier thresholds ────────────────────────────────────────────────────────
+    def _att_tier(rate):
+        if rate > 0.70: return 'Tier 1'
+        if rate >= 0.50: return 'Tier 2'
+        return 'Tier 3'
 
-    convata_df['Attendance Tier'] = convata_df['Class Attendance'].apply(
-        lambda v: assign_tier(v, att_thresh)
+    def _par_tier(rate):
+        if rate >= 0.60: return 'Tier 1'
+        if rate >= 0.40: return 'Tier 2'
+        return 'Tier 3'
+
+    def _exam_tier(n):
+        if n >= 5: return 'Tier 1'
+        if n >= 3: return 'Tier 2'
+        return 'Tier 3'
+
+    # ── Compute tiers ──────────────────────────────────────────────────────────
+    convata_df['Attendance Tier'] = convata_df['Class Attendance'].apply(_att_tier)
+    convata_df['Participation Tier'] = convata_df['Class Participation'].apply(_par_tier)
+    convata_df['Exam Tier'] = convata_df['exam_count'].apply(_exam_tier)
+    convata_df['Overall Tier Num'] = convata_df.apply(
+        lambda r: max(tier_num(r['Attendance Tier']), tier_num(r['Participation Tier']), tier_num(r['Exam Tier'])),
+        axis=1
     )
-    convata_df['Participation Tier'] = convata_df['Class Participation'].apply(
-        lambda v: assign_tier(v, par_thresh)
-    )
-    convata_df['Exam Tier'] = convata_df['exam_count'].apply(
-        lambda n: 'Tier 1' if n > 5 else ('Tier 2' if n >= 3 else 'Tier 3')
-    )
-    convata_df['Overall Tier Num'] = convata_df[['Attendance Tier', 'Participation Tier', 'Exam Tier']].applymap(
-        tier_num
-    ).max(axis=1)
     convata_df['Overall Tier'] = convata_df['Overall Tier Num'].map({1: 'Tier 1', 2: 'Tier 2', 3: 'Tier 3'})
 
     # ── Score outcome ──────────────────────────────────────────────────────────
     def score_outcome(score):
-        if pd.isna(score):
-            return 'No score reported'
-        if score >= 502:
-            return 'Passing'
-        if score >= 495:
-            return 'Borderline'
+        if pd.isna(score): return 'No score reported'
+        if score >= 502:   return 'Passing'
+        if score >= 495:   return 'Borderline'
         return 'Below 495'
 
     convata_df['Score Outcome'] = convata_df['First Attempt'].apply(score_outcome)
 
-    # ── A. Cohort Summary Cards ────────────────────────────────────────────────
-    n_students = len(convata_df)
-    n_passing = int((convata_df['First Attempt'] >= 502).sum())
-    pct_passing = n_passing / n_students if n_students > 0 else 0
-    avg_attendance = convata_df['Class Attendance'].mean()
+    # ── Cohort-level aggregates ────────────────────────────────────────────────
+    n_students    = len(convata_df)
+    n_passing     = int((convata_df['First Attempt'] >= 502).sum())
+    pct_passing   = n_passing / n_students if n_students > 0 else 0
+    avg_attendance    = convata_df['Class Attendance'].mean()
     avg_participation = convata_df['Class Participation'].mean()
 
+    # ══════════════════════════════════════════════════════════════════════════
+    # SECTION 1 — Cohort Summary Cards
+    # ══════════════════════════════════════════════════════════════════════════
+    st.subheader("Cohort Summary")
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         st.metric("Total Students", n_students)
@@ -1472,40 +1487,123 @@ elif view_mode == "Convata Partner Report":
         st.metric("Avg Attendance", f"{avg_attendance:.1%}")
     with c4:
         st.metric("Avg Participation", f"{avg_participation:.1%}")
-
     st.write(" ")
 
-    # ── B. Tier Distribution Chart ─────────────────────────────────────────────
-    st.subheader("Tier Distribution")
-    tier_rows = []
+    # ══════════════════════════════════════════════════════════════════════════
+    # SECTION 2 — Tier Overview (charts + per-tier counts)
+    # ══════════════════════════════════════════════════════════════════════════
+    st.subheader("Tier Overview")
+    st.caption(
+        "**Exam tier:** ≥5 exams = Tier 1 | 3–4 = Tier 2 | <3 = Tier 3 — "
+        "**Attendance tier:** >70% = Tier 1 | 50–69% = Tier 2 | <50% = Tier 3 — "
+        "**Participation tier:** ≥60% = Tier 1 | 40–59% = Tier 2 | <40% = Tier 3"
+    )
+    st.write(" ")
+
+    # Overall tier count cards
+    ov1, ov2, ov3 = st.columns(3)
+    for col_w, t, color in zip([ov1, ov2, ov3],
+                                ['Tier 1', 'Tier 2', 'Tier 3'],
+                                ['#4CAF50', '#FF9800', '#EF5350']):
+        cnt = int((convata_df['Overall Tier'] == t).sum())
+        pct = f"{cnt / n_students:.0%}" if n_students > 0 else "—"
+        with col_w:
+            st.markdown(
+                f'<div style="padding:0.75rem 1rem;border-left:4px solid {color};'
+                f'background:#f8fafc;border-radius:0 6px 6px 0;margin-bottom:0.5rem;">'
+                f'<span style="font-weight:700;color:{color};font-size:1.1rem;">{t}</span><br>'
+                f'<span style="font-size:1.6rem;font-weight:700;color:#1e293b;">{cnt}</span>'
+                f'<span style="font-size:0.95rem;color:#64748b;margin-left:0.5rem;">students ({pct})</span>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+    st.write(" ")
+
+    # Horizontal stacked bar — all four tier categories
+    tier_chart_rows = []
     for tier_col in ['Exam Tier', 'Attendance Tier', 'Participation Tier', 'Overall Tier']:
         counts = convata_df[tier_col].value_counts()
         for tier_val in ['Tier 1', 'Tier 2', 'Tier 3']:
-            tier_rows.append({
+            tier_chart_rows.append({
                 'Category': tier_col,
                 'Tier': tier_val,
                 'Count': int(counts.get(tier_val, 0))
             })
-    df_tiers = pd.DataFrame(tier_rows)
+    df_tier_chart = pd.DataFrame(tier_chart_rows)
 
     fig_tiers = px.bar(
-        df_tiers, x='Count', y='Category', color='Tier', barmode='stack',
+        df_tier_chart, x='Count', y='Category', color='Tier', barmode='stack',
         orientation='h',
-        title='Students by tier across all categories',
+        title='Students by tier — all categories',
         color_discrete_map=TIER_COLORS,
-        category_orders={'Tier': ['Tier 1', 'Tier 2', 'Tier 3']}
+        category_orders={
+            'Tier': ['Tier 1', 'Tier 2', 'Tier 3'],
+            'Category': ['Overall Tier', 'Participation Tier', 'Attendance Tier', 'Exam Tier']
+        },
+        text='Count'
     )
-    fig_tiers.update_layout(yaxis={'categoryorder': 'array',
-                                   'categoryarray': ['Overall Tier', 'Participation Tier',
-                                                     'Attendance Tier', 'Exam Tier']},
-                            legend={'orientation': 'h', 'yanchor': 'bottom', 'y': -0.3},
-                            margin={'t': 80})
+    fig_tiers.update_traces(textposition='inside', textfont_size=11)
+    fig_tiers.update_layout(
+        yaxis={'categoryorder': 'array',
+               'categoryarray': ['Overall Tier', 'Participation Tier', 'Attendance Tier', 'Exam Tier']},
+        xaxis_title='Number of students',
+        legend={'orientation': 'h', 'yanchor': 'bottom', 'y': -0.3, 'title': None},
+        margin={'t': 60, 'b': 80},
+        height=320
+    )
     fig_tiers = apply_light_mode_styling(fig_tiers)
     st.plotly_chart(fig_tiers, use_container_width=True)
     st.write(" ")
 
-    # ── C. Score Outcome Distribution ─────────────────────────────────────────
-    st.subheader("Score Outcome Distribution")
+    # ══════════════════════════════════════════════════════════════════════════
+    # SECTION 3 — Exam Count Breakdown
+    # ══════════════════════════════════════════════════════════════════════════
+    st.subheader("Practice Exam Count")
+    st.caption("Number of valid practice exams reported per student (score in range 472–528, excluding official attempts).")
+    st.write(" ")
+
+    # Summary counts by bucket
+    ec1, ec2, ec3, ec4 = st.columns(4)
+    n_zero   = int((convata_df['exam_count'] == 0).sum())
+    n_t3     = int(((convata_df['exam_count'] > 0) & (convata_df['exam_count'] < 3)).sum())
+    n_t2     = int(((convata_df['exam_count'] >= 3) & (convata_df['exam_count'] <= 4)).sum())
+    n_t1     = int((convata_df['exam_count'] >= 5).sum())
+    with ec1: st.metric("No exams reported",    n_zero)
+    with ec2: st.metric("1–2 exams (Tier 3)",   n_t3)
+    with ec3: st.metric("3–4 exams (Tier 2)",   n_t2)
+    with ec4: st.metric("5+ exams (Tier 1)",    n_t1)
+    st.write(" ")
+
+    # Distribution bar chart
+    exam_dist = convata_df['exam_count'].value_counts().sort_index().reset_index()
+    exam_dist.columns = ['Exams Reported', 'Students']
+    exam_dist['Tier'] = exam_dist['Exams Reported'].apply(
+        lambda n: 'Tier 1 (5+)' if n >= 5 else ('Tier 2 (3–4)' if n >= 3 else 'Tier 3 (<3)')
+    )
+    tier_color_exam = {'Tier 1 (5+)': '#4CAF50', 'Tier 2 (3–4)': '#FF9800', 'Tier 3 (<3)': '#EF5350'}
+    fig_exam = px.bar(
+        exam_dist, x='Exams Reported', y='Students', color='Tier',
+        color_discrete_map=tier_color_exam,
+        title='Distribution of practice exams reported per student',
+        text='Students',
+        category_orders={'Tier': ['Tier 1 (5+)', 'Tier 2 (3–4)', 'Tier 3 (<3)']}
+    )
+    fig_exam.update_traces(textposition='outside')
+    fig_exam.update_layout(
+        xaxis={'dtick': 1, 'title': 'Number of practice exams reported'},
+        yaxis_title='Number of students',
+        showlegend=True,
+        legend={'orientation': 'h', 'yanchor': 'bottom', 'y': -0.35, 'title': None},
+        margin={'t': 60, 'b': 80}
+    )
+    fig_exam = apply_light_mode_styling(fig_exam)
+    st.plotly_chart(fig_exam, use_container_width=True)
+    st.write(" ")
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # SECTION 4 — Score Outcome Distribution
+    # ══════════════════════════════════════════════════════════════════════════
+    st.subheader("Score Outcomes")
     outcome_order = ['Passing', 'Borderline', 'Below 495', 'No score reported']
     outcome_counts_c = convata_df['Score Outcome'].value_counts()
     outcome_data = []
@@ -1515,7 +1613,6 @@ elif view_mode == "Convata Partner Report":
         outcome_data.append({'Outcome': o, 'Count': cnt, 'Pct': f"{pct:.1f}%"})
     df_outcome_c = pd.DataFrame(outcome_data)
 
-    # Summary metrics
     oc1, oc2, oc3, oc4 = st.columns(4)
     for col_w, row in zip([oc1, oc2, oc3, oc4], outcome_data):
         with col_w:
@@ -1525,77 +1622,82 @@ elif view_mode == "Convata Partner Report":
     fig_outcome_c = px.bar(
         df_outcome_c, x='Outcome', y='Count', color='Outcome',
         color_discrete_map=OUTCOME_COLORS,
-        title='First Attempt outcome — full cohort',
+        title='First Attempt score outcome — full cohort',
         text='Count',
         category_orders={'Outcome': outcome_order}
     )
     fig_outcome_c.update_traces(textposition='outside')
-    fig_outcome_c.update_layout(showlegend=False, margin={'t': 80})
+    fig_outcome_c.update_layout(showlegend=False, margin={'t': 60})
     fig_outcome_c = apply_light_mode_styling(fig_outcome_c)
     st.plotly_chart(fig_outcome_c, use_container_width=True)
     st.write(" ")
 
-    # ── D. Students Needing Attention ─────────────────────────────────────────
-    st.subheader("Students Needing Attention")
-    st.caption("Students with a missing or below-502 First Attempt score. Sorted by urgency: no score → below 495 → borderline.")
+    # ══════════════════════════════════════════════════════════════════════════
+    # SECTION 5 — Detailed Student Table
+    # ══════════════════════════════════════════════════════════════════════════
+    st.subheader("Student Detail")
+    st.caption(
+        "All students sorted by Overall Tier (worst first), then by score outcome urgency. "
+        "Students passing (≥502) are shown at the bottom."
+    )
+    st.write(" ")
 
-    needs_attention = convata_df[convata_df['Score Outcome'] != 'Passing'].copy()
-
-    outcome_sort_order = {'No score reported': 0, 'Below 495': 1, 'Borderline': 2}
-    needs_attention['_outcome_sort'] = needs_attention['Score Outcome'].map(outcome_sort_order)
-    needs_attention = needs_attention.sort_values(
-        ['_outcome_sort', 'Overall Tier Num', 'Class Attendance'],
-        ascending=[True, False, True]
+    # Sort: Tier 3 first, then by score urgency within tier
+    outcome_sort_map = {'No score reported': 0, 'Below 495': 1, 'Borderline': 2, 'Passing': 3}
+    convata_df['_outcome_sort'] = convata_df['Score Outcome'].map(outcome_sort_map)
+    detail_sorted = convata_df.sort_values(
+        ['Overall Tier Num', '_outcome_sort', 'Class Attendance'],
+        ascending=[False, True, True]
     )
 
-    if needs_attention.empty:
+    detail_rows = []
+    for _, row in detail_sorted.iterrows():
+        sid = int(row['Student ID'])
+        score = row['First Attempt']
+        score_display = str(int(score)) if pd.notna(score) else "—"
+        next_date = str(row.get('Next Attempt Date', ''))
+        next_date = next_date if next_date.strip() not in ('', 'nan') else "—"
+        att_pct  = row['Class Attendance']
+        par_pct  = row['Class Participation']
+        acc_pct  = row['In-Class Accuracy']
+        detail_rows.append({
+            'Student ID':          sid,
+            'Overall Tier':        tier_badge(row['Overall Tier']),
+            'Exam Tier':           tier_badge(row['Exam Tier']),
+            'Attendance Tier':     tier_badge(row['Attendance Tier']),
+            'Participation Tier':  tier_badge(row['Participation Tier']),
+            'Exams Reported':      int(row['exam_count']),
+            'Attendance':          f"{att_pct:.1%}",
+            'Participation':       f"{par_pct:.1%}",
+            'In-Class Accuracy':   f"{acc_pct:.1%}",
+            'First Attempt':       score_display,
+            'Score Outcome':       outcome_badge(row['Score Outcome']),
+            'Next Attempt Date':   next_date,
+        })
+
+    df_detail = pd.DataFrame(detail_rows)
+
+    # Split into two sub-tables: needs attention (not passing) and passing
+    needs_attn_detail = df_detail[df_detail['Score Outcome'].str.contains('Passing') == False]
+    passing_detail    = df_detail[~df_detail.index.isin(needs_attn_detail.index)]
+
+    st.markdown("#### Students Needing Attention")
+    st.caption("Missing score or First Attempt below 502 — sorted by urgency within tier.")
+    if needs_attn_detail.empty:
         st.success("All students with reported scores are passing (≥502).")
     else:
-        table_rows = []
-        for _, row in needs_attention.iterrows():
-            sid = int(row['Student ID'])
-            name = get_name(sid, roster_df)
-            score = row['First Attempt']
-            score_display = str(int(score)) if pd.notna(score) else "—"
-            next_date = row.get('Next Attempt Date', '')
-            next_date = next_date if pd.notna(next_date) and str(next_date).strip() not in ('', 'nan') else "—"
-            table_rows.append({
-                'Student': name,
-                'First Attempt': score_display,
-                'Outcome': outcome_badge(row['Score Outcome']),
-                'Next Attempt Date': next_date,
-                'Overall Tier': tier_badge(row['Overall Tier']),
-                'Attendance': f"{row['Class Attendance']:.1%}",
-                'Participation': f"{row['Class Participation']:.1%}",
-            })
-
-        df_table = pd.DataFrame(table_rows)
         st.markdown(
-            df_table.to_html(escape=False, index=False),
+            needs_attn_detail.to_html(escape=False, index=False),
             unsafe_allow_html=True
         )
     st.write(" ")
 
-    # ── E. Engagement Detail (collapsed) ──────────────────────────────────────
-    with st.expander("Engagement detail — all students", expanded=False):
-        engagement_rows = []
-        sorted_all = convata_df.sort_values(
-            ['Overall Tier Num', 'Class Attendance'], ascending=[False, True]
-        )
-        for _, row in sorted_all.iterrows():
-            sid = int(row['Student ID'])
-            engagement_rows.append({
-                'Student': get_name(sid, roster_df),
-                'Attendance': f"{row['Class Attendance']:.1%}",
-                'Participation': f"{row['Class Participation']:.1%}",
-                'In-Class Accuracy': f"{row['In-Class Accuracy']:.1%}",
-                'Exams Reported': int(row['exam_count']),
-                'Exam Tier': tier_badge(row['Exam Tier']),
-                'Attendance Tier': tier_badge(row['Attendance Tier']),
-                'Overall Tier': tier_badge(row['Overall Tier']),
-            })
-        df_engagement_table = pd.DataFrame(engagement_rows)
-        st.markdown(
-            df_engagement_table.to_html(escape=False, index=False),
-            unsafe_allow_html=True
-        )
+    with st.expander(f"Passing students ({len(passing_detail)})", expanded=False):
+        st.caption("Students with First Attempt ≥ 502.")
+        if passing_detail.empty:
+            st.info("No students have reported a passing score yet.")
+        else:
+            st.markdown(
+                passing_detail.to_html(escape=False, index=False),
+                unsafe_allow_html=True
+            )
