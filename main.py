@@ -399,7 +399,7 @@ view_mode = st.sidebar.radio(
 )
 
 # Student roster reference (collapsed expander) — hidden on programming/partner pages
-if view_mode not in ("EY 26 Programming", "EY25 Summer Retester Cohort", "EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention"):
+if view_mode not in ("EY 26 Programming", "EY25 Summer Retester Cohort"):
     roster_path = None
     for path in ['roster.csv', './roster.csv']:
         if os.path.exists(path):
