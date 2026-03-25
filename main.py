@@ -389,7 +389,7 @@ st.sidebar.title("Navigation")
 view_mode = st.sidebar.radio(
     "View",
     [
-        "EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention",
+        "EY25 Scholar March-May Engagement, Interventions, and Predictions",
         "Individual Student Data - EY25",
     ],
     label_visibility="visible",
@@ -1345,10 +1345,10 @@ elif view_mode == "EY 26 Programming":
     st.write(" ")
 
 # ══════════════════════════════════════════════════════════════════════════════
-# VIEW: EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention
+# VIEW: EY25 Scholar March-May Engagement, Interventions, and Predictions
 # ══════════════════════════════════════════════════════════════════════════════
-elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention":
-    st.header("EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention")
+elif view_mode == "EY25 Scholar March-May Engagement, Interventions, and Predictions":
+    st.header("EY25 Scholar March-May Engagement, Interventions, and Predictions")
     st.write(" ")
 
     st.markdown("""
@@ -1393,7 +1393,7 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
 
     if convata_df is None or convata_df.empty:
         st.info(
-            "Data not found. Add **convata_data.csv** to the project folder to see the EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention.\n\n"
+            "Data not found. Add **convata_data.csv** to the project folder to see the EY25 Scholar March-May Engagement, Interventions, and Predictions.\n\n"
             "Expected columns: Student ID, Name Surname, Email, Class Attendance, Class Participation, "
             "In-Class Accuracy, First Attempt, Next Attempt Date"
         )
@@ -1706,17 +1706,89 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
         ps['actual_exam_score'] = pd.to_numeric(ps['actual_exam_score'], errors='coerce')
         highest_practice_numeric = ps.groupby('student_id')['actual_exam_score'].max().to_dict()
 
-    # Only students who have a practice score
+    # Build convata lookup: student_id → (first_attempt_score, next_attempt_date)
+    convata_lookup = {}
+    if not convata_df.empty:
+        for _, r in convata_df.iterrows():
+            sid_c = int(r['Student ID'])
+            fa = pd.to_numeric(r.get('First Attempt', None), errors='coerce')
+            nd = str(r.get('Next Attempt Date', '')).strip()
+            convata_lookup[sid_c] = (fa, nd)
+
+    # All students with a practice score
     students_with_practice = {sid: score for sid, score in highest_practice_numeric.items()}
-    total_with_practice = len(students_with_practice)
-    above_502 = sum(1 for s in students_with_practice.values() if s > 502)
-    pct_above = above_502 / total_with_practice if total_with_practice > 0 else 0
+
+    # Untested students: have a practice score but no first attempt score yet
+    untested = {sid: score for sid, score in students_with_practice.items()
+                if pd.isna(convata_lookup.get(int(sid), (float('nan'), ''))[0])}
+    total_untested = len(untested)
+    untested_above_502 = sum(1 for s in untested.values() if s > 502)
+    pct_untested_above = untested_above_502 / total_untested if total_untested > 0 else 0
 
     st.metric(
-        label="Scholars with highest practice score > 502",
-        value=f"{pct_above:.1%}",
-        help=f"{above_502} of {total_with_practice} students who have taken at least one practice exam"
+        label="Scholars who have not yet taken the exam with highest practice score > 502",
+        value=f"{pct_untested_above:.1%}",
+        help=f"{untested_above_502} of {total_untested} students who have not yet taken their first exam"
     )
+
+    st.write(" ")
+
+    # ── Graph 1: First-time vs Second-time exam takers in April and May ────────
+    # First-time: first_exam_date in April (4/) or May (5/), no first attempt score
+    # Second-time: next_attempt_date in April (4/) or May (5/), has first attempt score
+    taker_data = []
+    for sid_c, (fa_score, next_date) in convata_lookup.items():
+        if pd.notna(fa_score):
+            # Already tested — second-time taker, bucketed by next attempt date
+            nd_prefix = next_date.split('/')[0] if '/' in next_date else ''
+            if nd_prefix in ('4', '5'):
+                taker_data.append({
+                    'Month': 'April' if nd_prefix == '4' else 'May',
+                    'Type': 'Second-time exam taker',
+                })
+        else:
+            # Not yet tested — first-time taker, bucketed by first exam date
+            date_str = str(first_exam_date_map.get(sid_c, '—'))
+            fd_prefix = date_str.split('/')[0] if '/' in date_str else ''
+            if fd_prefix in ('4', '5'):
+                taker_data.append({
+                    'Month': 'April' if fd_prefix == '4' else 'May',
+                    'Type': 'First-time exam taker',
+                })
+
+    if taker_data:
+        taker_df = pd.DataFrame(taker_data)
+        month_order = ['April', 'May']
+        taker_df['Month'] = pd.Categorical(taker_df['Month'], categories=month_order, ordered=True)
+
+        # Count and compute percentages within each month
+        taker_counts = taker_df.groupby(['Month', 'Type'], observed=True).size().reset_index(name='Count')
+        month_totals = taker_counts.groupby('Month', observed=True)['Count'].transform('sum')
+        taker_counts['Percentage'] = (taker_counts['Count'] / month_totals * 100).round(1)
+
+        st.markdown("**Share of First-time vs Second-time Takers — April & May**")
+        st.caption("Percentage breakdown of first-time vs second-time exam takers within each month.")
+        fig_pct = px.bar(
+            taker_counts,
+            x='Month',
+            y='Percentage',
+            color='Type',
+            barmode='stack',
+            text=taker_counts['Percentage'].apply(lambda x: f"{x}%"),
+            color_discrete_map={
+                'First-time exam taker':  '#42A5F5',
+                'Second-time exam taker': '#AB47BC',
+            },
+            labels={'Percentage': '% of Students'},
+            category_orders={'Month': month_order, 'Type': ['First-time exam taker', 'Second-time exam taker']},
+        )
+        fig_pct.update_traces(textposition='inside')
+        fig_pct.update_layout(
+            plot_bgcolor='white', paper_bgcolor='white',
+            font_color='#1e293b', legend_title_text='Exam Taker Type',
+            yaxis=dict(range=[0, 100], ticksuffix='%'),
+        )
+        st.plotly_chart(fig_pct, use_container_width=True)
 
     st.write(" ")
 
@@ -1732,16 +1804,6 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
         if score > 502:   return '> 502 (Passing)'
         if score >= 495:  return '495–501 (Borderline)'
         return '< 495 (Below)'
-
-    # Build lookup: student_id → (first_attempt_score, next_attempt_date) from convata_df
-    convata_lookup = {}
-    if not convata_df.empty:
-        for _, r in convata_df.iterrows():
-            sid_c = int(r['Student ID'])
-            fa = r.get('First Attempt', None)
-            fa_numeric = pd.to_numeric(fa, errors='coerce')
-            nd = str(r.get('Next Attempt Date', '')).strip()
-            convata_lookup[sid_c] = (fa_numeric, nd)
 
     month_prefix_map = {'3': 'March', '4': 'April', '5': 'May'}
 
