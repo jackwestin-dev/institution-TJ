@@ -1591,7 +1591,7 @@ elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and In
 
     # ── Students Needing Intervention ─────────────────────────────────────────
     st.markdown("#### Students Needing Intervention")
-    st.caption("Missing score or First Attempt below 502 — sorted by urgency within tier.")
+    st.caption("Missing score or First Attempt below 502 — sorted by urgency within tier. Tiers were tracked for attendance and participation from March 2nd onward. Exam tiers were tracked since the beginning of the program.")
 
     if intervention_df.empty:
         st.success("All students with reported scores are passing (≥502).")
