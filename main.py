@@ -405,8 +405,11 @@ if view_mode not in ("EY 26 Programming", "EY25 Summer Retester Cohort"):
     if roster_path:
         roster_df_ref = pd.read_csv(roster_path)
         with st.expander("Student roster (reference)", expanded=False):
+            display_cols = {'student_id': 'Student ID'}
+            if 'display_name' in roster_df_ref.columns:
+                display_cols['display_name'] = 'Name'
             st.dataframe(
-                roster_df_ref.rename(columns={'student_id': 'Student ID', 'name': 'Name'}),
+                roster_df_ref[list(display_cols.keys())].rename(columns=display_cols),
                 use_container_width=True,
                 hide_index=True
             )
