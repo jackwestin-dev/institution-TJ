@@ -393,13 +393,13 @@ view_mode = st.sidebar.radio(
         "Individual Student Data - EY25",
         "EY25 Summer Retester Cohort",
         "EY 26 Programming",
-        "Spring EY25 Realtime Results",
+        "EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention",
     ],
     label_visibility="visible",
 )
 
 # Student roster reference (collapsed expander) — hidden on programming/partner pages
-if view_mode not in ("EY 26 Programming", "EY25 Summer Retester Cohort", "Spring EY25 Realtime Results"):
+if view_mode not in ("EY 26 Programming", "EY25 Summer Retester Cohort", "EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention"):
     roster_path = None
     for path in ['roster.csv', './roster.csv']:
         if os.path.exists(path):
@@ -1345,10 +1345,10 @@ elif view_mode == "EY 26 Programming":
     st.write(" ")
 
 # ══════════════════════════════════════════════════════════════════════════════
-# VIEW: Spring EY25 Realtime Results
+# VIEW: EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention
 # ══════════════════════════════════════════════════════════════════════════════
-elif view_mode == "Spring EY25 Realtime Results":
-    st.header("Spring EY25 Realtime Results")
+elif view_mode == "EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention":
+    st.header("EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention")
     st.write(" ")
 
     # ── Tier thresholds (documented here for transparency) ─────────────────────
@@ -1369,7 +1369,7 @@ elif view_mode == "Spring EY25 Realtime Results":
 
     if convata_df is None or convata_df.empty:
         st.info(
-            "Data not found. Add **convata_data.csv** to the project folder to see the Spring EY25 Realtime Results.\n\n"
+            "Data not found. Add **convata_data.csv** to the project folder to see the EY25 Scholars - March - April Outcomes, Scores, Tiers, and Intervention.\n\n"
             "Expected columns: Student ID, Name Surname, Email, Class Attendance, Class Participation, "
             "In-Class Accuracy, First Attempt, Next Attempt Date"
         )
