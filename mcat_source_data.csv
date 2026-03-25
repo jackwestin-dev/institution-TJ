@@ -1,0 +1,161 @@
+student_id,college,first_exam_date,first_exam_score,second_exam_date,category
+1.0,Baylor Univ,4/10/26,,—,future
+2.0,Univ of Texas at El Paso,1/23/26,476,—,below_495
+3.0,,—,,—,no_date
+4.0,Texas Tech Univ,4/24/26,,—,future
+5.0,Angelo State Univ,3/20/26,,—,took_no_score
+6.0,Univ of Texas Rio Grande Valley,4/24/26,,—,future
+7.0,Univ of Texas at Tyler,4/10/26,,—,future
+8.0,Univ of Texas at Austin,1/10/26,499,—,borderline
+9.0,Univ of Texas at El Paso,1/15/26,484,5/22/26,below_495
+10.0,Univ of Texas at Austin,1/10/26,516,—,passing
+11.0,Angelo State Univ,3/7/26,,—,took_no_score
+12.0,University of St Thomas - TX,4/24/26,,—,future
+13.0,Texas A&M Univ,2/13/26,,—,took_no_score
+14.0,Univ of Texas at Austin,1/23/26,493,—,below_495
+15.0,Univ of Texas at Austin,3/7/26,,—,took_no_score
+16.0,,—,,—,no_date
+17.0,Texas Tech Univ,3/7/26,,—,took_no_score
+18.0,Univ of Texas at Austin,4/24/26,,—,future
+19.0,Howard Payne Univ,1/23/26,481,—,below_495
+20.0,Univ of Texas at Austin,1/10/26,487,—,below_495
+21.0,Midwestern State Univ,4/25/26,,—,future
+22.0,Univ of Texas at El Paso,1/23/26,480,—,below_495
+23.0,Wm Marsh Rice Univ,3/7/26,,—,took_no_score
+24.0,Univ of Texas at Austin,2/13/26,,—,took_no_score
+25.0,Univ of Texas at Austin,1/10/26,506,5/9/26,passing
+26.0,Univ of Texas at Austin,1/10/26,503,—,passing
+27.0,Lamar Univ,4/10/26,,—,future
+28.0,Univ of North Texas,1/15/26,488,—,below_495
+29.0,Texas A&M Univ,3/7/26,,—,took_no_score
+30.0,,—,,—,no_date
+31.0,Texas Christian Univ,4/11/26,,—,future
+32.0,,—,,—,no_date
+33.0,Univ of Texas at Dallas,2/13/26,514,—,passing
+34.0,,—,,—,no_date
+35.0,Texas A&M International Univ,4/11/26,,—,future
+36.0,Univ of Texas at Tyler,1/10/26,488,5/8/26,below_495
+37.0,Univ of Houston,3/20/26,,—,took_no_score
+38.0,Univ of Texas Rio Grande Valley,2/13/26,483,—,below_495
+39.0,Texas Tech Univ,3/20/26,,—,took_no_score
+40.0,Univ of Texas at El Paso,1/15/26,486,5/9/26,below_495
+41.0,Univ of Texas at Dallas,3/7/26,,—,took_no_score
+42.0,,—,,—,no_date
+43.0,,—,,—,no_date
+44.0,Univ of Texas at Austin,1/23/26,490,—,below_495
+45.0,Univ of Texas at Austin,4/25/26,,—,future
+46.0,Texas A&M Univ,3/20/26,,—,took_no_score
+47.0,Texas A&M Univ,3/7/26,,—,took_no_score
+48.0,,—,,—,no_date
+49.0,Univ of North Texas,1/10/26,497,5/2/26,borderline
+50.0,Univ of Texas at Austin,4/25/26,,—,future
+51.0,,—,,—,no_date
+52.0,Univ of Texas Rio Grande Valley,3/7/26,,—,took_no_score
+53.0,Univ of Texas at Austin,1/9/26,507,—,passing
+54.0,,—,,—,no_date
+55.0,University of St Thomas - TX,1/10/26,493,—,below_495
+56.0,Univ of Texas at Dallas,4/25/26,,—,future
+57.0,Univ of Texas at Austin,4/25/26,,—,future
+58.0,Univ of Texas at Austin,4/24/26,,—,future
+59.0,Texas A&M Univ,1/9/26,486,—,below_495
+60.0,Texas A&M Univ,4/25/26,,—,future
+61.0,Univ of Texas at Austin,3/20/26,,—,took_no_score
+62.0,Houston Christian Univ,4/25/26,,—,future
+63.0,Univ of Texas at Austin,4/11/26,,—,future
+64.0,Univ of Texas at El Paso,1/15/26,510,—,passing
+65.0,,—,,—,no_date
+66.0,Texas State Univ,2/13/26,501,—,borderline
+67.0,Texas Woman's Univ,1/10/26,485,—,below_495
+68.0,Univ of Texas at Austin,4/25/26,,—,future
+69.0,Univ of Texas at Arlington,1/9/26,492,5/22/26,below_495
+70.0,Univ of Texas at Austin,4/10/26,,—,future
+71.0,Texas A&M Univ,2/13/26,486,—,below_495
+72.0,Univ of Texas at El Paso,1/15/26,494,5/2/26,below_495
+73.0,Univ of Texas at Austin,1/10/26,516,—,passing
+74.0,Univ of Texas at Austin,2/13/26,,—,took_no_score
+75.0,Lamar Univ,1/15/26,492,—,below_495
+76.0,Texas State Univ,1/15/26,495,5/22/26,borderline
+77.0,Univ of Texas at Austin,1/15/26,494,5/9/26,below_495
+78.0,Univ of Texas at Austin,3/20/26,,—,took_no_score
+79.0,Univ of Texas at Austin,1/10/26,501,—,borderline
+80.0,Texas A&M Univ,4/25/26,,—,future
+81.0,Univ of Texas at El Paso,1/15/26,487,—,below_495
+82.0,Univ of Texas at El Paso,1/23/26,477,—,below_495
+83.0,,—,,—,no_date
+84.0,Texas Woman's Univ,1/15/26,486,5/9/26,below_495
+85.0,Trinity Univ,1/23/26,512,—,passing
+86.0,Southern Methodist Univ,1/15/26,519,—,passing
+87.0,,—,,—,no_date
+88.0,Texas State Univ,3/7/26,,—,took_no_score
+89.0,Texas A&M Univ,4/10/26,,—,future
+90.0,Univ of Texas at Austin,2/13/26,496,5/8/26,borderline
+91.0,Trinity Univ,2/13/26,493,5/14/01,below_495
+92.0,Texas A&M Univ,1/10/26,492,—,below_495
+93.0,Univ of Texas at Austin,4/10/26,,—,future
+94.0,Univ of Texas at Austin,1/10/26,494,—,below_495
+95.0,Univ of Texas at Austin,1/10/26,506,—,passing
+96.0,Sam Houston State Univ,4/24/26,,—,future
+97.0,Univ of Texas at Austin,3/20/26,,—,took_no_score
+98.0,Univ of Texas at Austin,1/10/26,508,—,passing
+99.0,Univ of Texas at Austin,3/7/26,,—,took_no_score
+100.0,Univ of Texas at Austin,2/13/26,513,—,passing
+101.0,Univ of Houston,1/15/26,509,—,passing
+102.0,Univ of Texas at Austin,1/10/26,514,—,passing
+103.0,Univ of Texas at El Paso,1/15/26,481,5/2/26,below_495
+104.0,Univ of North Texas,2/13/26,499,5/22/26,borderline
+105.0,Texas A&M Univ,3/7/26,,—,took_no_score
+106.0,,—,,—,no_date
+107.0,Univ of Texas Rio Grande Valley,1/23/26,489,—,below_495
+108.0,Texas Woman's Univ,4/25/26,,—,future
+109.0,Texas A&M Univ,4/11/26,,—,future
+110.0,Southern Methodist Univ,1/23/26,507,—,passing
+111.0,Univ of Houston,1/23/26,514,—,passing
+112.0,Texas A&M Univ,4/10/26,,—,future
+113.0,Univ of Texas at Dallas,1/23/26,512,—,passing
+114.0,Univ of Houston - Downtown,4/24/26,,—,future
+115.0,Southern Methodist Univ,2/13/26,501,4/24/26,borderline
+116.0,Univ of Texas of the Permian Basin,2/13/26,497,—,borderline
+117.0,Univ of Texas at San Antonio,1/23/26,487,—,below_495
+118.0,Univ of Texas at Tyler,1/9/26,504,—,passing
+119.0,Univ of Houston,2/13/26,,—,took_no_score
+120.0,Univ of Texas at Austin,1/10/26,495,5/14/26,borderline
+121.0,Univ of Houston,1/15/26,494,5/22/26,below_495
+122.0,Texas Tech Univ,1/9/26,502,5/22/26,passing
+123.0,Univ of Texas at Austin,4/10/26,,—,future
+124.0,Baylor Univ,8/23/25,514,—,passing
+125.0,Texas A&M Univ,1/23/26,493,5/8/26,below_495
+126.0,University of St Thomas - TX,2/13/26,511,—,passing
+127.0,Univ of Texas at Austin,3/20/26,,—,took_no_score
+128.0,Univ of Texas at Austin,1/23/26,500,—,borderline
+129.0,Trinity Univ,3/7/26,,—,took_no_score
+130.0,Univ of Texas at Austin,4/11/26,,—,future
+131.0,Texas A&M Univ,3/20/26,,—,took_no_score
+132.0,Univ of Texas at Austin,3/20/26,,—,took_no_score
+133.0,Southern Methodist Univ,1/23/26,511,—,passing
+134.0,Univ of Texas at Austin,1/23/26,509,—,passing
+135.0,Univ of Texas at Austin,3/20/26,,—,took_no_score
+136.0,Univ of Texas at San Antonio,2/13/26,478,5/2/26,below_495
+137.0,University of North Texas at Dallas,—,,—,no_date
+138.0,Univ of Texas at Austin,1/23/26,499,—,borderline
+139.0,Univ of Texas at Austin,1/10/26,502,—,passing
+140.0,Univ of Texas Rio Grande Valley,2/13/26,500,—,borderline
+141.0,Univ of Texas at Austin,1/15/26,483,5/9/26,below_495
+142.0,Baylor Univ,4/25/26,,—,future
+143.0,Univ of Texas at Arlington,1/10/26,voided score,5/8/26,voided
+144.0,Univ of Texas at Dallas,1/23/26,509,—,passing
+145.0,Stephen F. Austin State Univ,1/23/26,497,—,borderline
+146.0,,—,,—,no_date
+147.0,,—,,—,no_date
+148.0,Univ of Texas at Austin,1/10/26,517,—,passing
+149.0,Univ of Texas at Austin,1/9/26,513,—,passing
+150.0,Univ of Texas at Dallas,1/23/26,508,—,passing
+151.0,Univ of Texas at Austin,1/10/26,478,5/22/26,below_495
+152.0,Univ of Texas at Austin,1/23/26,505,—,passing
+153.0,Univ of Houston Clear Lake (was alt),1/9/26,501,—,borderline
+154.0,Texas State Univ,4/10/26,,—,future
+155.0,,—,,—,no_date
+,William Marsh Rice Univ (was alt),9/4/25,526,—,passing
+,Univ of Texas at Austin (was alt),1/23/26,506,—,passing
+,Texas State Univ (was alt),4/25/26,,—,future
+,Univ of Texas at Austin (was alt),1/10/26,509,—,passing
+,Southwestern (was alt),1/10/26,503,—,passing
