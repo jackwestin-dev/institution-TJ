@@ -1534,12 +1534,18 @@ elif view_mode == "Spring EY25 Realtime Results":
         # Table 1 — Tier overview
         tier_rows = []
         for _, row in intervention_df.iterrows():
+            score = row['First Attempt']
+            score_display = str(int(score)) if pd.notna(score) else "—"
+            next_date = str(row.get('Next Attempt Date', ''))
+            next_date = next_date if next_date.strip() not in ('', 'nan') else "—"
             tier_rows.append({
                 'Student ID':         int(row['Student ID']),
                 'Overall Tier':       tier_badge(row['Overall Tier']),
                 'Exam Tier':          tier_badge(row['Exam Tier']),
                 'Attendance Tier':    tier_badge(row['Attendance Tier']),
                 'Participation Tier': tier_badge(row['Participation Tier']),
+                'First Attempt':      score_display,
+                'Next Attempt Date':  next_date,
             })
         df_tier_table = pd.DataFrame(tier_rows)
         st.markdown(df_tier_table.to_html(escape=False, index=False), unsafe_allow_html=True)
