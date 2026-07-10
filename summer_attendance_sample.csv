@@ -1,0 +1,18 @@
+cohort,date,session,type,attended,roster,pct
+EY26,2026-06-15,Learning Styles & Frameworks,regular,106,120,88
+EY26,2026-06-17,CARS Strategy — Reading Fundamentals,regular,101,120,84
+EY26,2026-06-22,Atomic Structure & Periodic Trends,regular,109,120,91
+EY26,2026-06-23,Chemical Equilibrium & Kinetics,regular,103,120,86
+EY26,2026-06-24,Stoichiometry & Solutions,regular,98,120,82
+EY26,2026-06-25,Waves (Light + Sound),regular,95,120,79
+EY26,2026-06-26,Fluid Dynamics,regular,92,120,77
+EY26,2026-06-29,Acid/Base Chemistry,regular,97,120,81
+EY26,2026-06-30,Redox & Electrochemistry,regular,89,120,74
+EY25,2026-06-22,Small Group Session 1,small_group,60,65,92
+EY25,2026-06-22,Acid Base & Amino Acids,regular,57,65,88
+EY25,2026-06-23,Small Group Session 2,small_group,51,65,78
+EY25,2026-06-24,Enzyme Kinetics & Inhibition,regular,55,65,85
+EY25,2026-06-24,Small Group Session 3,small_group,49,65,76
+EY25,2026-06-25,Electrostatics,regular,52,65,80
+EY25,2026-06-26,Theories of Emotion & Conditioning,regular,48,65,74
+EY25,2026-06-29,Redox & Electrochemistry,regular,46,65,71

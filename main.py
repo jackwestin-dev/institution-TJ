@@ -391,12 +391,13 @@ view_mode = st.sidebar.radio(
     [
         "EY25 Scholar March-May Engagement, Interventions, and Predictions",
         "Individual Student Data - EY25",
+        "Summer EY25 and EY26",
     ],
     label_visibility="visible",
 )
 
 # Student roster reference (collapsed expander) — hidden on programming/partner pages
-if view_mode not in ("EY 26 Programming", "EY25 Summer Retester Cohort"):
+if view_mode not in ("EY 26 Programming", "EY25 Summer Retester Cohort", "Summer EY25 and EY26"):
     roster_path = None
     for path in ['roster.csv', './roster.csv']:
         if os.path.exists(path):
@@ -1864,3 +1865,121 @@ elif view_mode == "EY25 Scholar March-May Engagement, Interventions, and Predict
         st.plotly_chart(fig_pred, use_container_width=True)
     else:
         st.info("No score data available for March, April, or May test-takers.")
+
+elif view_mode == "Summer EY25 and EY26":
+    # ── Summer EY25 × EY26 engagement: Nova attendance + Canvas activity ──
+    EY26_C, EY25_C = "#5D5DF2", "#38B2AC"        # brand violet / teal
+    EY26_L, EY25_L = "#9B99F7", "#7FD6CE"        # lighter (small-group / secondary)
+
+    st.title("Summer EY25 and EY26")
+    st.caption("Nova session attendance + Canvas activity, side by side. Canvas numbers are live from cached quiz reports; "
+               "attendance is scoped to **June 2026** and tracked as **sessions attended ÷ sessions offered**.")
+
+    def _find(fname):
+        for p in (fname, "./" + fname):
+            if os.path.exists(p):
+                return p
+        return None
+
+    att_path = _find("summer_attendance_sample.csv")
+    can_path = _find("summer_canvas_metrics.csv")
+
+    if can_path is None:
+        st.warning("`summer_canvas_metrics.csv` not found — Canvas activity can't be shown.")
+    else:
+        canvas = pd.read_csv(can_path)
+        att = pd.read_csv(att_path) if att_path else None
+
+        # cohort enrollment (distinct students across cached Canvas reports)
+        enroll = {"EY26": 120, "EY25": 65}
+
+        # ---- KPI row ----
+        st.markdown("#### At a glance")
+        tasks = canvas[canvas["type"] == "Participation Task"]
+        k = st.columns(4)
+        k[0].metric("Enrolled — EY26 / EY25", f"{enroll['EY26']} / {enroll['EY25']}")
+        if att is not None:
+            # attended ÷ offered across all June session-slots, both cohorts
+            att_rate = 100 * att["attended"].sum() / (att["roster"].sum())
+            k[1].metric("Avg attendance (June, sample)", f"{att_rate:.0f}%")
+        else:
+            k[1].metric("Avg attendance (June)", "—")
+        k[2].metric("Avg participation (tasks)", f"{tasks['participation'].mean():.0f}%")
+        k[3].metric("Avg accuracy (tasks)", f"{tasks['accuracy'].mean():.0f}%")
+
+        # ---- Attendance ----
+        st.markdown("---")
+        st.markdown("#### Session attendance — June 2026")
+        st.caption("⚠️ Sample data in the Nova skill's output shape (attended ÷ offered). Real numbers drop in once the skill runs the pull.")
+        if att is None:
+            st.info("`summer_attendance_sample.csv` not found — run the Nova attendance skill to generate it.")
+        else:
+            acols = st.columns(2)
+            for col, coh, cc, lc in ((acols[0], "EY26", EY26_C, EY26_L), (acols[1], "EY25", EY25_C, EY25_L)):
+                sub = att[att["cohort"] == coh].copy()
+                if sub.empty:
+                    col.info(f"No {coh} attendance rows.")
+                    continue
+                offered = len(sub)
+                rate = 100 * sub["attended"].sum() / (offered * enroll[coh])
+                col.markdown(f"**{coh}** · {offered} sessions offered · "
+                             f"<span style='color:{cc};font-weight:700'>{rate:.0f}%</span> attended "
+                             f"({sub['attended'].sum()}/{offered * enroll[coh]} student-sessions)",
+                             unsafe_allow_html=True)
+                sub["label"] = sub.apply(lambda r: ("SG: " if r["type"] == "small_group" else "") + r["session"], axis=1)
+                sub = sub.sort_values("date")
+                fig = go.Figure(go.Bar(
+                    x=sub["pct"], y=sub["label"], orientation="h",
+                    marker_color=[lc if t == "small_group" else cc for t in sub["type"]],
+                    text=[f"{a}/{r}" for a, r in zip(sub["attended"], sub["roster"])],
+                    textposition="auto",
+                    hovertemplate="%{y}<br>%{x}% present<extra></extra>",
+                ))
+                fig.update_layout(height=max(260, 34 * offered), margin=dict(l=8, r=8, t=8, b=8),
+                                  xaxis_title="% of roster present", xaxis_range=[0, 100],
+                                  yaxis=dict(autorange="reversed"), showlegend=False,
+                                  plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
+                col.plotly_chart(fig, use_container_width=True)
+
+        # ---- Canvas accuracy & participation ----
+        st.markdown("---")
+        st.markdown("#### Canvas accuracy & participation")
+        st.caption("Participation = submitted ÷ enrollment · Accuracy = correct ÷ attempted (graded items). "
+                   "Surveys/forms are ungraded — filter them out for meaningful accuracy.")
+
+        # cohort-average comparison on participation tasks (the session-attached activity)
+        cmp = tasks.groupby("cohort").agg(
+            participation=("participation", "mean"),
+            accuracy=("accuracy", "mean"),
+        ).reindex(["EY26", "EY25"]).reset_index()
+        c1, c2 = st.columns(2)
+        for col, metric, title in ((c1, "participation", "Avg participation (tasks)"),
+                                    (c2, "accuracy", "Avg accuracy (tasks)")):
+            fig = go.Figure(go.Bar(
+                x=cmp["cohort"], y=cmp[metric],
+                marker_color=[EY26_C, EY25_C],
+                text=[f"{v:.0f}%" for v in cmp[metric]], textposition="outside",
+            ))
+            fig.update_layout(title=title, height=300, yaxis_range=[0, 105],
+                              margin=dict(l=8, r=8, t=40, b=8), showlegend=False,
+                              plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
+            col.plotly_chart(fig, use_container_width=True)
+
+        # full, filterable table
+        st.markdown("##### Every session activity")
+        f1, f2 = st.columns([1, 1])
+        types = ["All types"] + sorted(canvas["type"].dropna().unique().tolist())
+        pick_type = f1.selectbox("Type", types, index=0)
+        pick_coh = f2.selectbox("Cohort", ["Both", "EY26", "EY25"], index=0)
+        tbl = canvas.copy()
+        if pick_type != "All types":
+            tbl = tbl[tbl["type"] == pick_type]
+        if pick_coh != "Both":
+            tbl = tbl[tbl["cohort"] == pick_coh]
+        tbl = tbl.sort_values(["cohort", "participation"], ascending=[True, False])
+        tbl = tbl.rename(columns={"cohort": "Cohort", "title": "Session activity", "type": "Type",
+                                  "n_submitted": "Submitted", "participation": "Particip. %", "accuracy": "Accuracy %"})
+        st.dataframe(tbl[["Cohort", "Session activity", "Type", "Submitted", "Particip. %", "Accuracy %"]],
+                     use_container_width=True, hide_index=True)
+        st.caption(f"{len(tbl)} activities · Canvas cached Jun 29, 2026 · course 345 = EY26, 351 = EY25.")
+    st.write(" ")
