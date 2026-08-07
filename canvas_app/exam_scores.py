@@ -454,6 +454,228 @@ def participation_table(
     return table, n_items
 
 
+# ── Within-course learning: pre-class vs post-class on the same topic ────────
+#
+# Every session ships a Pre-Class Quiz taken before instruction and a
+# Participation Task taken during/after it, both on the same topic. The
+# difference between a student's two scores is the closest thing this course has
+# to a measured learning gain, and it is what the Learning tab correlates
+# against MCAT growth.
+#
+# Homework deliberately has no part in the pairing: almost every homework item
+# is titled just "Homework", so there is no topic to match on. It is still
+# reported as a plain average alongside the other item types.
+
+# Stripped from a title to leave the bare topic. Longest variants first, so
+# "Pre-Class Prep Work" is not half-consumed by the "Pre-Class" in a later
+# pattern.
+_TOPIC_MARKERS = [
+    r"pre[-\s]?class\s+prep\s+work",
+    r"pre[-\s]?class\s+check",
+    r"pre[-\s]?class\s+quiz",
+    r"participation\s+tasks?",
+    r"pre[-\s]?quiz",
+]
+
+
+def topic_of(title: str) -> str:
+    """
+    Reduce an assignment title to a topic key comparable across item types.
+
+        "Chemical Equilibrium and Kinetics - Pre-Class Quiz"    ->
+        "Chemical Equilibrium and Kinetics Participation Task"  ->
+            both "chemical equilibrium and kinetics"
+
+    Punctuation is dropped rather than normalised because the two titles for one
+    topic rarely agree on it — "Electrostatics- Pre-Class Quiz" against
+    "Electrostatics Participation Task", "Waves (Light + Sound)" against
+    "Waves (Light + Sound)".
+    """
+    text = clean_cell(title).lower()
+    for marker in _TOPIC_MARKERS:
+        text = re.sub(marker, " ", text)
+    text = re.sub(r"[^a-z0-9 ]", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _pct_by_key(course_id: int, assignment_id: int) -> "dict[str, float]":
+    """{normalised name: score %} for one cached assignment, best attempt kept."""
+    raw = _rc.get_cached_csv(course_id, assignment_id)
+    if not raw:
+        return {}
+    score_df, pts = parse_score_csv(io.BytesIO(raw))
+    if score_df is None or not pts:
+        return {}
+    out: "dict[str, float]" = {}
+    for _, row in score_df.iterrows():
+        key = normalize_name(row["student"])
+        if not key:
+            continue
+        pct = round(row["score"] / pts * 100, 1)
+        # A retake shows up as a second row; keep the better one.
+        if pct > out.get(key, -1):
+            out[key] = pct
+    return out
+
+
+def paired_topics(course_id: int, *, exclude_ids: "set | None" = None) -> pd.DataFrame:
+    """
+    Topics that have BOTH a cached pre-class quiz and a cached participation task.
+
+    Columns: topic, pre_id, post_id, pre_title, post_title. A topic with two
+    pre-class items (an occasional re-run) keeps the earliest by due date, so
+    the "before instruction" reading is the one used.
+    """
+    exclude_ids = exclude_ids or set()
+    items = cached_items(course_id)
+    items = items[~items["assignment_id"].isin(exclude_ids)]
+
+    def first_by_topic(item_type: str) -> dict:
+        subset = items[items["item_type"] == item_type].sort_values("due_at")
+        picked: dict = {}
+        for _, row in subset.iterrows():
+            key = topic_of(row["title"])
+            if key and key not in picked:
+                picked[key] = row
+        return picked
+
+    pre = first_by_topic("Pre-Class Quiz")
+    post = first_by_topic("Participation Task")
+
+    rows = []
+    for key in sorted(set(pre) & set(post)):
+        rows.append({
+            "topic":      key,
+            "pre_id":     int(pre[key]["assignment_id"]),
+            "post_id":    int(post[key]["assignment_id"]),
+            "pre_title":  pre[key]["title"],
+            "post_title": post[key]["title"],
+        })
+    return pd.DataFrame(rows, columns=["topic", "pre_id", "post_id", "pre_title", "post_title"])
+
+
+def learning_tables(
+    course_id: int, *, exclude_ids: "set | None" = None,
+) -> "tuple[pd.DataFrame, pd.DataFrame]":
+    """
+    Per-student and per-topic learning gain for a course.
+
+    Returns (students, topics).
+
+    students: key, Student, Topics Paired, Pre-Class Avg %, Post-Class Avg %,
+              Learning Gain
+        Averages cover only the topics where that student sat BOTH halves, so
+        the gain is never the difference of two different topic sets.
+
+    topics:   Topic, Students, Pre %, Post %, Gain, pre_title, post_title
+        Cohort means per topic, over the students who sat both halves of it.
+    """
+    pairs = paired_topics(course_id, exclude_ids=exclude_ids)
+    if pairs.empty:
+        return (
+            pd.DataFrame(columns=["key", "Student", "Topics Paired",
+                                  "Pre-Class Avg %", "Post-Class Avg %", "Learning Gain"]),
+            pd.DataFrame(columns=["Topic", "Students", "Pre %", "Post %", "Gain",
+                                  "pre_title", "post_title"]),
+        )
+
+    display: "dict[str, str]" = {}
+    per_student: "dict[str, dict]" = {}
+    topic_rows = []
+
+    for _, pair in pairs.iterrows():
+        pre_pct = _pct_by_key(course_id, pair["pre_id"])
+        post_pct = _pct_by_key(course_id, pair["post_id"])
+        both = set(pre_pct) & set(post_pct)
+        if not both:
+            continue
+
+        for key in both:
+            rec = per_student.setdefault(key, {"pre": [], "post": []})
+            rec["pre"].append(pre_pct[key])
+            rec["post"].append(post_pct[key])
+
+        pre_mean = sum(pre_pct[k] for k in both) / len(both)
+        post_mean = sum(post_pct[k] for k in both) / len(both)
+        topic_rows.append({
+            "Topic":      pair["post_title"][:60],
+            "Students":   len(both),
+            "Pre %":      round(pre_mean, 1),
+            "Post %":     round(post_mean, 1),
+            "Gain":       round(post_mean - pre_mean, 1),
+            "pre_title":  pair["pre_title"],
+            "post_title": pair["post_title"],
+        })
+
+    # Recover a readable name for each key from any cached report.
+    for _, pair in pairs.iterrows():
+        for aid in (pair["pre_id"], pair["post_id"]):
+            raw = _rc.get_cached_csv(course_id, aid)
+            if not raw:
+                continue
+            for name in submitted_students(io.BytesIO(raw)):
+                key = normalize_name(name)
+                if key and key not in display:
+                    display[key] = display_name(name)
+
+    student_rows = []
+    for key, rec in per_student.items():
+        pre_avg = sum(rec["pre"]) / len(rec["pre"])
+        post_avg = sum(rec["post"]) / len(rec["post"])
+        student_rows.append({
+            "key":               key,
+            "Student":           display.get(key, key.title()),
+            "Topics Paired":     len(rec["pre"]),
+            "Pre-Class Avg %":   round(pre_avg, 1),
+            "Post-Class Avg %":  round(post_avg, 1),
+            "Learning Gain":     round(post_avg - pre_avg, 1),
+        })
+
+    students = pd.DataFrame(student_rows, columns=[
+        "key", "Student", "Topics Paired", "Pre-Class Avg %", "Post-Class Avg %", "Learning Gain",
+    ])
+    if len(students):
+        students = students.sort_values("Learning Gain", ascending=False).reset_index(drop=True)
+
+    topics = pd.DataFrame(topic_rows, columns=[
+        "Topic", "Students", "Pre %", "Post %", "Gain", "pre_title", "post_title",
+    ])
+    if len(topics):
+        topics = topics.sort_values("Gain", ascending=False).reset_index(drop=True)
+
+    return students, topics
+
+
+def type_averages(course_id: int, *, exclude_ids: "set | None" = None) -> pd.DataFrame:
+    """
+    Per-student mean score % within each item type.
+
+    Columns: key, then "<type> Avg %" for every type that had cached, scoreable
+    reports. Lets the Learning tab line up "how well they scored on homework"
+    against "how much they gained", which the paired view alone can't show.
+    """
+    exclude_ids = exclude_ids or set()
+    items = cached_items(course_id)
+    items = items[~items["assignment_id"].isin(exclude_ids)]
+
+    collected: "dict[str, dict[str, list]]" = {}
+    for _, item in items.iterrows():
+        item_type = item["item_type"]
+        for key, pct in _pct_by_key(course_id, item["assignment_id"]).items():
+            collected.setdefault(key, {}).setdefault(item_type, []).append(pct)
+
+    seen_types = sorted({t for rec in collected.values() for t in rec})
+    rows = []
+    for key, rec in collected.items():
+        row = {"key": key}
+        for item_type in seen_types:
+            values = rec.get(item_type)
+            row[f"{item_type} Avg %"] = round(sum(values) / len(values), 1) if values else None
+        rows.append(row)
+
+    return pd.DataFrame(rows, columns=["key"] + [f"{t} Avg %" for t in seen_types])
+
+
 # ── Correlation helpers (numpy only — no scipy dependency) ───────────────────
 
 def correlation(x: pd.Series, y: pd.Series) -> dict:
@@ -482,6 +704,41 @@ def correlation(x: pd.Series, y: pd.Series) -> dict:
         out["spearman"] = float(np.corrcoef(rx, ry)[0, 1])
     slope, intercept = np.polyfit(xv, yv, 1)
     out["slope"], out["intercept"] = float(slope), float(intercept)
+    return out
+
+
+def partial_correlation(x: pd.Series, y: pd.Series, control: pd.Series) -> dict:
+    """
+    Correlation between x and y after linearly removing `control` from both.
+
+    Needed because Exam 1 drives this cohort hard: students who scored low on
+    Exam 1 have the most room to improve (regression to the mean) AND tend to
+    score low on pre-class quizzes, which inflates their measured learning gain.
+    A raw gain-vs-growth correlation therefore mostly restates the Exam 1 effect.
+    Residualising both sides on Exam 1 leaves whatever the gain adds by itself.
+
+    Returns {n, pearson}; pearson is None with fewer than four complete triples
+    or a degenerate series.
+    """
+    import numpy as np
+
+    trio = pd.DataFrame({"x": x, "y": y, "c": control}).dropna()
+    out = {"n": len(trio), "pearson": None}
+    if len(trio) < 4:
+        return out
+
+    xv, yv, cv = (trio[col].to_numpy(float) for col in ("x", "y", "c"))
+    if cv.std() == 0 or xv.std() == 0 or yv.std() == 0:
+        return out
+
+    def residual(v):
+        slope, intercept = np.polyfit(cv, v, 1)
+        return v - (slope * cv + intercept)
+
+    rx, ry = residual(xv), residual(yv)
+    if rx.std() == 0 or ry.std() == 0:
+        return out
+    out["pearson"] = float(np.corrcoef(rx, ry)[0, 1])
     return out
 
 

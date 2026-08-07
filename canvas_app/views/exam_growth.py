@@ -367,6 +367,19 @@ def render() -> None:
         for col in ("Items Completed", "Participation %", "Avg Task Score %"):
             growth[col] = np.nan
 
+    # Within-course learning: pre-class quiz vs participation task on the same
+    # topic. Merged here so every tab can use it, not just the Learning tab.
+    learning, topic_gains = ex.learning_tables(int(course_id))
+    if len(learning):
+        growth = growth.merge(learning.drop(columns=["Student"]), on="key", how="left")
+    else:
+        for col in ("Topics Paired", "Pre-Class Avg %", "Post-Class Avg %", "Learning Gain"):
+            growth[col] = np.nan
+
+    type_avgs = ex.type_averages(int(course_id))
+    if len(type_avgs):
+        growth = growth.merge(type_avgs, on="key", how="left")
+
     paired = growth.dropna(subset=["Change"]).copy()
 
     if paired.empty:
@@ -377,7 +390,7 @@ def render() -> None:
         st.stop()
 
     tab_growth, tab_bands, tab_part, tab_student, tab_data = st.tabs(
-        ["📈 Growth", "🎯 Score Bands", "🤝 Participation vs Growth", "👤 Student", "🧾 Data & Coverage"]
+        ["📈 Growth", "🎯 Score Bands", "🧠 Learning vs Growth", "👤 Student", "🧾 Data & Coverage"]
     )
 
     # ── Tab: Growth ──────────────────────────────────────────────────────────────
@@ -613,116 +626,213 @@ def render() -> None:
     # ── Tab: Participation vs Growth ─────────────────────────────────────────────
 
     with tab_part:
-        st.subheader("Participation vs improvement")
+        st.subheader("Learning vs exam growth")
+        st.caption(
+            "Every session pairs a **Pre-Class Quiz** (before instruction) with a "
+            "**Participation Task** (during/after) on the same topic. The difference "
+            "is the closest thing the course measures to a learning gain — this tab "
+            "asks whether it tracks MCAT improvement."
+        )
 
-        if not participation_types:
-            st.info("Pick at least one participation item type in the sidebar.")
-        elif n_items == 0:
+        if topic_gains.empty:
             st.warning(
-                f"No cached reports match the selected item types for course {int(course_id)}. "
-                "Sync reports on the **Quiz Reports** page first."
+                f"No topic has both a cached pre-class quiz and a cached participation "
+                f"task for course {int(course_id)}. Sync more reports, or pick a course "
+                "that runs pre-class quizzes — course 351 (EY25) has none."
+            )
+        elif paired["Learning Gain"].notna().sum() < 3:
+            st.warning(
+                "Fewer than three students have both a learning gain and a score in "
+                "each exam, so no relationship can be shown."
             )
         else:
-            x_choice = st.radio(
-                "Participation measure",
-                options=["Participation %", "Avg Task Score %"],
-                horizontal=True,
-                help="Participation % = share of items submitted. "
-                     "Avg Task Score % = mean score on the items they did submit.",
+            min_topics = st.slider(
+                "Minimum paired topics per student", 1,
+                int(paired["Topics Paired"].max()), min(3, int(paired["Topics Paired"].max())),
+                help="A student who sat only one or two pairs has a very noisy gain. "
+                     "Raising this trades sample size for a steadier measure.",
             )
-            y_choice = st.radio(
-                "Outcome measure",
-                options=["Change", "Exam 2"],
-                format_func=lambda v: "Score change (Exam 2 − Exam 1)" if v == "Change"
-                                      else "Exam 2 total",
-                horizontal=True,
+            view = paired[
+                paired["Learning Gain"].notna() & (paired["Topics Paired"] >= min_topics)
+            ].copy()
+
+            k = st.columns(5)
+            k[0].metric("Topics paired", len(topic_gains))
+            k[1].metric("Students in view", len(view))
+            k[2].metric("Mean pre-class", f"{view['Pre-Class Avg %'].mean():.1f}%")
+            k[3].metric("Mean post-class", f"{view['Post-Class Avg %'].mean():.1f}%")
+            k[4].metric("Mean gain", f"{view['Learning Gain'].mean():+.1f} pts")
+
+            # ── The ceiling check, stated before any correlation ───────────────
+            post_sd = view["Post-Class Avg %"].std()
+            pre_sd = view["Pre-Class Avg %"].std()
+            mirror = ex.correlation(view["Pre-Class Avg %"], view["Learning Gain"])
+            if mirror["pearson"] is not None and mirror["pearson"] < -0.85:
+                st.warning(
+                    f"**Gain is mostly just the pre-class score upside down.** "
+                    f"Participation tasks sit at a ceiling — they spread only "
+                    f"{post_sd:.1f} points across students, against {pre_sd:.1f} for the "
+                    f"pre-class quizzes — so nearly everyone finishes near 100% and the "
+                    f"gain is set by where they started "
+                    f"(r = {mirror['pearson']:+.2f} between pre-class score and gain). "
+                    f"Read “gain” here as “had room to grow”, not “learned more”.",
+                    icon="⚠️",
+                )
+
+            st.divider()
+            st.markdown("### Where learning happened")
+            st.caption("Cohort mean per topic, over the students who sat both halves.")
+
+            topic_view = topic_gains.head(20)
+            fig_topic = go.Figure()
+            for _, row in topic_view.iterrows():
+                fig_topic.add_trace(go.Scatter(
+                    x=[row["Pre %"], row["Post %"]], y=[row["Topic"], row["Topic"]],
+                    mode="lines", line=dict(color=jw.SUCCESS, width=2),
+                    showlegend=False, hoverinfo="skip",
+                ))
+            for name, color, col in (("Pre-class", EXAM1_COLOR, "Pre %"),
+                                     ("Participation task", EXAM2_COLOR, "Post %")):
+                fig_topic.add_trace(go.Scatter(
+                    x=topic_view[col], y=topic_view["Topic"], mode="markers", name=name,
+                    marker=dict(size=10, color=color, line=dict(color=jw.WHITE, width=2)),
+                    customdata=topic_view["Students"],
+                    hovertemplate="%{y}<br>" + name + ": %{x:.1f}%<br>%{customdata} students<extra></extra>",
+                ))
+            fig_topic.update_layout(**jw.plotly_layout(
+                title="Pre-class → participation task, by topic",
+                height=max(380, len(topic_view) * 26 + 160),
+                xaxis_title="Mean score %", xaxis_range=[0, 105], yaxis_title=None,
+                yaxis=dict(categoryorder="array",
+                           categoryarray=topic_view["Topic"].tolist()[::-1],
+                           tickfont=dict(size=10)),
+                legend=dict(orientation="h", yanchor="bottom", y=1.005, x=0),
+                margin=dict(t=110, r=24, b=48, l=8),
+            ))
+            st.plotly_chart(fig_topic, use_container_width=True)
+            st.dataframe(
+                topic_gains[["Topic", "Students", "Pre %", "Post %", "Gain"]],
+                use_container_width=True, hide_index=True,
             )
 
-            subset = paired.dropna(subset=[x_choice, y_choice]).copy()
+            # ── Gain vs growth, raw and adjusted ───────────────────────────────
+            st.divider()
+            st.markdown("### Does gain predict MCAT growth?")
 
-            c = st.columns(4)
-            c[0].metric("Items counted", n_items)
-            c[1].metric("Students in view", len(subset))
-            c[2].metric("Mean participation", f"{subset['Participation %'].mean():.1f}%"
-                        if subset["Participation %"].notna().any() else "—")
-            c[3].metric("Mean change", f"{subset['Change'].mean():+.1f}")
+            adjust = st.toggle(
+                "Adjust for Exam 1 baseline",
+                value=False,
+                help="Students who scored low on Exam 1 have the most room to improve, "
+                     "and also tend to score low on pre-class quizzes. Adjusting removes "
+                     "that shared Exam 1 effect from both sides.",
+            )
 
-            if len(subset) < 3:
-                st.warning("Fewer than three students have both measures — no correlation shown.")
-            else:
-                fig_sc, stats = _scatter_with_fit(
-                    subset, x_choice, y_choice,
-                    title=f"{x_choice} vs {'score change' if y_choice == 'Change' else 'Exam 2 total'}",
-                    x_title=x_choice,
-                    y_title="Change in MCAT total" if y_choice == "Change" else "Exam 2 total",
-                    hline=0 if y_choice == "Change" else None,
+            raw = ex.correlation(view["Learning Gain"], view["Change"])
+            part = ex.partial_correlation(view["Learning Gain"], view["Change"], view["Exam 1"])
+            baseline = ex.correlation(view["Exam 1"], view["Change"])
+
+            fig_gain, _ = _scatter_with_fit(
+                view, "Learning Gain", "Change",
+                title="Learning gain vs MCAT change",
+                x_title="Learning gain (participation task − pre-class, points)",
+                y_title="Change in MCAT total",
+                hline=0,
+            )
+            st.plotly_chart(fig_gain, use_container_width=True)
+
+            if part["pearson"] is not None and raw["pearson"] is not None:
+                shrunk = abs(part["pearson"]) < abs(raw["pearson"]) / 2
+                message = (
+                    f"Raw correlation **r = {raw['pearson']:+.2f}** (n = {raw['n']}). "
+                    f"Exam 1 alone predicts change at **r = {baseline['pearson']:+.2f}** — "
+                    f"low scorers had the most room. After removing that shared Exam 1 "
+                    f"effect, learning gain is left with **r = {part['pearson']:+.2f}**."
                 )
-                st.plotly_chart(fig_sc, use_container_width=True)
-
-                r, rho = stats["pearson"], stats["spearman"]
-                verdict = ex.strength_label(r)
-                body = (
-                    f"Pearson **r = {r:+.2f}**"
-                    + (f" · Spearman **ρ = {rho:+.2f}**" if rho is not None else "")
-                    + f" · n = {stats['n']}"
-                    + f" · each +10 {x_choice.replace(' %', '')} points goes with "
-                      f"**{stats['slope'] * 10:+.1f}** points of "
-                      f"{'change' if y_choice == 'Change' else 'Exam 2 total'}."
-                )
-                if r is not None and abs(r) < 0.1:
-                    st.info(f"**{verdict.capitalize()}.** {body}", icon="ℹ️")
-                elif r is not None and r > 0:
-                    st.success(f"**{verdict.capitalize()} relationship.** {body}", icon="📈")
+                if shrunk:
+                    st.warning(
+                        f"**The raw relationship is regression to the mean, not learning.** "
+                        f"{message} Whatever the gain measures, it adds essentially nothing "
+                        f"to what Exam 1 already told you.",
+                        icon="⚠️",
+                    )
                 else:
-                    st.warning(f"**{verdict.capitalize()} relationship.** {body}", icon="📉")
+                    st.success(
+                        f"**Gain survives the Exam 1 control.** {message}", icon="📈",
+                    )
+
+            if adjust:
+                st.caption(
+                    "Adjusted view: both axes have their Exam 1 trend removed, so what's "
+                    "left is the part neither variable shares with the baseline."
+                )
+                adj = view.dropna(subset=["Learning Gain", "Change", "Exam 1"]).copy()
+                slope_g, int_g = np.polyfit(adj["Exam 1"], adj["Learning Gain"], 1)
+                slope_c, int_c = np.polyfit(adj["Exam 1"], adj["Change"], 1)
+                adj["Gain (adj)"] = adj["Learning Gain"] - (slope_g * adj["Exam 1"] + int_g)
+                adj["Change (adj)"] = adj["Change"] - (slope_c * adj["Exam 1"] + int_c)
+                fig_adj, _ = _scatter_with_fit(
+                    adj, "Gain (adj)", "Change (adj)",
+                    title="Same students, Exam 1 effect removed from both axes",
+                    x_title="Learning gain, Exam 1 removed",
+                    y_title="MCAT change, Exam 1 removed",
+                    hline=0,
+                )
+                st.plotly_chart(fig_adj, use_container_width=True)
+
+            # ── Every measure, side by side ────────────────────────────────────
+            st.divider()
+            st.markdown("### Which measure actually tracks growth?")
+            st.caption(
+                "Each candidate against MCAT change, before and after controlling for "
+                "Exam 1. A measure worth acting on keeps its size in the adjusted column."
+            )
+
+            candidates = [
+                ("Learning Gain",       "Learning gain (post − pre)"),
+                ("Pre-Class Avg %",     "Pre-class score (starting knowledge)"),
+                ("Post-Class Avg %",    "Participation task score"),
+                ("Homework Avg %",      "Homework score"),
+                ("Avg Task Score %",    "Avg score, all counted items"),
+                ("Participation %",     "Participation rate (share submitted)"),
+            ]
+            rows = []
+            for col, label in candidates:
+                if col not in view.columns or view[col].notna().sum() < 4:
+                    continue
+                r_raw = ex.correlation(view[col], view["Change"])
+                r_adj = ex.partial_correlation(view[col], view["Change"], view["Exam 1"])
+                rows.append({
+                    "Measure":            label,
+                    "n":                  r_raw["n"],
+                    "r (raw)":            round(r_raw["pearson"], 3) if r_raw["pearson"] is not None else None,
+                    "r (Exam 1 removed)": round(r_adj["pearson"], 3) if r_adj["pearson"] is not None else None,
+                    "Reading":            ex.strength_label(r_adj["pearson"]),
+                })
+            if rows:
+                st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
                 st.caption(
                     "Correlation is not causation, and this cohort's participation is "
-                    "clustered high, which shrinks any correlation it can show. Read the "
-                    "quartile view below alongside the coefficient."
+                    "clustered high, which shrinks any correlation it can show."
                 )
 
-                st.divider()
-                st.markdown("### Change by participation quartile")
-
-                quart = subset.dropna(subset=[x_choice]).copy()
-                try:
-                    quart["Quartile"] = pd.qcut(
-                        quart[x_choice], 4, labels=["Q1 (lowest)", "Q2", "Q3", "Q4 (highest)"],
-                        duplicates="drop",
-                    )
-                except ValueError:
-                    quart["Quartile"] = "All"
-
-                summary = quart.groupby("Quartile", observed=True).agg(
-                    Students=("Student", "count"),
-                    **{f"Mean {x_choice}": (x_choice, "mean")},
-                    **{"Mean change": ("Change", "mean")},
-                    Improved=("Change", lambda s: int((s > 0).sum())),
-                ).reset_index()
-                summary["Mean change"] = summary["Mean change"].round(1)
-                summary[f"Mean {x_choice}"] = summary[f"Mean {x_choice}"].round(1)
-
-                fig_q = px.bar(
-                    summary, x="Quartile", y="Mean change", text="Mean change",
-                    hover_data=["Students", f"Mean {x_choice}", "Improved"],
-                    title=f"Mean score change by {x_choice} quartile",
-                    color_discrete_sequence=[jw.VIOLET_600],
-                )
-                fig_q.update_traces(texttemplate="%{text:+.1f}", textposition="outside")
-                fig_q.add_hline(y=0, line_color=jw.GRAY_400)
-                fig_q.update_layout(**jw.plotly_layout(height=380, xaxis_title=None))
-                st.plotly_chart(fig_q, use_container_width=True)
-                st.dataframe(summary, use_container_width=True, hide_index=True)
-
-                st.divider()
-                st.markdown("### Student detail")
-                table = subset[[
-                    "Student", "Exam 1", "Exam 2", "Change", "Band 2", "Movement",
-                    "Items Completed", "Participation %", "Avg Task Score %",
-                ]].sort_values("Participation %", ascending=False)
-                st.dataframe(table, use_container_width=True, hide_index=True)
-
-    # ── Tab: Student ─────────────────────────────────────────────────────────────
+            # ── Student detail ─────────────────────────────────────────────────
+            st.divider()
+            st.markdown("### Student detail")
+            detail_cols = [
+                "Student", "Exam 1", "Exam 2", "Change", "Band 2", "Movement",
+                "Topics Paired", "Pre-Class Avg %", "Post-Class Avg %", "Learning Gain",
+                "Participation %",
+            ]
+            detail = view[[c for c in detail_cols if c in view.columns]].sort_values(
+                "Learning Gain", ascending=False
+            )
+            st.dataframe(detail, use_container_width=True, hide_index=True)
+            st.download_button(
+                "⬇️ Learning table (CSV)",
+                detail.to_csv(index=False).encode(),
+                file_name=f"ey26_learning_course_{int(course_id)}.csv",
+                mime="text/csv",
+            )
 
     with tab_student:
         st.subheader("Individual student")
