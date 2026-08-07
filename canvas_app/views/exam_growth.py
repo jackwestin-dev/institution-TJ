@@ -20,6 +20,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import streamlit as st
 
+from .. import bundle
 from .. import exam_scores as ex
 from .. import jw_theme as jw
 from ..config import EXAM_DATA_DIR as DATA_DIR
@@ -183,6 +184,113 @@ def _unparsed_rows(df: pd.DataFrame, extracted: pd.DataFrame, mapping: dict) -> 
     return pd.DataFrame(cells)
 
 
+# ─── Course work vs exam growth ──────────────────────────────────────────────
+
+def _render_course_work_section(paired, topic_gains, course_id) -> None:
+    """
+    Whether doing well in the course predicted improving on the MCAT.
+
+    It didn't, and this section says so. It stays in the app because a null
+    result that isn't written down gets re-investigated, and because the method
+    matters: the obvious version of this analysis produces a convincing-looking
+    positive number that is entirely an artefact.
+    """
+    st.markdown("### Did course work predict exam improvement?")
+
+    if topic_gains.empty or "Standing Change" not in paired.columns:
+        st.caption("Not enough paired course data for this course to answer that.")
+        return
+
+    view = paired.dropna(subset=["Standing Change", "Change"])
+    if len(view) < 4:
+        st.caption("Too few students have both course and exam data to answer that.")
+        return
+
+    raw = ex.correlation(view["Standing Change"], view["Change"])
+    adj = ex.partial_correlation(view["Standing Change"], view["Change"], view["Exam 1"])
+
+    st.info(
+        f"**No. Course performance and MCAT improvement are unrelated in this cohort** "
+        f"(r = {raw['pearson']:+.2f}; r = {adj['pearson']:+.2f} after accounting for where "
+        f"students started, n = {len(view)}). Students who improved most in class were "
+        f"not the students who improved most on the MCAT. The exam growth on the other "
+        f"tabs is the real result — this is here to record that the link was tested.",
+        icon="🔍",
+    )
+
+    with st.expander("How this was measured, and why the obvious version is wrong"):
+        st.markdown(
+            "**The idea.** Every session has a *pre-class quiz* taken before teaching and "
+            "a *homework* on the same topic taken after. The difference between a "
+            "student's two scores should approximate what they learned from that session."
+            "\n\n"
+            "**Why raw score difference fails.** Homework and quiz are not equally hard. "
+            f"Across the {len(topic_gains)} paired topics the cohort's average moved by "
+            f"{topic_gains['Gain'].min():+.0f} to {topic_gains['Gain'].max():+.0f} points "
+            "depending on the topic — Emotion and Stress homework ran far harder than its "
+            "quiz, Redox far easier. A raw difference therefore measures which topics a "
+            "student happened to sit as much as what they learned. It is also mechanically "
+            "tied to the starting score: anyone who scores low on the quiz has more room "
+            "to gain."
+            "\n\n"
+            "**What is used instead.** Each student is scored against their own cohort on "
+            "each assignment, then compared: *how far up the class did they move from quiz "
+            "to homework on the same material?* A harder homework pushes everyone down "
+            "equally and cancels out. This measure is largely free of the starting-score "
+            "artefact (correlation with starting score falls from −0.47 to −0.15)."
+            "\n\n"
+            "**Result.** Even with a clean measure, it is unrelated to MCAT change. "
+            "Course assessments do track *ability* — pre-class scores correlate with "
+            "Exam 1 at about +0.5 — they just do not predict who *improves*."
+        )
+
+        st.markdown("**Topic difficulty — the confound this controls for**")
+        st.caption(
+            "Cohort average on the pre-class quiz vs the homework for the same topic. "
+            "A large gap means the two assessments were not equally hard."
+        )
+        show = topic_gains[["Topic", "Students", "Pre %", "Post %", "Gain"]].rename(
+            columns={"Pre %": "Pre-class avg %", "Post %": "Homework avg %",
+                     "Gain": "Difficulty gap (pts)"})
+        st.dataframe(show, use_container_width=True, hide_index=True)
+
+        dropped = topic_gains.attrs.get("dropped_ungraded") or []
+        if dropped:
+            st.caption(
+                "Excluded as ungraded (Canvas reports 0 correct, 0 incorrect and 0 "
+                "no-response for every student, so there is nothing to compare): "
+                + ", ".join(dropped)
+            )
+
+        st.markdown("**Every candidate measure against exam change**")
+        st.caption(
+            "The second column is what matters: it removes the effect of where a student "
+            "started, since low starters improve more regardless. Nothing survives it."
+        )
+        rows = []
+        for col, label in [
+            ("Standing Change",          "Course learning (difficulty-adjusted)"),
+            ("Learning Gain",            "Course learning (raw point difference)"),
+            ("Pre-Class Avg %",          "Pre-class quiz score"),
+            ("Post-Class Avg %",         "Homework score"),
+            ("Participation %",          "Participation rate"),
+            ("Avg Task Score %",         "Average score across all course items"),
+        ]:
+            if col not in paired.columns or paired[col].notna().sum() < 4:
+                continue
+            r1 = ex.correlation(paired[col], paired["Change"])
+            r2 = ex.partial_correlation(paired[col], paired["Change"], paired["Exam 1"])
+            rows.append({
+                "Measure": label,
+                "Students": r1["n"],
+                "vs exam change": round(r1["pearson"], 2) if r1["pearson"] is not None else None,
+                "…allowing for starting score": round(r2["pearson"], 2) if r2["pearson"] is not None else None,
+                "Verdict": ex.strength_label(r2["pearson"]),
+            })
+        if rows:
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
+
 # ─── Charts ──────────────────────────────────────────────────────────────────
 
 def _dumbbell(paired: pd.DataFrame, title: str) -> go.Figure:
@@ -300,58 +408,86 @@ def _scatter_with_fit(
 def render() -> None:
     # ─── Sidebar ─────────────────────────────────────────────────────────────────
 
+    # Nothing here needs setting for the page to work — the defaults are the
+    # EY26 cohort. Kept behind an expander so the sidebar is empty at a glance
+    # when this is being presented.
     with st.sidebar:
-        st.title("⚙️ Exam Growth")
-        course_id = st.number_input(
-            "Course ID", value=345, min_value=1, step=1,
-            help="345 = Jack Westin MCAT Preparation (EY26). Used for participation only.",
-        )
-        st.divider()
-        st.markdown("**Participation basis**")
-        participation_types = st.multiselect(
-            "Item types that count",
-            options=ex.PARTICIPATION_TYPES,
-            default=DEFAULT_PARTICIPATION_TYPES,
-            help="Computed from locally cached Canvas reports. Sync more reports on "
-                 "the Quiz Reports page to widen the base.",
-        )
-        st.caption("Participation = share of these items a student submitted.")
+        st.title("📈 Exam Growth")
+        st.caption("MCAT full-length 1 → full-length 2, JAMP EY26 cohort.")
+        with st.expander("Advanced settings", expanded=False):
+            course_id = st.number_input(
+                "Course ID", value=345, min_value=1, step=1,
+                help="345 = Jack Westin MCAT Preparation (EY26). Used for course "
+                     "participation figures only; the exam scores are independent of it.",
+            )
+            participation_types = st.multiselect(
+                "Course items that count toward participation",
+                options=ex.PARTICIPATION_TYPES,
+                default=DEFAULT_PARTICIPATION_TYPES,
+                help="Participation = the share of these items a student submitted.",
+            )
 
     st.markdown(jw.brand_header("Exam Growth — JAMP EY26"), unsafe_allow_html=True)
 
     # ─── Sources ─────────────────────────────────────────────────────────────────
+    #
+    # Default path needs no input at all: the committed bundle already holds both
+    # exams. The file pickers only appear when someone opens the loading section,
+    # so this page can be projected in front of administration as-is.
 
-    with st.expander("📂 Score sources", expanded=True):
-        if not _data_dir_files():
-            st.info(
-                "No score files on disk — upload one for each exam below. "
-                "`exam_data/` is gitignored because these exports carry student "
-                "names, so on the deployed app uploading is the only route in. "
-                "On a local checkout, drop exports into `exam_data/` at the repo "
-                "root and they load automatically."
+    local_files = _data_dir_files()
+    name1 = name2 = ""
+
+    if local_files:
+        with st.expander("📂 Score sources", expanded=False):
+            st.caption(
+                "Reading MCAT exports from `exam_data/`. Adjust the file or column "
+                "mapping here if a new export is shaped differently."
             )
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("##### Exam 1 (baseline)")
-            df1, name1 = _source_picker("Exam 1 file", "e1", "exam1")
-            map1 = _mapping_controls(df1, name1, "e1") if df1 is not None else None
-        with col2:
-            st.markdown("##### Exam 2")
-            df2, name2 = _source_picker("Exam 2 file", "e2", "exam2")
-            map2 = _mapping_controls(df2, name2, "e2") if df2 is not None else None
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("##### Exam 1 (baseline)")
+                df1, name1 = _source_picker("Exam 1 file", "e1", "exam1")
+                map1 = _mapping_controls(df1, name1, "e1") if df1 is not None else None
+            with col2:
+                st.markdown("##### Exam 2")
+                df2, name2 = _source_picker("Exam 2 file", "e2", "exam2")
+                map2 = _mapping_controls(df2, name2, "e2") if df2 is not None else None
 
-    if df1 is None or df2 is None or map1 is None or map2 is None:
-        st.info("Choose a file for each exam above to build the dashboard.")
-        st.stop()
+        if df1 is None or df2 is None or map1 is None or map2 is None:
+            st.info("Choose a file for each exam in **Score sources** above.")
+            st.stop()
 
-    scores1 = ex.extract_scores(df1, map1["name_col"], map1["total_col"], map1["section_cols"])
-    scores2 = ex.extract_scores(df2, map2["name_col"], map2["total_col"], map2["section_cols"])
+        scores1 = ex.extract_scores(df1, map1["name_col"], map1["total_col"], map1["section_cols"])
+        scores2 = ex.extract_scores(df2, map2["name_col"], map2["total_col"], map2["section_cols"])
+        # Students who answered the survey with a screenshot instead of numbers
+        # are unreadable from the export; their scores are typed into
+        # exam_data/manual_scores.csv and folded in here.
+        scores1 = ex.with_manual(scores1, "exam1")
+        scores2 = ex.with_manual(scores2, "exam2")
 
-    if scores1["total"].notna().sum() == 0 or scores2["total"].notna().sum() == 0:
-        which = "Exam 1" if scores1["total"].notna().sum() == 0 else "Exam 2"
-        st.error(
-            f"No valid MCAT totals (472–528) could be read from the **{which}** file. "
-            "Check the column mapping above."
+        if scores1["total"].notna().sum() == 0 or scores2["total"].notna().sum() == 0:
+            which = "Exam 1" if scores1["total"].notna().sum() == 0 else "Exam 2"
+            st.error(
+                f"No valid MCAT totals (472–528) could be read from the **{which}** file. "
+                "Check the column mapping in **Score sources**."
+            )
+            st.stop()
+
+    elif bundle.has_exams():
+        scores1, scores2 = bundle.exam_frames()
+        name1, name2 = "published data (Exam 1)", "published data (Exam 2)"
+        df1 = df2 = None
+        map1 = map2 = None
+        if scores1.empty or scores2.empty:
+            st.error("The published exam data is missing one of the two exams.")
+            st.stop()
+
+    else:
+        st.info(
+            "No exam scores are available. On a local checkout, drop the MCAT "
+            "exports into `exam_data/`; on the server, run `build_data_bundle.py` "
+            "and commit `data/`."
         )
         st.stop()
 
@@ -389,14 +525,35 @@ def render() -> None:
         )
         st.stop()
 
-    tab_growth, tab_bands, tab_part, tab_student, tab_data = st.tabs(
-        ["📈 Growth", "🎯 Score Bands", "🧠 Learning vs Growth", "👤 Student", "🧾 Data & Coverage"]
+    # The learning analysis is deliberately not a headline tab. Course learning
+    # turned out to have no relationship with exam growth (r = -0.08 once the
+    # Exam 1 baseline is controlled for), so promoting it would advertise a
+    # finding that isn't there. It lives inside Data & Coverage, where the
+    # method and the null result are both written down.
+    tab_growth, tab_bands, tab_student, tab_data = st.tabs(
+        ["📈 Growth", "🎯 Score Bands", "👤 Student", "🧾 Data & Methods"]
     )
 
     # ── Tab: Growth ──────────────────────────────────────────────────────────────
 
     with tab_growth:
         st.subheader("Growth from Exam 1 to Exam 2")
+        st.markdown(
+            f"""
+Students in this cohort sat two full-length practice MCATs, and reported their
+scores through a Canvas survey. This tab compares the two.
+
+**What the numbers mean.** The MCAT is scored **472–528**, with 500 as the
+midpoint. Each of the four sections is scored 118–132 and the four add up to the
+total. A change of a few points is normal test-to-test variation; a change of
+ten or more is a real shift.
+
+**Who is counted.** Only the **{len(paired)} students who have a usable score for
+both exams**. Someone who sat one and not the other can't show growth, so
+including them would distort every figure on this tab. Coverage for everyone
+else is in **Data & Methods**.
+"""
+        )
 
         m = st.columns(5)
         m[0].metric("Students with both", len(paired))
@@ -505,7 +662,20 @@ def render() -> None:
 
     with tab_bands:
         st.subheader("Score bands")
-        st.caption("On Track ≥ 502 · Borderline 496–501 · Needs Support ≤ 495")
+        st.markdown(
+            """
+Students are grouped into three bands by total score, so movement between them
+shows how the cohort's readiness shifted rather than just its average.
+
+| Band | Score | Meaning |
+|---|---|---|
+| **On Track** | 502 and above | At or above the median MCAT score |
+| **Borderline** | 496 – 501 | Close, but below the median |
+| **Needs Support** | 495 and below | Well below the median |
+
+A student "moved up" if their band on Exam 2 is higher than on Exam 1.
+"""
+        )
 
         n_e1 = int(growth["Exam 1"].notna().sum())
         n_e2 = int(growth["Exam 2"].notna().sum())
@@ -625,215 +795,6 @@ def render() -> None:
 
     # ── Tab: Participation vs Growth ─────────────────────────────────────────────
 
-    with tab_part:
-        st.subheader("Learning vs exam growth")
-        st.caption(
-            "Every session pairs a **Pre-Class Quiz** (before instruction) with a "
-            "**Participation Task** (during/after) on the same topic. The difference "
-            "is the closest thing the course measures to a learning gain — this tab "
-            "asks whether it tracks MCAT improvement."
-        )
-
-        if topic_gains.empty:
-            st.warning(
-                f"No topic has both a cached pre-class quiz and a cached participation "
-                f"task for course {int(course_id)}. Sync more reports, or pick a course "
-                "that runs pre-class quizzes — course 351 (EY25) has none."
-            )
-        elif paired["Learning Gain"].notna().sum() < 3:
-            st.warning(
-                "Fewer than three students have both a learning gain and a score in "
-                "each exam, so no relationship can be shown."
-            )
-        else:
-            min_topics = st.slider(
-                "Minimum paired topics per student", 1,
-                int(paired["Topics Paired"].max()), min(3, int(paired["Topics Paired"].max())),
-                help="A student who sat only one or two pairs has a very noisy gain. "
-                     "Raising this trades sample size for a steadier measure.",
-            )
-            view = paired[
-                paired["Learning Gain"].notna() & (paired["Topics Paired"] >= min_topics)
-            ].copy()
-
-            k = st.columns(5)
-            k[0].metric("Topics paired", len(topic_gains))
-            k[1].metric("Students in view", len(view))
-            k[2].metric("Mean pre-class", f"{view['Pre-Class Avg %'].mean():.1f}%")
-            k[3].metric("Mean post-class", f"{view['Post-Class Avg %'].mean():.1f}%")
-            k[4].metric("Mean gain", f"{view['Learning Gain'].mean():+.1f} pts")
-
-            # ── The ceiling check, stated before any correlation ───────────────
-            post_sd = view["Post-Class Avg %"].std()
-            pre_sd = view["Pre-Class Avg %"].std()
-            mirror = ex.correlation(view["Pre-Class Avg %"], view["Learning Gain"])
-            if mirror["pearson"] is not None and mirror["pearson"] < -0.85:
-                st.warning(
-                    f"**Gain is mostly just the pre-class score upside down.** "
-                    f"Participation tasks sit at a ceiling — they spread only "
-                    f"{post_sd:.1f} points across students, against {pre_sd:.1f} for the "
-                    f"pre-class quizzes — so nearly everyone finishes near 100% and the "
-                    f"gain is set by where they started "
-                    f"(r = {mirror['pearson']:+.2f} between pre-class score and gain). "
-                    f"Read “gain” here as “had room to grow”, not “learned more”.",
-                    icon="⚠️",
-                )
-
-            st.divider()
-            st.markdown("### Where learning happened")
-            st.caption("Cohort mean per topic, over the students who sat both halves.")
-
-            topic_view = topic_gains.head(20)
-            fig_topic = go.Figure()
-            for _, row in topic_view.iterrows():
-                fig_topic.add_trace(go.Scatter(
-                    x=[row["Pre %"], row["Post %"]], y=[row["Topic"], row["Topic"]],
-                    mode="lines", line=dict(color=jw.SUCCESS, width=2),
-                    showlegend=False, hoverinfo="skip",
-                ))
-            for name, color, col in (("Pre-class", EXAM1_COLOR, "Pre %"),
-                                     ("Participation task", EXAM2_COLOR, "Post %")):
-                fig_topic.add_trace(go.Scatter(
-                    x=topic_view[col], y=topic_view["Topic"], mode="markers", name=name,
-                    marker=dict(size=10, color=color, line=dict(color=jw.WHITE, width=2)),
-                    customdata=topic_view["Students"],
-                    hovertemplate="%{y}<br>" + name + ": %{x:.1f}%<br>%{customdata} students<extra></extra>",
-                ))
-            fig_topic.update_layout(**jw.plotly_layout(
-                title="Pre-class → participation task, by topic",
-                height=max(380, len(topic_view) * 26 + 160),
-                xaxis_title="Mean score %", xaxis_range=[0, 105], yaxis_title=None,
-                yaxis=dict(categoryorder="array",
-                           categoryarray=topic_view["Topic"].tolist()[::-1],
-                           tickfont=dict(size=10)),
-                legend=dict(orientation="h", yanchor="bottom", y=1.005, x=0),
-                margin=dict(t=110, r=24, b=48, l=8),
-            ))
-            st.plotly_chart(fig_topic, use_container_width=True)
-            st.dataframe(
-                topic_gains[["Topic", "Students", "Pre %", "Post %", "Gain"]],
-                use_container_width=True, hide_index=True,
-            )
-
-            # ── Gain vs growth, raw and adjusted ───────────────────────────────
-            st.divider()
-            st.markdown("### Does gain predict MCAT growth?")
-
-            adjust = st.toggle(
-                "Adjust for Exam 1 baseline",
-                value=False,
-                help="Students who scored low on Exam 1 have the most room to improve, "
-                     "and also tend to score low on pre-class quizzes. Adjusting removes "
-                     "that shared Exam 1 effect from both sides.",
-            )
-
-            raw = ex.correlation(view["Learning Gain"], view["Change"])
-            part = ex.partial_correlation(view["Learning Gain"], view["Change"], view["Exam 1"])
-            baseline = ex.correlation(view["Exam 1"], view["Change"])
-
-            fig_gain, _ = _scatter_with_fit(
-                view, "Learning Gain", "Change",
-                title="Learning gain vs MCAT change",
-                x_title="Learning gain (participation task − pre-class, points)",
-                y_title="Change in MCAT total",
-                hline=0,
-            )
-            st.plotly_chart(fig_gain, use_container_width=True)
-
-            if part["pearson"] is not None and raw["pearson"] is not None:
-                shrunk = abs(part["pearson"]) < abs(raw["pearson"]) / 2
-                message = (
-                    f"Raw correlation **r = {raw['pearson']:+.2f}** (n = {raw['n']}). "
-                    f"Exam 1 alone predicts change at **r = {baseline['pearson']:+.2f}** — "
-                    f"low scorers had the most room. After removing that shared Exam 1 "
-                    f"effect, learning gain is left with **r = {part['pearson']:+.2f}**."
-                )
-                if shrunk:
-                    st.warning(
-                        f"**The raw relationship is regression to the mean, not learning.** "
-                        f"{message} Whatever the gain measures, it adds essentially nothing "
-                        f"to what Exam 1 already told you.",
-                        icon="⚠️",
-                    )
-                else:
-                    st.success(
-                        f"**Gain survives the Exam 1 control.** {message}", icon="📈",
-                    )
-
-            if adjust:
-                st.caption(
-                    "Adjusted view: both axes have their Exam 1 trend removed, so what's "
-                    "left is the part neither variable shares with the baseline."
-                )
-                adj = view.dropna(subset=["Learning Gain", "Change", "Exam 1"]).copy()
-                slope_g, int_g = np.polyfit(adj["Exam 1"], adj["Learning Gain"], 1)
-                slope_c, int_c = np.polyfit(adj["Exam 1"], adj["Change"], 1)
-                adj["Gain (adj)"] = adj["Learning Gain"] - (slope_g * adj["Exam 1"] + int_g)
-                adj["Change (adj)"] = adj["Change"] - (slope_c * adj["Exam 1"] + int_c)
-                fig_adj, _ = _scatter_with_fit(
-                    adj, "Gain (adj)", "Change (adj)",
-                    title="Same students, Exam 1 effect removed from both axes",
-                    x_title="Learning gain, Exam 1 removed",
-                    y_title="MCAT change, Exam 1 removed",
-                    hline=0,
-                )
-                st.plotly_chart(fig_adj, use_container_width=True)
-
-            # ── Every measure, side by side ────────────────────────────────────
-            st.divider()
-            st.markdown("### Which measure actually tracks growth?")
-            st.caption(
-                "Each candidate against MCAT change, before and after controlling for "
-                "Exam 1. A measure worth acting on keeps its size in the adjusted column."
-            )
-
-            candidates = [
-                ("Learning Gain",       "Learning gain (post − pre)"),
-                ("Pre-Class Avg %",     "Pre-class score (starting knowledge)"),
-                ("Post-Class Avg %",    "Participation task score"),
-                ("Homework Avg %",      "Homework score"),
-                ("Avg Task Score %",    "Avg score, all counted items"),
-                ("Participation %",     "Participation rate (share submitted)"),
-            ]
-            rows = []
-            for col, label in candidates:
-                if col not in view.columns or view[col].notna().sum() < 4:
-                    continue
-                r_raw = ex.correlation(view[col], view["Change"])
-                r_adj = ex.partial_correlation(view[col], view["Change"], view["Exam 1"])
-                rows.append({
-                    "Measure":            label,
-                    "n":                  r_raw["n"],
-                    "r (raw)":            round(r_raw["pearson"], 3) if r_raw["pearson"] is not None else None,
-                    "r (Exam 1 removed)": round(r_adj["pearson"], 3) if r_adj["pearson"] is not None else None,
-                    "Reading":            ex.strength_label(r_adj["pearson"]),
-                })
-            if rows:
-                st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
-                st.caption(
-                    "Correlation is not causation, and this cohort's participation is "
-                    "clustered high, which shrinks any correlation it can show."
-                )
-
-            # ── Student detail ─────────────────────────────────────────────────
-            st.divider()
-            st.markdown("### Student detail")
-            detail_cols = [
-                "Student", "Exam 1", "Exam 2", "Change", "Band 2", "Movement",
-                "Topics Paired", "Pre-Class Avg %", "Post-Class Avg %", "Learning Gain",
-                "Participation %",
-            ]
-            detail = view[[c for c in detail_cols if c in view.columns]].sort_values(
-                "Learning Gain", ascending=False
-            )
-            st.dataframe(detail, use_container_width=True, hide_index=True)
-            st.download_button(
-                "⬇️ Learning table (CSV)",
-                detail.to_csv(index=False).encode(),
-                file_name=f"ey26_learning_course_{int(course_id)}.csv",
-                mime="text/csv",
-            )
-
     with tab_student:
         st.subheader("Individual student")
 
@@ -919,16 +880,22 @@ def render() -> None:
             "Raw question counts like “25/59” are ignored on purpose. Fix these at the "
             "source form and re-export to bring the students below into the analysis."
         )
-        for label, df_raw, extracted, mapping in (
-            (name1, df1, scores1, map1),
-            (name2, df2, scores2, map2),
-        ):
-            bad = _unparsed_rows(df_raw, extracted, mapping)
-            if bad.empty:
-                st.success(f"**{label}** — every row parsed.")
-            else:
-                st.markdown(f"**{label}** — {len(bad)} unusable row(s)")
-                st.dataframe(bad, use_container_width=True, hide_index=True)
+        if map1 is None or map2 is None:
+            st.caption(
+                "Unreadable rows are reported when reading raw exports. The published "
+                "data has already had them filtered out at build time."
+            )
+        else:
+            for label, df_raw, extracted, mapping in (
+                (name1, df1, scores1, map1),
+                (name2, df2, scores2, map2),
+            ):
+                bad = _unparsed_rows(df_raw, extracted, mapping)
+                if bad.empty:
+                    st.success(f"**{label}** — every row parsed.")
+                else:
+                    st.markdown(f"**{label}** — {len(bad)} unusable row(s)")
+                    st.dataframe(bad, use_container_width=True, hide_index=True)
 
         only1 = growth[growth["Exam 1"].notna() & growth["Exam 2"].isna()]
         only2 = growth[growth["Exam 2"].notna() & growth["Exam 1"].isna()]
@@ -943,6 +910,9 @@ def render() -> None:
             st.markdown(f"**Exam 2 but not Exam 1 — {len(only2)}**")
             st.dataframe(only2[["Student", "Exam 2", "Band 2", "Participation %"]],
                          use_container_width=True, hide_index=True)
+
+        st.divider()
+        _render_course_work_section(paired, topic_gains, course_id)
 
         st.divider()
         st.markdown("### Downloads")

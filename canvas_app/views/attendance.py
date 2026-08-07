@@ -10,11 +10,74 @@ import urllib.parse
 import concurrent.futures
 from datetime import datetime
 
+import plotly.graph_objects as go
+
 from .. import jw_theme as jw
+from ..config import DATA_DIR
 
 # page_config and global CSS are set once in the app.py router
 
 BASE_URL = "https://jackwestin.com/nova-api"
+
+SNAPSHOT = DATA_DIR / "attendance.csv"
+SNAPSHOT_COLUMNS = ["cohort", "date", "session", "type", "attended", "roster", "pct"]
+
+
+def _render_snapshot() -> bool:
+    """
+    Draw the committed attendance snapshot. Returns False when there isn't one.
+
+    The snapshot is aggregate — attendance counts per session, never per named
+    student — so it is safe to commit to a public repo, unlike the raw Nova
+    records this view fetches when it runs live.
+    """
+    if not SNAPSHOT.exists():
+        return False
+    try:
+        df = pd.read_csv(SNAPSHOT)
+    except Exception:
+        return False
+    if df.empty or not set(SNAPSHOT_COLUMNS).issubset(df.columns):
+        return False
+
+    st.markdown(
+        "Each bar is one teaching session. **Attended** counts the students who "
+        "joined; **roster** is how many were expected. The percentage is simply "
+        "attended ÷ roster, so a session with a small roster can show a high "
+        "percentage on few students — the raw counts are on every bar."
+    )
+
+    k = st.columns(4)
+    k[0].metric("Sessions", len(df))
+    k[1].metric("Students expected", int(df["roster"].max()))
+    k[2].metric("Total attendances", int(df["attended"].sum()))
+    overall = 100 * df["attended"].sum() / df["roster"].sum() if df["roster"].sum() else 0
+    k[3].metric("Overall attendance", f"{overall:.0f}%",
+                help="Every student-session attended, over every student-session offered.")
+
+    st.divider()
+    for cohort, group in df.groupby("cohort"):
+        group = group.sort_values("date")
+        rate = 100 * group["attended"].sum() / group["roster"].sum() if group["roster"].sum() else 0
+        st.markdown(f"#### {cohort} — {len(group)} sessions, {rate:.0f}% attended overall")
+        fig = go.Figure(go.Bar(
+            x=group["pct"], y=group["session"], orientation="h",
+            marker_color=jw.VIOLET_600,
+            text=[f"{a}/{r}" for a, r in zip(group["attended"], group["roster"])],
+            textposition="auto",
+            hovertemplate="%{y}<br>%{x:.0f}% present<extra></extra>",
+        ))
+        fig.update_layout(**jw.plotly_layout(
+            height=max(260, 30 * len(group) + 120), xaxis_title="% of roster present",
+            xaxis_range=[0, 100], yaxis_title=None,
+            yaxis=dict(autorange="reversed", tickfont=dict(size=10)),
+            margin=dict(t=20, r=20, b=48, l=8),
+        ))
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.dataframe(df[SNAPSHOT_COLUMNS], use_container_width=True, hide_index=True)
+    st.caption(f"Source: published snapshot in `data/attendance.csv` · {len(df)} sessions.")
+    return True
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -227,29 +290,48 @@ def fetch_all_attendances(sessions, cookie_str, ua_str):
 def render() -> None:
     # ── sidebar ───────────────────────────────────────────────────────────────────
 
+    # Live Nova access needs session cookies copied out of a browser, which is
+    # not something to do in front of an audience — and the cookies expire in
+    # hours anyway. The default path reads a committed snapshot instead; the
+    # cookie form is tucked into an expander for whoever refreshes it.
     with st.sidebar:
-        st.title("⚙️ Settings")
-        class_id = st.number_input("Class ID", value=722, min_value=1, step=1)
-        cookie_string = st.text_area(
-            "Browser Cookies",
-            height=150,
-            placeholder="Paste the full Cookie header value here…",
-            help="F12 → Network → any nova-api request → Headers → Request Headers → Cookie",
-        )
-        user_agent = st.text_input(
-            "User-Agent",
-            placeholder="Paste your browser's User-Agent header value here…",
-            help="F12 → Network → any request → Request Headers → User-Agent. Required when Cloudflare blocks requests.",
-        )
-        load_btn = st.button(
-            "🔄 Load Data", type="primary", use_container_width=True,
-            disabled=not bool(cookie_string)
-        )
-        st.caption("⚠️ Cookies expire with your browser session. Re-paste if you get a 401 error.")
+        st.title("🗓️ Attendance")
+        st.caption("Live session attendance for the Nova class.")
+        with st.expander("Refresh from Nova", expanded=False):
+            st.caption(
+                "Pulls current attendance straight from Nova. Needs your browser "
+                "session, which expires within hours — snapshot the result rather "
+                "than relying on this staying live."
+            )
+            class_id = st.number_input("Class ID", value=722, min_value=1, step=1)
+            cookie_string = st.text_area(
+                "Browser cookies",
+                height=120,
+                placeholder="Paste the full Cookie header value here…",
+                help="F12 → Network → any nova-api request → Headers → Request Headers → Cookie",
+            )
+            user_agent = st.text_input(
+                "User-Agent",
+                placeholder="Paste your browser's User-Agent header value here…",
+                help="F12 → Network → any request → Request Headers → User-Agent. "
+                     "Required when Cloudflare blocks requests.",
+            )
+            load_btn = st.button(
+                "🔄 Load from Nova", type="primary", use_container_width=True,
+                disabled=not bool(cookie_string),
+            )
 
     if not cookie_string:
-        st.markdown(jw.brand_header("Nova Attendance Dashboard"), unsafe_allow_html=True)
-        st.info("👈 Paste your browser cookies in the sidebar, then click **Load Data**.")
+        st.markdown(jw.brand_header("Session Attendance"), unsafe_allow_html=True)
+        snapshot = _render_snapshot()
+        if not snapshot:
+            st.info(
+                "No attendance snapshot has been published yet.\n\n"
+                "A staff member can create one from **Refresh from Nova** in the "
+                "sidebar, then export it for committing. Attendance is the one "
+                "figure that can't be rebuilt from Canvas — Nova only serves it to "
+                "a logged-in browser session."
+            )
         st.stop()
 
 
@@ -432,6 +514,50 @@ def render() -> None:
 
 
     # ── raw data ──────────────────────────────────────────────────────────────────
+
+    # ── Publish a snapshot ────────────────────────────────────────────────────
+    st.divider()
+    with st.expander("📤 Publish this as a snapshot"):
+        st.markdown(
+            "Nova only serves attendance to a logged-in browser session, so the "
+            "deployed dashboard can't fetch it. Export the aggregate below, save it "
+            "as `data/attendance.csv`, and commit — the Attendance view then opens "
+            "with these numbers and no login.\n\n"
+            "The export holds **per-session counts only**, never a named student, so "
+            "it is safe in a public repo."
+        )
+        cohort_label = st.text_input(
+            "Cohort label", value="EY26",
+            help="How this class is named in the dashboard, e.g. EY26 or EY25.",
+        )
+        roster_size = st.number_input(
+            "Roster size", value=int(df["user"].nunique()), min_value=1, step=1,
+            help="Students expected per session — the denominator for the percentage. "
+                 "Defaults to the number of distinct students seen.",
+        )
+        snap = (
+            df.groupby("session_label")
+              .agg(attended=("user", "nunique"))
+              .reset_index()
+              .rename(columns={"session_label": "session"})
+        )
+        order = {lbl: i for i, lbl in enumerate(all_labels)}
+        snap = snap.sort_values("session", key=lambda s: s.map(order))
+        snap.insert(0, "cohort", cohort_label)
+        snap["date"] = ""
+        snap["type"] = "regular"
+        snap["roster"] = int(roster_size)
+        snap["pct"] = (snap["attended"] / int(roster_size) * 100).round(0).astype(int)
+        snap = snap[SNAPSHOT_COLUMNS]
+
+        st.dataframe(snap, use_container_width=True, hide_index=True)
+        st.download_button(
+            "⬇️ Download attendance.csv",
+            snap.to_csv(index=False).encode(),
+            file_name="attendance.csv",
+            mime="text/csv",
+            type="primary",
+        )
 
     with st.expander("📋 Raw attendance records"):
         st.dataframe(df_raw_view, use_container_width=True)

@@ -400,20 +400,25 @@ view_mode = None
 
 if section == "Canvas Accuracy":
     from canvas_app import jw_theme as jw
-    from canvas_app.config import cache_note, has_local_cache
-    from canvas_app.views import VIEWS
+    from canvas_app.views import ADMIN_VIEWS, PRESENTATION_VIEWS
 
     st.markdown(jw.CSS, unsafe_allow_html=True)
-    canvas_view = st.sidebar.radio(
-        "Canvas view",
-        list(VIEWS),
-        label_visibility="visible",
-    )
-    st.sidebar.divider()
-    if not has_local_cache():
-        st.sidebar.caption("⚠️ " + cache_note())
 
-    VIEWS[canvas_view]()
+    # Staff tools are opt-in. Without this ticked the sidebar shows only the
+    # three views that read published data, so the dashboard can be projected
+    # for administration with nothing to enter and no live connection to fail.
+    show_admin = st.sidebar.checkbox(
+        "Staff tools",
+        value=False,
+        help="Adds the live Canvas connection and data-refresh controls. "
+             "Not needed to view any of the published figures.",
+    )
+    choices = {**PRESENTATION_VIEWS, **ADMIN_VIEWS} if show_admin else PRESENTATION_VIEWS
+
+    canvas_view = st.sidebar.radio("View", list(choices), label_visibility="visible")
+    st.sidebar.divider()
+
+    choices[canvas_view]()
     st.stop()
 
 view_mode = st.sidebar.radio(

@@ -26,6 +26,11 @@ reports_cache/
 exam_data/
 *.zip
 
+# De-identification map for the committed data bundle: student_id -> real name.
+# The bundle itself carries only opaque IDs and is safe to publish; this file is
+# the one thing that could reverse it, so it stays local.
+data/.student_map.csv
+
 # Dependencies (uncomment if you add Node/Python/etc.)
 # node_modules/
 __pycache__/

@@ -24,6 +24,7 @@ import re
 
 import pandas as pd
 
+from . import bundle as _bundle
 from . import reports_cache as _rc
 from .score_parsing import parse_score_csv, submitted_students
 
@@ -271,6 +272,71 @@ def extract_scores(
     return out.drop_duplicates(subset="key", keep="first").reset_index(drop=True)
 
 
+MANUAL_FILE = "manual_scores.csv"
+
+
+def manual_scores(exam_label: str) -> pd.DataFrame:
+    """
+    Scores typed in by hand, for students the export can't carry.
+
+    Some students answer the score survey by uploading a screenshot of their
+    score report instead of entering numbers. The CSV export then holds a PNG
+    filename where the score should be, and nothing in it can be parsed. Reading
+    those images is a human job; this is where the result goes.
+
+    exam_data/manual_scores.csv, columns:
+        student,exam,total,C/P,CARS,B/B,P/S
+        Example Student,exam2,505,126,125,127,127
+
+    Only `student`, `exam` and either `total` or all four sections are needed.
+    The file is gitignored — it carries names.
+    """
+    from .config import EXAM_DATA_DIR
+
+    path = EXAM_DATA_DIR / MANUAL_FILE
+    empty = pd.DataFrame(columns=["key", "student", "total", *SECTIONS, "source_row"])
+    if not path.exists():
+        return empty
+    try:
+        raw = pd.read_csv(path)
+    except Exception:
+        return empty
+
+    raw.columns = [str(c).strip() for c in raw.columns]
+    name_col = next((c for c in raw.columns if c.lower() in ("student", "name")), None)
+    exam_col = next((c for c in raw.columns if c.lower() == "exam"), None)
+    if name_col is None or exam_col is None:
+        return empty
+
+    rows = []
+    for idx, row in raw.iterrows():
+        if str(row[exam_col]).strip().lower() != exam_label.lower():
+            continue
+        key = normalize_name(row[name_col])
+        if not key:
+            continue
+        sections = {s: parse_section(row.get(s)) for s in SECTIONS}
+        section_sum = (sum(sections[s] for s in SECTIONS)
+                       if all(sections[s] is not None for s in SECTIONS) else None)
+        total = parse_total(row.get("total")) or section_sum
+        if total is None:
+            continue
+        rows.append({
+            "key": key, "student": display_name(row[name_col]), "total": float(total),
+            **sections, "source_row": f"manual:{idx}",
+        })
+    return pd.DataFrame(rows, columns=["key", "student", "total", *SECTIONS, "source_row"])
+
+
+def with_manual(frame: pd.DataFrame, exam_label: str) -> pd.DataFrame:
+    """Fold hand-entered scores into an extracted exam frame, manual winning."""
+    manual = manual_scores(exam_label)
+    if manual.empty:
+        return frame
+    keep = frame[~frame["key"].isin(set(manual["key"]))]
+    return pd.concat([manual, keep], ignore_index=True)
+
+
 def merge_sources(frames: "list[pd.DataFrame]") -> pd.DataFrame:
     """
     Combine several extracted frames for the same exam, earlier frames winning.
@@ -383,6 +449,33 @@ def cached_items(course_id: int) -> pd.DataFrame:
     return out.sort_values(["due_at", "title"]).reset_index(drop=True)
 
 
+# ── Data source: full local cache, or the committed de-identified bundle ──────
+#
+# A local checkout has reports_cache/ and shows real names. The deployed app has
+# only data/, where students are S001, S002… Everything below reads through
+# these three functions so neither the analysis nor the pages need to know which
+# one they are looking at — the only visible difference is what a student is
+# called.
+
+def using_bundle(course_id: int) -> bool:
+    """True when this course's numbers come from the committed bundle."""
+    if _rc.cached_for_course(course_id):
+        return False
+    return _bundle.available()
+
+
+def course_items(course_id: int) -> pd.DataFrame:
+    return _bundle.items(course_id) if using_bundle(course_id) else cached_items(course_id)
+
+
+def course_submitters(course_id: int, assignment_id: int) -> "list[str]":
+    """Identifiers of everyone who submitted — names locally, IDs on the server."""
+    if using_bundle(course_id):
+        return _bundle.submitters(course_id, assignment_id)
+    raw = _rc.get_cached_csv(course_id, assignment_id)
+    return submitted_students(io.BytesIO(raw)) if raw else []
+
+
 def participation_table(
     course_id: int,
     item_types: "list[str]",
@@ -401,7 +494,7 @@ def participation_table(
     points can't be resolved (0-point tasks with no question-count columns).
     """
     exclude_ids = exclude_ids or set()
-    items = cached_items(course_id)
+    items = course_items(course_id)
     items = items[items["item_type"].isin(item_types)]
     items = items[~items["assignment_id"].isin(exclude_ids)]
 
@@ -409,21 +502,12 @@ def participation_table(
     n_items = 0
 
     for _, item in items.iterrows():
-        csv_bytes = _rc.get_cached_csv(course_id, item["assignment_id"])
-        if not csv_bytes:
-            continue
-        names = submitted_students(io.BytesIO(csv_bytes))
+        names = course_submitters(course_id, item["assignment_id"])
         if not names:
             continue
         n_items += 1
 
-        score_df, pts = parse_score_csv(io.BytesIO(csv_bytes))
-        pct_by_key: "dict[str, float]" = {}
-        if score_df is not None and pts:
-            for _, srow in score_df.iterrows():
-                k = normalize_name(srow["student"])
-                if k:
-                    pct_by_key[k] = round(srow["score"] / pts * 100, 1)
+        pct_by_key = _pct_by_key(course_id, item["assignment_id"])
 
         for name in names:
             key = normalize_name(name)
@@ -475,6 +559,9 @@ _TOPIC_MARKERS = [
     r"pre[-\s]?class\s+quiz",
     r"participation\s+tasks?",
     r"pre[-\s]?quiz",
+    r"homework",
+    # Canvas suffixes a re-run with " -2"; the topic is the same.
+    r"\s-\s*\d+\s*$",
 ]
 
 
@@ -499,7 +586,9 @@ def topic_of(title: str) -> str:
 
 
 def _pct_by_key(course_id: int, assignment_id: int) -> "dict[str, float]":
-    """{normalised name: score %} for one cached assignment, best attempt kept."""
+    """{student identifier: score %} for one assignment, best attempt kept."""
+    if using_bundle(course_id):
+        return _bundle.pct_by_key(course_id, assignment_id)
     raw = _rc.get_cached_csv(course_id, assignment_id)
     if not raw:
         return {}
@@ -518,16 +607,44 @@ def _pct_by_key(course_id: int, assignment_id: int) -> "dict[str, float]":
     return out
 
 
-def paired_topics(course_id: int, *, exclude_ids: "set | None" = None) -> pd.DataFrame:
+POST_TYPES = ["Homework", "Participation Task"]
+
+# A z-score needs a cohort behind it. Below this many students on a topic the
+# standard deviation is too unstable to divide by, so that topic contributes to
+# the raw gain but not to the standing change.
+MIN_TOPIC_STUDENTS = 8
+
+
+def _mean_sd(values: "list[float]") -> "tuple[float, float]":
+    """Population mean and standard deviation. sd is 0.0 for a constant list."""
+    n = len(values)
+    if not n:
+        return 0.0, 0.0
+    mean = sum(values) / n
+    var = sum((v - mean) ** 2 for v in values) / n
+    return mean, var ** 0.5
+
+
+def paired_topics(
+    course_id: int,
+    *,
+    post_type: str = "Homework",
+    exclude_ids: "set | None" = None,
+) -> pd.DataFrame:
     """
-    Topics that have BOTH a cached pre-class quiz and a cached participation task.
+    Topics that have BOTH a cached pre-class quiz and a cached `post_type` item.
 
     Columns: topic, pre_id, post_id, pre_title, post_title. A topic with two
     pre-class items (an occasional re-run) keeps the earliest by due date, so
     the "before instruction" reading is the one used.
+
+    post_type="Homework" is the meaningful pairing: homework is graded on
+    correctness and spreads students out. Participation tasks are marked for
+    completion, so nearly everyone scores ~100% and a "gain" against them mostly
+    measures where the student started rather than what they learned.
     """
     exclude_ids = exclude_ids or set()
-    items = cached_items(course_id)
+    items = course_items(course_id)
     items = items[~items["assignment_id"].isin(exclude_ids)]
 
     def first_by_topic(item_type: str) -> dict:
@@ -540,7 +657,7 @@ def paired_topics(course_id: int, *, exclude_ids: "set | None" = None) -> pd.Dat
         return picked
 
     pre = first_by_topic("Pre-Class Quiz")
-    post = first_by_topic("Participation Task")
+    post = first_by_topic(post_type)
 
     rows = []
     for key in sorted(set(pre) & set(post)):
@@ -555,7 +672,10 @@ def paired_topics(course_id: int, *, exclude_ids: "set | None" = None) -> pd.Dat
 
 
 def learning_tables(
-    course_id: int, *, exclude_ids: "set | None" = None,
+    course_id: int,
+    *,
+    post_type: str = "Homework",
+    exclude_ids: "set | None" = None,
 ) -> "tuple[pd.DataFrame, pd.DataFrame]":
     """
     Per-student and per-topic learning gain for a course.
@@ -570,7 +690,7 @@ def learning_tables(
     topics:   Topic, Students, Pre %, Post %, Gain, pre_title, post_title
         Cohort means per topic, over the students who sat both halves of it.
     """
-    pairs = paired_topics(course_id, exclude_ids=exclude_ids)
+    pairs = paired_topics(course_id, post_type=post_type, exclude_ids=exclude_ids)
     if pairs.empty:
         return (
             pd.DataFrame(columns=["key", "Student", "Topics Paired",
@@ -582,6 +702,7 @@ def learning_tables(
     display: "dict[str, str]" = {}
     per_student: "dict[str, dict]" = {}
     topic_rows = []
+    dropped: "list[str]" = []
 
     for _, pair in pairs.iterrows():
         pre_pct = _pct_by_key(course_id, pair["pre_id"])
@@ -590,33 +711,57 @@ def learning_tables(
         if not both:
             continue
 
+        # An item every student scores identically on was never really graded —
+        # course 345 has homework rows where Canvas reports 0 correct, 0
+        # incorrect and 0 no-response for the whole cohort. Pairing against one
+        # produces a fictitious -93 point "gain", so drop the topic and say so.
+        if len({pre_pct[k] for k in both}) == 1 or len({post_pct[k] for k in both}) == 1:
+            dropped.append(pair["post_title"])
+            continue
+
+        pre_mean, pre_sd = _mean_sd([pre_pct[k] for k in both])
+        post_mean, post_sd = _mean_sd([post_pct[k] for k in both])
+
         for key in both:
-            rec = per_student.setdefault(key, {"pre": [], "post": []})
+            rec = per_student.setdefault(key, {"pre": [], "post": [], "z": []})
             rec["pre"].append(pre_pct[key])
             rec["post"].append(post_pct[key])
+            # Standing change: where the student sat in the cohort on the
+            # homework, minus where they sat on the pre-class quiz. Both sides
+            # are z-scored within their own assignment, so a homework that was
+            # simply harder shifts every student's post score by the same amount
+            # and cancels. What is left is movement relative to peers on the
+            # same material. Needs a real cohort to standardise against.
+            if len(both) >= MIN_TOPIC_STUDENTS and pre_sd and post_sd:
+                rec["z"].append(
+                    (post_pct[key] - post_mean) / post_sd
+                    - (pre_pct[key] - pre_mean) / pre_sd
+                )
 
-        pre_mean = sum(pre_pct[k] for k in both) / len(both)
-        post_mean = sum(post_pct[k] for k in both) / len(both)
         topic_rows.append({
             "Topic":      pair["post_title"][:60],
             "Students":   len(both),
             "Pre %":      round(pre_mean, 1),
             "Post %":     round(post_mean, 1),
             "Gain":       round(post_mean - pre_mean, 1),
+            "Difficulty": round(post_mean - pre_mean, 1),
             "pre_title":  pair["pre_title"],
             "post_title": pair["post_title"],
         })
 
-    # Recover a readable name for each key from any cached report.
-    for _, pair in pairs.iterrows():
-        for aid in (pair["pre_id"], pair["post_id"]):
-            raw = _rc.get_cached_csv(course_id, aid)
-            if not raw:
-                continue
-            for name in submitted_students(io.BytesIO(raw)):
-                key = normalize_name(name)
-                if key and key not in display:
-                    display[key] = display_name(name)
+    # Recover a readable label for each key. Locally that means the student's
+    # name from a cached export; on the bundle the identifier is already the
+    # label, so there is nothing to look up.
+    if not using_bundle(course_id):
+        for _, pair in pairs.iterrows():
+            for aid in (pair["pre_id"], pair["post_id"]):
+                raw = _rc.get_cached_csv(course_id, aid)
+                if not raw:
+                    continue
+                for name in submitted_students(io.BytesIO(raw)):
+                    key = normalize_name(name)
+                    if key and key not in display:
+                        display[key] = display_name(name)
 
     student_rows = []
     for key, rec in per_student.items():
@@ -629,10 +774,13 @@ def learning_tables(
             "Pre-Class Avg %":   round(pre_avg, 1),
             "Post-Class Avg %":  round(post_avg, 1),
             "Learning Gain":     round(post_avg - pre_avg, 1),
+            "Topics Standardised": len(rec["z"]),
+            "Standing Change":   round(sum(rec["z"]) / len(rec["z"]), 3) if rec["z"] else None,
         })
 
     students = pd.DataFrame(student_rows, columns=[
-        "key", "Student", "Topics Paired", "Pre-Class Avg %", "Post-Class Avg %", "Learning Gain",
+        "key", "Student", "Topics Paired", "Pre-Class Avg %", "Post-Class Avg %",
+        "Learning Gain", "Topics Standardised", "Standing Change",
     ])
     if len(students):
         students = students.sort_values("Learning Gain", ascending=False).reset_index(drop=True)
@@ -642,6 +790,10 @@ def learning_tables(
     ])
     if len(topics):
         topics = topics.sort_values("Gain", ascending=False).reset_index(drop=True)
+
+    # Carried on the frame so the page can report what was excluded instead of
+    # silently showing a smaller topic count than the cache suggests.
+    topics.attrs["dropped_ungraded"] = dropped
 
     return students, topics
 
@@ -655,7 +807,7 @@ def type_averages(course_id: int, *, exclude_ids: "set | None" = None) -> pd.Dat
     against "how much they gained", which the paired view alone can't show.
     """
     exclude_ids = exclude_ids or set()
-    items = cached_items(course_id)
+    items = course_items(course_id)
     items = items[~items["assignment_id"].isin(exclude_ids)]
 
     collected: "dict[str, dict[str, list]]" = {}

@@ -20,7 +20,8 @@ from pathlib import Path
 from streamlit.testing.v1 import AppTest
 
 ROOT = Path(__file__).resolve().parent
-CANVAS_VIEWS = ["Quiz Reports", "Exam Growth", "Nova Attendance"]
+PRESENTATION_VIEWS = ["Exam Growth", "Course Performance", "Attendance"]
+ADMIN_VIEWS = ["Canvas Explorer (live)"]
 SCHOLAR_VIEWS = [
     "EY25 Scholar March-May Engagement, Interventions, and Predictions",
     "Individual Student Data - EY25",
@@ -48,10 +49,16 @@ def hidden(names):
             dst.rename(src)
 
 
-def check(label: str, section: str, view: str) -> bool:
+def _radio(at, label):
+    return next(r for r in at.radio if r.label == label)
+
+
+def check(label: str, section: str, view: str, staff: bool = False) -> bool:
     at = AppTest.from_file(str(ROOT / "main.py"), default_timeout=300).run()
-    at.radio[0].set_value(section).run()
-    at.radio[1].set_value(view).run()
+    _radio(at, "Section").set_value(section).run()
+    if staff:
+        at.checkbox[0].set_value(True).run()
+    _radio(at, "View").set_value(view).run()
 
     problems = [str(e.value) for e in at.exception]
     print(f"[{'FAIL' if problems else 'ok'}] {label}: {view}")
@@ -66,15 +73,19 @@ def main() -> int:
     print("--- local checkout (cache, exam data and .env present) ---")
     for view in SCHOLAR_VIEWS:
         ok &= check("local", "Scholar Dashboard", view)
-    for view in CANVAS_VIEWS:
+    for view in PRESENTATION_VIEWS:
         ok &= check("local", "Canvas Accuracy", view)
+    for view in ADMIN_VIEWS:
+        ok &= check("local", "Canvas Accuracy", view, staff=True)
 
     print("\n--- deployed server (no cache, no exam data, no .env) ---")
     with hidden(LOCAL_ONLY):
         for view in SCHOLAR_VIEWS:
             ok &= check("server", "Scholar Dashboard", view)
-        for view in CANVAS_VIEWS:
+        for view in PRESENTATION_VIEWS:
             ok &= check("server", "Canvas Accuracy", view)
+        for view in ADMIN_VIEWS:
+            ok &= check("server", "Canvas Accuracy", view, staff=True)
 
     print("\nPASS" if ok else "\nFAIL")
     return 0 if ok else 1
