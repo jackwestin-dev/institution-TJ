@@ -40,43 +40,102 @@ def _render_snapshot() -> bool:
     if df.empty or not set(SNAPSHOT_COLUMNS).issubset(df.columns):
         return False
 
+    # Sessions are numbered "#57 Emotion and Stress"; sort on the number so #7
+    # doesn't land after #70, and so the chart runs in teaching order.
+    df["_n"] = df["session"].str.extract(r"^#(\d+)").astype(float)
+    df = df.sort_values(["cohort", "_n", "session"]).reset_index(drop=True)
+
+    small = df["type"].astype(str).str.lower().eq("small_group")
+    whole_class, small_group = df[~small], df[small]
+
     st.markdown(
-        "Each bar is one teaching session. **Attended** counts the students who "
+        "Each bar is one teaching session. **Attended** is how many students "
         "joined; **roster** is how many were expected. The percentage is simply "
-        "attended ÷ roster, so a session with a small roster can show a high "
-        "percentage on few students — the raw counts are on every bar."
+        "attended ÷ roster, and the raw counts sit on every bar so a percentage "
+        "is never shown without the numbers behind it."
     )
 
+    rate = (100 * whole_class["attended"].sum() / whole_class["roster"].sum()
+            if whole_class["roster"].sum() else 0)
     k = st.columns(4)
-    k[0].metric("Sessions", len(df))
-    k[1].metric("Students expected", int(df["roster"].max()))
-    k[2].metric("Total attendances", int(df["attended"].sum()))
-    overall = 100 * df["attended"].sum() / df["roster"].sum() if df["roster"].sum() else 0
-    k[3].metric("Overall attendance", f"{overall:.0f}%",
-                help="Every student-session attended, over every student-session offered.")
+    k[0].metric("Whole-class sessions", len(whole_class))
+    k[1].metric("Students on the roster", int(whole_class["roster"].max()) if len(whole_class) else 0)
+    k[2].metric("Attendances recorded", int(whole_class["attended"].sum()))
+    k[3].metric("Average attendance", f"{rate:.0f}%",
+                help="Every student-session attended, over every student-session "
+                     "offered, across whole-class sessions.")
 
-    st.divider()
-    for cohort, group in df.groupby("cohort"):
-        group = group.sort_values("date")
-        rate = 100 * group["attended"].sum() / group["roster"].sum() if group["roster"].sum() else 0
-        st.markdown(f"#### {cohort} — {len(group)} sessions, {rate:.0f}% attended overall")
+    if len(small_group):
+        st.info(
+            f"**{len(small_group)} small-group sessions are reported separately below, "
+            f"as attendee counts rather than percentages.** The cohort is split into "
+            f"four groups of roughly 30, so only a fraction of students is expected at "
+            f"any one — measuring them against the full roster would show ~20% and "
+            f"badly understate turnout. A percentage isn't shown at all because the "
+            f"export doesn't record which group met, and two of these sessions drew "
+            f"more students than the largest group holds, so they combined groups.",
+            icon="ℹ️",
+        )
+
+    def _chart(group, title, color):
+        st.markdown(f"#### {title}")
         fig = go.Figure(go.Bar(
             x=group["pct"], y=group["session"], orientation="h",
-            marker_color=jw.VIOLET_600,
+            marker_color=color,
             text=[f"{a}/{r}" for a, r in zip(group["attended"], group["roster"])],
             textposition="auto",
-            hovertemplate="%{y}<br>%{x:.0f}% present<extra></extra>",
+            hovertemplate="%{y}<br>%{x:.0f}% of roster present<extra></extra>",
         ))
         fig.update_layout(**jw.plotly_layout(
-            height=max(260, 30 * len(group) + 120), xaxis_title="% of roster present",
+            height=max(260, 26 * len(group) + 120), xaxis_title="% of roster present",
             xaxis_range=[0, 100], yaxis_title=None,
-            yaxis=dict(autorange="reversed", tickfont=dict(size=10)),
+            yaxis=dict(categoryorder="array",
+                       categoryarray=group["session"].tolist()[::-1],
+                       tickfont=dict(size=10)),
             margin=dict(t=20, r=20, b=48, l=8),
         ))
         st.plotly_chart(fig, use_container_width=True)
 
+    st.divider()
+    for cohort, group in whole_class.groupby("cohort"):
+        crate = 100 * group["attended"].sum() / group["roster"].sum() if group["roster"].sum() else 0
+        _chart(group, f"{cohort} — {len(group)} whole-class sessions, {crate:.0f}% average attendance",
+               jw.VIOLET_600)
+
+    if len(small_group):
+        st.divider()
+        st.markdown(f"#### Small-group sessions ({len(small_group)}) — students attending")
+        st.caption(
+            "Counts, not percentages: the group that met isn't recorded. For scale, "
+            "the four groups hold 31, 31, 31 and 29 students."
+        )
+        fig_sg = go.Figure(go.Bar(
+            x=small_group["attended"], y=small_group["session"], orientation="h",
+            marker_color=jw.TEAL_500,
+            text=small_group["attended"], textposition="auto",
+            hovertemplate="%{y}<br>%{x} students attended<extra></extra>",
+        ))
+        fig_sg.add_vline(x=30, line_dash="dot", line_color=jw.GRAY_400,
+                         annotation_text="typical group size",
+                         annotation_font_color=jw.GRAY_500)
+        fig_sg.update_layout(**jw.plotly_layout(
+            height=max(240, 26 * len(small_group) + 120),
+            xaxis_title="Students attending", yaxis_title=None,
+            yaxis=dict(categoryorder="array",
+                       categoryarray=small_group["session"].tolist()[::-1],
+                       tickfont=dict(size=10)),
+            margin=dict(t=20, r=20, b=48, l=8),
+        ))
+        st.plotly_chart(fig_sg, use_container_width=True)
+
+    st.divider()
+    st.markdown("##### Every session")
     st.dataframe(df[SNAPSHOT_COLUMNS], use_container_width=True, hide_index=True)
-    st.caption(f"Source: published snapshot in `data/attendance.csv` · {len(df)} sessions.")
+    st.caption(
+        f"Source: published snapshot in `data/attendance.csv` · {len(df)} sessions "
+        f"({len(whole_class)} whole-class, {len(small_group)} small-group). "
+        "Session names come from Nova and are abbreviated in the export."
+    )
     return True
 
 
@@ -165,7 +224,12 @@ def session_sort_key(sess):
 
 
 def build_session_label(sess, idx):
-    """Return a unique human-readable label for a session dict."""
+    """Return a unique human-readable label for a session dict.
+
+    Titles keep enough characters to stay readable — cutting at 20 left
+    published snapshots full of labels like "#53 Charged Amino Acids," that
+    break mid-topic.
+    """
     prefix = f"#{idx + 1}"
     for key in ("date", "scheduled_at", "start_at", "starts_at", "started_at", "name", "title"):
         val = sess.get(key)
@@ -174,7 +238,7 @@ def build_session_label(sess, idx):
                 dt = datetime.fromisoformat(str(val).replace(" ", "T"))
                 return f"{prefix} {dt.strftime('%b %d')}"
             except Exception:
-                return f"{prefix} {str(val)[:20]}"
+                return f"{prefix} {' '.join(str(val).split())[:70].rstrip(' ,-:')}"
     return f"Session {idx + 1}"
 
 
@@ -545,7 +609,12 @@ def render() -> None:
         snap = snap.sort_values("session", key=lambda s: s.map(order))
         snap.insert(0, "cohort", cohort_label)
         snap["date"] = ""
-        snap["type"] = "regular"
+        # Small groups are attended by a subset of the cohort by design, so the
+        # full roster is the wrong denominator for them. Labelling them here
+        # keeps them out of the headline attendance rate downstream.
+        snap["type"] = snap["session"].str.contains(
+            r"small\s*gro", case=False, na=False
+        ).map({True: "small_group", False: "regular"})
         snap["roster"] = int(roster_size)
         snap["pct"] = (snap["attended"] / int(roster_size) * 100).round(0).astype(int)
         snap = snap[SNAPSHOT_COLUMNS]
