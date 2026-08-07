@@ -8,3 +8,15 @@ seaborn
 matplotlib
 scipy
 statsmodels
+
+# Canvas Accuracy views
+requests
+python-dotenv
+
+# Optional essay-review backends. The default "keyword" backend needs neither;
+# these are imported lazily and only when that backend is selected.
+anthropic
+google-genai
+
+# NOTE: playwright is deliberately absent. It drives the report downloader,
+# which only runs locally — see requirements-dev.txt.

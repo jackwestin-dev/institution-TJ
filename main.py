@@ -386,6 +386,36 @@ if not check_password():
 
 # ── Sidebar navigation ─────────────────────────────────────────────────────────
 st.sidebar.title("Navigation")
+
+# Two independent radios, one per section. The scholar views run off static
+# CSVs; the Canvas views talk to Canvas/Nova live and carry their own sidebar
+# controls, so mixing them into one list made the sidebar contradict itself.
+section = st.sidebar.radio(
+    "Section",
+    ["Scholar Dashboard", "Canvas Accuracy"],
+    label_visibility="visible",
+)
+
+view_mode = None
+
+if section == "Canvas Accuracy":
+    from canvas_app import jw_theme as jw
+    from canvas_app.config import cache_note, has_local_cache
+    from canvas_app.views import VIEWS
+
+    st.markdown(jw.CSS, unsafe_allow_html=True)
+    canvas_view = st.sidebar.radio(
+        "Canvas view",
+        list(VIEWS),
+        label_visibility="visible",
+    )
+    st.sidebar.divider()
+    if not has_local_cache():
+        st.sidebar.caption("⚠️ " + cache_note())
+
+    VIEWS[canvas_view]()
+    st.stop()
+
 view_mode = st.sidebar.radio(
     "View",
     [
@@ -1882,7 +1912,11 @@ elif view_mode == "Summer EY25 and EY26":
         return None
 
     att_path = _find("summer_attendance_sample.csv")
-    can_path = _find("summer_canvas_metrics.csv")
+    # data/canvas_metrics.csv is rebuilt from the real report cache by
+    # build_canvas_metrics.py; summer_canvas_metrics.csv is the older hand-built
+    # snapshot, kept only as a fallback for checkouts that haven't rebuilt yet.
+    can_path = _find("data/canvas_metrics.csv") or _find("summer_canvas_metrics.csv")
+    can_is_live = can_path is not None and can_path.replace("\\", "/").endswith("data/canvas_metrics.csv")
 
     if can_path is None:
         st.warning("`summer_canvas_metrics.csv` not found — Canvas activity can't be shown.")
@@ -1981,5 +2015,9 @@ elif view_mode == "Summer EY25 and EY26":
                                   "n_submitted": "Submitted", "participation": "Particip. %", "accuracy": "Accuracy %"})
         st.dataframe(tbl[["Cohort", "Session activity", "Type", "Submitted", "Particip. %", "Accuracy %"]],
                      use_container_width=True, hide_index=True)
-        st.caption(f"{len(tbl)} activities · Canvas cached Jun 29, 2026 · course 345 = EY26, 351 = EY25.")
+        source_note = (
+            f"built from the report cache on {datetime.fromtimestamp(os.path.getmtime(can_path)):%b %d, %Y}"
+            if can_is_live else "hand-built snapshot, Jun 29 2026"
+        )
+        st.caption(f"{len(tbl)} activities · {source_note} · course 345 = EY26, 351 = EY25.")
     st.write(" ")
