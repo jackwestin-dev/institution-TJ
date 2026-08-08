@@ -1907,8 +1907,11 @@ elif view_mode == "Summer EY25 and EY26":
     EY26_L, EY25_L = "#9B99F7", "#7FD6CE"        # lighter (small-group / secondary)
 
     st.title("Summer EY25 and EY26")
-    st.caption("Nova session attendance + Canvas activity, side by side. Canvas numbers are live from cached quiz reports; "
-               "attendance is scoped to **June 2026** and tracked as **sessions attended ÷ sessions offered**.")
+    st.caption(
+        "Nova session attendance and Canvas activity, side by side. Attendance is "
+        "**students present ÷ students on the roster**, over the whole-class sessions "
+        "in the published snapshot. Canvas figures come from the cached quiz reports."
+    )
 
     def _find(fname):
         for p in (fname, "./" + fname):
@@ -1916,7 +1919,11 @@ elif view_mode == "Summer EY25 and EY26":
                 return p
         return None
 
-    att_path = _find("summer_attendance_sample.csv")
+    # data/attendance.csv is the real Nova pull, published by the Attendance view.
+    # summer_attendance_sample.csv was invented placeholder data and has been
+    # removed; the fallback stays only so an older checkout still renders.
+    att_path = _find("data/attendance.csv") or _find("summer_attendance_sample.csv")
+    att_is_real = att_path is not None and att_path.replace("\\", "/").endswith("data/attendance.csv")
     # data/canvas_metrics.csv is rebuilt from the real report cache by
     # build_canvas_metrics.py; summer_canvas_metrics.csv is the older hand-built
     # snapshot, kept only as a fallback for checkouts that haven't rebuilt yet.
@@ -1939,8 +1946,14 @@ elif view_mode == "Summer EY25 and EY26":
         k[0].metric("Enrolled — EY26 / EY25", f"{enroll['EY26']} / {enroll['EY25']}")
         if att is not None:
             # attended ÷ offered across all June session-slots, both cohorts
-            att_rate = 100 * att["attended"].sum() / (att["roster"].sum())
-            k[1].metric("Avg attendance (June, sample)", f"{att_rate:.0f}%")
+            # Small-group sessions carry no roster: only a subset of the cohort is
+            # expected, and the export doesn't say which group met. Counting their
+            # attendees against a whole-cohort denominator understates every rate.
+            whole = att[att["type"].astype(str).str.lower() != "small_group"]
+            denom = pd.to_numeric(whole["roster"], errors="coerce").sum()
+            att_rate = 100 * whole["attended"].sum() / denom if denom else 0
+            k[1].metric("Avg attendance", f"{att_rate:.0f}%",
+                        help="Whole-class sessions only.")
         else:
             k[1].metric("Avg attendance (June)", "—")
         k[2].metric("Avg participation (tasks)", f"{tasks['participation'].mean():.0f}%")
@@ -1949,9 +1962,20 @@ elif view_mode == "Summer EY25 and EY26":
         # ---- Attendance ----
         st.markdown("---")
         st.markdown("#### Session attendance — June 2026")
-        st.caption("⚠️ Sample data in the Nova skill's output shape (attended ÷ offered). Real numbers drop in once the skill runs the pull.")
+        if att_is_real:
+            st.caption(
+                "Attendance pulled from Nova. Small-group sessions are excluded from "
+                "the rates below — only part of the cohort is expected at one, so "
+                "measuring them against the full roster understates turnout."
+            )
+        else:
+            st.caption("Attendance figures (attended ÷ offered).")
         if att is None:
-            st.info("`summer_attendance_sample.csv` not found — run the Nova attendance skill to generate it.")
+            st.info(
+                "No attendance data found. Publish a snapshot from "
+                "**JAMP EY26 → Attendance → Refresh from Nova** and commit it as "
+                "`data/attendance.csv`."
+            )
         else:
             acols = st.columns(2)
             for col, coh, cc, lc in ((acols[0], "EY26", EY26_C, EY26_L), (acols[1], "EY25", EY25_C, EY25_L)):
@@ -1959,11 +1983,16 @@ elif view_mode == "Summer EY25 and EY26":
                 if sub.empty:
                     col.info(f"No {coh} attendance rows.")
                     continue
+                sub = sub[sub["type"].astype(str).str.lower() != "small_group"]
+                if sub.empty:
+                    col.info(f"No whole-class {coh} sessions recorded.")
+                    continue
                 offered = len(sub)
-                rate = 100 * sub["attended"].sum() / (offered * enroll[coh])
+                expected = pd.to_numeric(sub["roster"], errors="coerce").sum() or (offered * enroll[coh])
+                rate = 100 * sub["attended"].sum() / expected
                 col.markdown(f"**{coh}** · {offered} sessions offered · "
                              f"<span style='color:{cc};font-weight:700'>{rate:.0f}%</span> attended "
-                             f"({sub['attended'].sum()}/{offered * enroll[coh]} student-sessions)",
+                             f"({int(sub['attended'].sum())}/{int(expected)} student-sessions)",
                              unsafe_allow_html=True)
                 sub["label"] = sub.apply(lambda r: ("SG: " if r["type"] == "small_group" else "") + r["session"], axis=1)
                 sub = sub.sort_values("date")

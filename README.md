@@ -27,7 +27,7 @@ Streamlit dashboard for JFDs. The sidebar has two sections, each with its own ra
 - `roster.csv` — For student roster (reference) at top of dashboard.
 - `data/canvas_metrics.csv` — Canvas accuracy/participation per assignment, built from the report cache by `build_canvas_metrics.py`. Counts only, no names. Powers the Summer EY25/EY26 view.
 - `summer_canvas_metrics.csv` — The older hand-built snapshot the above replaces. Kept only as a fallback for checkouts that haven't rebuilt yet.
-- `summer_attendance_sample.csv` — Sample Nova attendance in the attendance-tracker skill's output shape; replace with the skill's real June 2026 pull.
+- `data/attendance.csv` — Real Nova session attendance, per-session counts only. Published from **JAMP EY26 → Attendance → Refresh from Nova → Publish this as a snapshot**. Small-group sessions carry no roster, because only part of the cohort is expected and the export doesn't record which group met.
 
 ## Student data never leaves your machine
 
