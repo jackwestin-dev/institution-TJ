@@ -31,6 +31,14 @@ exam_data/
 # the one thing that could reverse it, so it stays local.
 data/.student_map.csv
 
+# Presentation deck and its generator, kept deliberately local. Nothing here is
+# student-identifying — the deck is cohort-level and was checked — they are just
+# not wanted in the repo. Listed so a stray `git add -A` can't sweep them in.
+# To commit one anyway: git add -f <path>
+*.pptx
+build_slides.py
+slide_assets/
+
 # Dependencies (uncomment if you add Node/Python/etc.)
 # node_modules/
 __pycache__/
