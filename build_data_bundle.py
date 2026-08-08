@@ -130,11 +130,18 @@ def collect_assignments_and_scores() -> "tuple[list, list, dict, dict, list, lis
             # Canvas can't distinguish "answered nothing" from "answered wrong" —
             # both export as 0. See canvas_app.data_quality for what that costs
             # and which zeros are removed here.
-            keep, drop_keys, reason = dq.screen(item_type, pct_by_key)
+            keep, drop_keys, blank_scores, reason = dq.screen(item_type, pct_by_key)
             if not keep:
                 dropped_assignments.append(f"{course_id}_{aid} {title[:44]} — {reason}")
                 continue
-            if drop_keys:
+            if blank_scores:
+                # Ungraded but genuinely submitted — a participation task or
+                # survey Canvas never scored. Keeping the rows preserves the
+                # record of who took part; clearing the scores stops a fictitious
+                # 0% being averaged in as performance.
+                pct_by_key = {}
+                dropped_rows.append(f"{course_id}_{aid} {title[:44]} — {reason}")
+            elif drop_keys:
                 dropped_rows.append(f"{course_id}_{aid} {title[:44]} — {reason}")
 
             kept_names = [n for n in names if ex.normalize_name(n) not in drop_keys]

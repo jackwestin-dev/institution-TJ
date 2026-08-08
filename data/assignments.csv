@@ -1,9 +1,12 @@
 course_id,assignment_id,title,item_type,topic,due_at,n_submitted
+345,894,Practice Exam Scores Submission Form,Survey,practice exam scores submission form,2026-05-20T13:41:09Z,27
 345,895,Exam Date Reporting,Survey,exam date reporting,2026-05-20T14:06:14Z,5
+345,896,Unscored Sample Test (Free) Score Submission,Survey,unscored sample test free score submission,2026-05-20T17:34:41Z,107
 345,751,Jack Westin MCAT Course - Onboarding Survey,Survey,jack westin mcat course onboarding survey,2026-05-22T04:59:59Z,106
 345,753,C/P Section Review - Pre-Class Survey,Survey,c p section review pre class survey,2026-06-01T12:50:00Z,108
 345,754,C/P Section Full Length Review - Participation Task,Participation Task,c p section full length review,2026-06-01T15:00:00Z,116
 345,975,CARS Section Review Pre-Class Survey,Survey,cars section review pre class survey,2026-06-03T17:00:00Z,113
+345,854,CARS - AAMC Practice Participation Task -2,Participation Task,cars aamc practice,2026-06-04T17:00:00Z,118
 345,977,CARS Section Review Post-Class Survey,Survey,cars section review post class survey,2026-06-05T03:59:59Z,109
 345,1005,Bio/Biochem Section Review Pre-Class Survey,Survey,bio biochem section review pre class survey,2026-06-08T17:00:00Z,116
 345,763,B/B Section Full Length Exam Review - Science Strategies (practical applications) Participation Task,Participation Task,b b section full length exam review science strategies practical applications,2026-06-08T21:00:00Z,114
@@ -45,6 +48,7 @@ course_id,assignment_id,title,item_type,topic,due_at,n_submitted
 345,803,Electrostatics Participation Task,Participation Task,electrostatics,2026-07-06T15:30:00Z,106
 345,808,Magnetism & Circuits - Pre-Class Quiz,Pre-Class Quiz,magnetism circuits,2026-07-07T13:00:00Z,95
 345,806,Magnetism & Circuits Participation Task,Participation Task,magnetism circuits,2026-07-07T15:00:00Z,96
+345,811,CARS - Question Strategy Participation Task,Participation Task,cars question strategy,2026-07-08T15:30:00Z,101
 345,813,Research Methods - Pre-Class Quiz,Pre-Class Quiz,research methods,2026-07-09T13:30:00Z,95
 345,812,Research Methods Participation Task,Participation Task,research methods,2026-07-10T02:00:00Z,102
 345,876,CARS - Question Strategy Homework,Homework,cars question strategy,2026-07-13T04:59:59Z,93
@@ -83,11 +87,13 @@ course_id,assignment_id,title,item_type,topic,due_at,n_submitted
 351,1057,Acid Base and Amino Acids Participation Task,Participation Task,acid base and amino acids,2026-06-22T09:28:37Z,63
 351,1068,AAMC CARS Passage Analysis and Practice Participation Task,Participation Task,aamc cars passage analysis and practice,2026-06-22T10:06:22Z,48
 351,1059,Small Group Session 1 Participation Task,Participation Task,small group session 1,2026-06-22T17:00:00Z,63
+351,1065,Small Group Session 2 Participation Task,Participation Task,small group session 2,2026-06-23T17:00:00Z,55
 351,1058,Acid Base and Amino Acids Homework,Homework,acid base and amino acids,2026-06-24T03:59:59Z,50
 351,1062,Enzyme Kinetics and Inhibition Participation Task,Participation Task,enzyme kinetics and inhibition,2026-06-24T03:59:59Z,62
 351,1070,Small Group Session 3 Participation Task,Participation Task,small group session 3,2026-06-24T17:30:00Z,54
 351,1089,Electrostatics Participation Task,Participation Task,electrostatics,2026-06-25T15:00:00Z,54
 351,1071,AAMC CARS Practice Participation Task,Participation Task,aamc cars practice,2026-06-25T17:00:00Z,53
+351,1067,AAMC CARS Passage Analysis and Practice Post-Class Survey,Survey,aamc cars passage analysis and practice post class survey,2026-06-26T03:59:59Z,48
 351,1090,Theories of Emotion and Conditioning Participation Task,Participation Task,theories of emotion and conditioning,2026-06-26T15:00:00Z,53
 351,1072,Small Group Session 5 Participation Task,Participation Task,small group session 5,2026-06-26T17:00:00Z,53
 351,1069,AAMC CARS Passage Analysis Homework,Homework,aamc cars passage analysis,2026-06-28T03:59:59Z,39
