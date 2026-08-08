@@ -184,6 +184,97 @@ def _unparsed_rows(df: pd.DataFrame, extracted: pd.DataFrame, mapping: dict) -> 
     return pd.DataFrame(cells)
 
 
+# ─── Follow-up cohort ────────────────────────────────────────────────────────
+
+def _render_followup(growth: pd.DataFrame, course_id: int) -> None:
+    """
+    Students the growth figures cannot speak for, and what that costs.
+
+    Every band number on this page describes students who reported a score for
+    both exams. Students who reported the first and then stopped are silently
+    absent, and they are not a random sample: a student who stops reporting is
+    more likely to be struggling than one who reports an improvement. Leaving
+    them out of the count makes the cohort look better than the evidence
+    supports, so they are counted here instead — as outreach, not as failure.
+    """
+    only_first = growth[growth["Exam 1"].notna() & growth["Exam 2"].isna()]
+    paired = growth.dropna(subset=["Change"])
+    if only_first.empty:
+        return
+
+    ns = "Needs Support (≤495)"
+    ns_unknown = int((only_first["Band 1"] == ns).sum())
+    ns_confirmed = int((paired["Band 2"] == ns).sum())
+
+    # Students doing the coursework who never reported any exam at all.
+    no_exam = 0
+    try:
+        part, _ = ex.participation_table(int(course_id), DEFAULT_PARTICIPATION_TYPES)
+        if len(part):
+            no_exam = len(set(part["key"]) - set(growth["key"]))
+    except Exception:
+        no_exam = 0
+
+    st.divider()
+    st.markdown("### Students needing outreach")
+    st.markdown(
+        f"""
+The bands above describe the **{len(paired)} students who reported a score for both
+exams**. A further **{len(only_first)} reported the first exam and then did not submit
+the second survey**, so their current standing is unknown rather than good.
+
+That matters for how the improvement is read. **{ns_unknown} of those {len(only_first)} were in
+Needs Support on Exam 1.** They have not been shown to have improved; they have
+simply stopped appearing in the data. Students who are struggling are less
+likely to report a score than students who are pleased with one, so this group
+should be treated as at-risk until contacted.
+"""
+    )
+
+    cols = st.columns(3)
+    cols[0].metric(
+        "Confirmed still needing support", ns_confirmed,
+        help="Scored 495 or below on Exam 2.",
+    )
+    cols[1].metric(
+        "Status unknown — no second exam", len(only_first),
+        delta=f"{ns_unknown} were Needs Support on Exam 1",
+        delta_color="off",
+        help="Reported Exam 1 and did not submit the Exam 2 survey.",
+    )
+    cols[2].metric(
+        "No exam reported at all", no_exam,
+        help="Active in the Canvas course but never reported a practice exam score.",
+    )
+
+    st.warning(
+        f"**Outreach list: {len(only_first) + no_exam} students.** "
+        f"{len(only_first)} reported Exam 1 but not Exam 2 ({ns_unknown} of them below 496), "
+        f"and {no_exam} taking part in the course have never reported a score. "
+        f"The first thing to establish is whether they sat the exam and did not "
+        f"report it, or did not sit it — those need different responses.",
+        icon="📣",
+    )
+
+    with st.expander(f"Where the {len(only_first)} unreported students stood on Exam 1"):
+        rows = []
+        for band in ex.BAND_NAMES:
+            members = only_first[only_first["Band 1"] == band]
+            if len(members):
+                rows.append({
+                    "Exam 1 band": band,
+                    "Students": len(members),
+                    "Mean Exam 1": round(members["Exam 1"].mean(), 1),
+                })
+        if rows:
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        st.caption(
+            f"Their mean Exam 1 score was {only_first['Exam 1'].mean():.1f}, against "
+            f"{paired['Exam 1'].mean():.1f} for the students who reported twice — so as a "
+            "group they started slightly behind, not ahead."
+        )
+
+
 # ─── Charts ──────────────────────────────────────────────────────────────────
 
 def _dumbbell(paired: pd.DataFrame, title: str) -> go.Figure:
@@ -607,6 +698,22 @@ A student "moved up" if their band on Exam 2 is higher than on Exam 1.
                       "here — switch to the like-for-like cohort for that."),
             )
 
+        # The improvement is stated right here, so the group it excludes has to be
+        # stated here too rather than only further down the page.
+        _only_first = int((growth["Exam 1"].notna() & growth["Exam 2"].isna()).sum())
+        if cohort == "paired" and _only_first:
+            _ns_unknown = int(
+                (growth["Band 1"] == "Needs Support (≤495)")
+                [growth["Exam 2"].isna()].sum()
+            )
+            st.info(
+                f"These counts cover the {len(paired)} students who reported both exams. "
+                f"A further **{_only_first} reported Exam 1 and not Exam 2**, "
+                f"**{_ns_unknown}** of them from Needs Support — their standing is unknown, "
+                f"not improved. See **Students needing outreach** below.",
+                icon="ℹ️",
+            )
+
         long = band_df.melt(id_vars="Band", var_name="Exam", value_name="Students")
         fig_band = px.bar(
             long, x="Band", y="Students", color="Exam", barmode="group", text="Students",
@@ -685,6 +792,8 @@ A student "moved up" if their band on Exam 2 is higher than on Exam 1.
                     .sort_values("Student"),
                     use_container_width=True, hide_index=True,
                 )
+
+        _render_followup(growth, course_id)
 
     # ── Tab: Participation vs Growth ─────────────────────────────────────────────
 
