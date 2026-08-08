@@ -38,6 +38,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from canvas_app import data_quality as dq
 from canvas_app import exam_scores as ex
 from canvas_app import reports_cache as rc
 from canvas_app.config import DATA_DIR, EXAM_DATA_DIR, has_local_cache
@@ -88,11 +89,18 @@ def assign_ids(name_keys: "set[str]", existing: "dict[str, str]") -> "dict[str, 
 
 # ── Collection ───────────────────────────────────────────────────────────────
 
-def collect_assignments_and_scores() -> "tuple[list, list, dict, dict]":
-    """Walk the cache once, returning assignment rows, score rows, names, cohorts."""
+def collect_assignments_and_scores() -> "tuple[list, list, dict, dict, list, list]":
+    """
+    Walk the cache once.
+
+    Returns assignment rows, score rows, names, cohorts, and the two screening
+    logs — assignments dropped whole, and assignments that lost individual rows.
+    """
     assignment_rows, score_rows = [], []
     display: "dict[str, str]" = {}
     cohort: "dict[str, str]" = {}
+    dropped_assignments: "list[str]" = []
+    dropped_rows: "list[str]" = []
 
     for course_id, cohort_name in COURSE_COHORT.items():
         for item in rc.cached_for_course(course_id):
@@ -117,17 +125,31 @@ def collect_assignments_and_scores() -> "tuple[list, list, dict, dict]":
                     if pct > pct_by_key.get(key, -1):   # retake: keep the better
                         pct_by_key[key] = pct
 
+            item_type = ex.classify_item(title)
+
+            # Canvas can't distinguish "answered nothing" from "answered wrong" —
+            # both export as 0. See canvas_app.data_quality for what that costs
+            # and which zeros are removed here.
+            keep, drop_keys, reason = dq.screen(item_type, pct_by_key)
+            if not keep:
+                dropped_assignments.append(f"{course_id}_{aid} {title[:44]} — {reason}")
+                continue
+            if drop_keys:
+                dropped_rows.append(f"{course_id}_{aid} {title[:44]} — {reason}")
+
+            kept_names = [n for n in names if ex.normalize_name(n) not in drop_keys]
+
             assignment_rows.append({
                 "course_id":     course_id,
                 "assignment_id": aid,
                 "title":         title,
-                "item_type":     ex.classify_item(title),
+                "item_type":     item_type,
                 "topic":         ex.topic_of(title),
                 "due_at":        item.get("due_at") or "",
-                "n_submitted":   len(names),
+                "n_submitted":   len(kept_names),
             })
 
-            for name in names:
+            for name in kept_names:
                 key = ex.normalize_name(name)
                 if not key:
                     continue
@@ -140,7 +162,7 @@ def collect_assignments_and_scores() -> "tuple[list, list, dict, dict]":
                     "score_pct":     pct_by_key.get(key),
                 })
 
-    return assignment_rows, score_rows, display, cohort
+    return assignment_rows, score_rows, display, cohort, dropped_assignments, dropped_rows
 
 
 def collect_exams() -> "tuple[list, dict]":
@@ -198,8 +220,18 @@ def main() -> int:
         return 2
 
     print("Reading report cache…")
-    assignment_rows, score_rows, display, cohort = collect_assignments_and_scores()
+    (assignment_rows, score_rows, display, cohort,
+     dropped_assignments, dropped_rows) = collect_assignments_and_scores()
     print(f"  {len(assignment_rows)} assignments, {len(score_rows)} submission rows")
+
+    if dropped_assignments:
+        print(f"  dropped {len(dropped_assignments)} ungraded assignment(s):")
+        for line in dropped_assignments:
+            print(f"    {line}")
+    if dropped_rows:
+        print(f"  screened zero rows on {len(dropped_rows)} homework(s):")
+        for line in dropped_rows:
+            print(f"    {line}")
 
     print("Reading exam data…")
     exam_rows, exam_display = collect_exams()

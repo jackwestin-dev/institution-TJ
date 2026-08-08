@@ -585,10 +585,35 @@ def topic_of(title: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def _is_ungraded(pcts: "dict[str, float]") -> bool:
+    """
+    True when every submitter scored exactly zero — Canvas never graded the item.
+
+    Course 345 has homework rows where Canvas reports 0 correct, 0 incorrect and
+    0 no-response for the entire cohort: "Learning Styles & Frameworks Homework"
+    and "Coaching Session 1", both study-skills tasks marked for completion. A
+    real assignment does not produce a flawless run of zeros across ninety
+    students, and averaging them in drags the reported homework figure down by
+    about five points.
+
+    Only an all-zero run counts. A hard assignment everyone did badly on still
+    has spread, and a completion task where everyone scores full marks is a real
+    (if uninformative) score rather than a missing one.
+    """
+    values = list(pcts.values())
+    return bool(values) and all(v == 0 for v in values)
+
+
 def _pct_by_key(course_id: int, assignment_id: int) -> "dict[str, float]":
-    """{student identifier: score %} for one assignment, best attempt kept."""
+    """
+    {student identifier: score %} for one assignment, best attempt kept.
+
+    Returns {} for an ungraded item, so it counts toward participation — the
+    student did submit — but never toward an average score.
+    """
     if using_bundle(course_id):
-        return _bundle.pct_by_key(course_id, assignment_id)
+        found = _bundle.pct_by_key(course_id, assignment_id)
+        return {} if _is_ungraded(found) else found
     raw = _rc.get_cached_csv(course_id, assignment_id)
     if not raw:
         return {}
@@ -604,7 +629,7 @@ def _pct_by_key(course_id: int, assignment_id: int) -> "dict[str, float]":
         # A retake shows up as a second row; keep the better one.
         if pct > out.get(key, -1):
             out[key] = pct
-    return out
+    return {} if _is_ungraded(out) else out
 
 
 POST_TYPES = ["Homework", "Participation Task"]

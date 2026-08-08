@@ -76,10 +76,12 @@ def build() -> pd.DataFrame:
 
             # Accuracy is left blank for ungraded items (surveys, 0-point forms
             # with no question-count columns) rather than reported as zero — a
-            # form nobody can get wrong is not a 0% score.
+            # form nobody can get wrong is not a 0% score. The same applies to
+            # assignments Canvas never scored, which come back as a flawless run
+            # of zeros across the whole cohort; see exam_scores._is_ungraded.
             score_df, pts = parse_score_csv(io.BytesIO(raw))
             accuracy = None
-            if score_df is not None and pts:
+            if score_df is not None and pts and not (score_df["score"] == 0).all():
                 accuracy = round(score_df["score"].mean() / pts * 100, 1)
 
             title = (entry.get("title") or str(aid)).strip()
