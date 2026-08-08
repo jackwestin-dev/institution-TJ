@@ -30,13 +30,109 @@ TYPE_COLOR = {
     "Other":              jw.GRAY_400,
 }
 
+# Rendered inside a styled <div>, so these use HTML tags — markdown asterisks
+# would come out literally.
 TYPE_MEANING = {
-    "Pre-Class Quiz":     "Taken **before** the session, to check what students already knew.",
-    "Homework":           "Taken **after** the session, graded on correctness. The most informative score.",
-    "Participation Task": "Completed **during** the session. Marked for taking part, not for accuracy.",
+    "Pre-Class Quiz":     "Taken <b>before</b> the session, to check what students already knew.",
+    "Homework":           "Taken <b>after</b> the session, graded on correctness. The most informative score.",
+    "Participation Task": "Completed <b>during</b> the session.",
     "Survey":             "Forms and score-reporting. Ungraded, so no accuracy figure.",
     "Other":              "Anything that doesn't fit the categories above.",
 }
+
+# The three that make up a teaching cycle, in the order students meet them.
+CYCLE = ["Pre-Class Quiz", "Participation Task", "Homework"]
+
+
+def _render_topic_detail(course_id: int, table: pd.DataFrame) -> None:
+    """
+    One topic at a time, across the three activities that make up its session.
+
+    Reading a single topic end to end — what students knew going in, what they
+    did in the room, how they scored on the follow-up — is far more legible than
+    a cohort average across thirty unrelated subjects.
+    """
+    work = table[table["Type"].isin(CYCLE)].copy()
+    if work.empty:
+        return
+    work["Topic"] = work["Assignment"].map(ex.topic_of)
+    work = work[work["Topic"].astype(bool)]
+
+    # Only topics that actually run more than one kind of activity are worth a
+    # breakdown; a lone homework has nothing to compare against.
+    counts = work.groupby("Topic")["Type"].nunique()
+    topics = sorted(counts[counts >= 2].index)
+    if not topics:
+        return
+
+    st.markdown("### One topic at a time")
+    st.caption(
+        "Each teaching topic runs up to three activities. Pick one to see how the "
+        "cohort did at each stage of that session."
+    )
+
+    def _label(topic: str) -> str:
+        rows = work[work["Topic"] == topic]
+        longest = max(rows["Assignment"], key=len)
+        for suffix in (" Homework", " Participation Task", " - Pre-Class Quiz"):
+            longest = longest.replace(suffix, "")
+        return longest.strip(" -") or topic.title()
+
+    default = next((i for i, t in enumerate(topics) if "acid" in t), 0)
+    topic = st.selectbox(
+        "Topic", options=topics, index=default, format_func=_label,
+        help="Only topics with more than one activity are listed.",
+    )
+
+    rows = work[work["Topic"] == topic]
+    by_type = {r["Type"]: r for _, r in rows.iterrows()}
+
+    cols = st.columns(len(CYCLE))
+    for col, activity in zip(cols, CYCLE):
+        row = by_type.get(activity)
+        if row is None:
+            col.metric(activity, "—", help="No activity of this type for this topic.")
+            continue
+        avg = row["Average %"]
+        col.metric(
+            activity,
+            f"{avg:.0f}%" if pd.notna(avg) else "not scored",
+            help=f"{int(row['Submissions'])} students submitted “{row['Assignment']}”.",
+        )
+
+    plot_rows = [
+        {"Activity": a, "Average %": by_type[a]["Average %"],
+         "Submissions": int(by_type[a]["Submissions"]),
+         "Assignment": by_type[a]["Assignment"]}
+        for a in CYCLE
+        if a in by_type and pd.notna(by_type[a]["Average %"])
+    ]
+    if plot_rows:
+        pdf = pd.DataFrame(plot_rows)
+        fig = go.Figure(go.Bar(
+            x=pdf["Activity"], y=pdf["Average %"],
+            marker_color=[TYPE_COLOR.get(a, jw.GRAY_400) for a in pdf["Activity"]],
+            text=[f"{v:.0f}%" for v in pdf["Average %"]], textposition="outside",
+            customdata=pdf[["Submissions", "Assignment"]].values,
+            hovertemplate="%{customdata[1]}<br>%{y:.1f}% average<br>"
+                          "%{customdata[0]} students<extra></extra>",
+        ))
+        fig.update_layout(**jw.plotly_layout(
+            title=_label(topic), height=360, yaxis_range=[0, 108],
+            yaxis_title="Average score %", xaxis_title="",
+        ))
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.caption(
+        "Pre-class and homework are graded on correctness and are comparable to "
+        "each other. The participation task is marked for taking part, so its "
+        "score sits higher and measures something different."
+    )
+    st.dataframe(
+        rows[["Assignment", "Type", "Submissions", "Average %"]]
+        .sort_values("Type", key=lambda s: s.map({t: i for i, t in enumerate(CYCLE)})),
+        use_container_width=True, hide_index=True,
+    )
 
 
 def _course_table(course_id: int) -> pd.DataFrame:
@@ -142,14 +238,10 @@ struggled; the reverse means a strong few and a long tail of non-submitters.
             unsafe_allow_html=True,
         )
 
-    st.info(
-        "**Participation tasks are not a measure of ability.** They are marked for "
-        "taking part, so nearly every student scores close to 100%. Their scores "
-        "correlate almost not at all with MCAT performance (about +0.09), while "
-        "pre-class quiz and homework scores correlate around +0.5. Read participation "
-        "task figures as attendance, and homework figures as learning.",
-        icon="💡",
-    )
+    st.divider()
+
+    # ── One topic, all three activity types ───────────────────────────────────
+    _render_topic_detail(course_id, table)
 
     st.divider()
 
@@ -209,24 +301,31 @@ struggled; the reverse means a strong few and a long tail of non-submitters.
             "assessments are not equally hard, so the gap between them is not a clean "
             "measure of learning — it is shown here to describe the topics, not to rank them."
         )
-        view = topics.head(20)
+        view = topics.head(20).copy()
+        # Every row here is a homework, so repeating the word on all of them
+        # spends label width on nothing and pushes the real topic off the end.
+        view["Label"] = (
+            view["Topic"].str.replace(r"\s*Homework\s*$", "", regex=True)
+                         .str.strip(" -–—,")
+                         .str.slice(0, 44)
+        )
         fig_p = go.Figure()
         for _, row in view.iterrows():
             fig_p.add_trace(go.Scatter(
-                x=[row["Pre %"], row["Post %"]], y=[row["Topic"], row["Topic"]],
+                x=[row["Pre %"], row["Post %"]], y=[row["Label"], row["Label"]],
                 mode="lines", line=dict(color=jw.GRAY_200, width=2),
                 showlegend=False, hoverinfo="skip"))
         for name, color, col in (("Pre-class quiz", jw.VIOLET_300, "Pre %"),
                                  ("Homework", jw.VIOLET_600, "Post %")):
             fig_p.add_trace(go.Scatter(
-                x=view[col], y=view["Topic"], mode="markers", name=name,
+                x=view[col], y=view["Label"], mode="markers", name=name,
                 marker=dict(size=10, color=color, line=dict(color=jw.WHITE, width=2)),
                 customdata=view["Students"],
                 hovertemplate="%{y}<br>" + name + ": %{x:.1f}%<br>%{customdata} students<extra></extra>"))
         fig_p.update_layout(**jw.plotly_layout(
             height=max(360, len(view) * 26 + 150), xaxis_title="Cohort average %",
             xaxis_range=[0, 105], yaxis_title=None,
-            yaxis=dict(categoryorder="array", categoryarray=view["Topic"].tolist()[::-1],
+            yaxis=dict(categoryorder="array", categoryarray=view["Label"].tolist()[::-1],
                        tickfont=dict(size=10)),
             legend=dict(orientation="h", yanchor="bottom", y=1.005, x=0),
             margin=dict(t=100, r=24, b=48, l=8)))

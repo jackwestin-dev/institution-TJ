@@ -185,13 +185,77 @@ h1, h2, h3, h4, h5 {{
     border-color: {VIOLET_600} !important;
 }}
 
-/* ── Selectbox / inputs ── */
+/* ── Selectbox / inputs ──
+   A near-white control on a near-white page reads as a caption, not something
+   you can click. These give the closed state a visible edge, a tinted fill and
+   a chevron big enough to notice. */
 [data-testid="stSelectbox"] > div > div,
 [data-testid="stMultiSelect"] > div > div {{
     border-color: {GRAY_200} !important;
     border-radius: 8px !important;
     background: {WHITE};
     font-family: 'Figtree', sans-serif !important;
+}}
+[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+[data-testid="stMultiSelect"] div[data-baseweb="select"] > div {{
+    border: 1.5px solid {VIOLET_300} !important;
+    background: {VIOLET_50} !important;
+    cursor: pointer !important;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}}
+[data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover,
+[data-testid="stMultiSelect"] div[data-baseweb="select"] > div:hover {{
+    border-color: {VIOLET_600} !important;
+    box-shadow: 0 0 0 3px rgba(93,93,242,0.14) !important;
+}}
+/* Streamlit's default #31333F is a mid grey that goes washed out against the
+   tinted control. The chosen value and the menu options are the two things a
+   reader actually has to read, so both get full-strength text. */
+[data-testid="stSelectbox"] div[data-baseweb="select"] div,
+[data-testid="stMultiSelect"] div[data-baseweb="select"] div,
+[data-testid="stSelectbox"] div[data-baseweb="select"] input,
+[data-testid="stMultiSelect"] div[data-baseweb="select"] input {{
+    color: {VIOLET_900} !important;
+    font-weight: 600 !important;
+    -webkit-text-fill-color: {VIOLET_900} !important;
+}}
+[data-testid="stSelectbox"] div[data-baseweb="select"] [class*="placeholder"],
+[data-testid="stMultiSelect"] div[data-baseweb="select"] [class*="placeholder"] {{
+    color: {GRAY_500} !important;
+    -webkit-text-fill-color: {GRAY_500} !important;
+    font-weight: 500 !important;
+}}
+/* The open menu is a portal outside the widget, so it needs its own rules. */
+div[data-baseweb="popover"] li,
+ul[data-baseweb="menu"] li,
+li[role="option"] {{
+    color: {VIOLET_900} !important;
+    font-family: 'Figtree', sans-serif !important;
+    font-weight: 500 !important;
+}}
+li[role="option"]:hover,
+ul[data-baseweb="menu"] li:hover {{
+    background: {VIOLET_50} !important;
+    color: {VIOLET_900} !important;
+}}
+li[role="option"][aria-selected="true"] {{
+    background: {VIOLET_50} !important;
+    font-weight: 700 !important;
+}}
+
+/* The chevron ships at 16px in the page's text colour — easy to miss.
+   Must come after the blanket colour rule above so it keeps its own. */
+[data-testid="stSelectbox"] div[data-baseweb="select"] svg,
+[data-testid="stMultiSelect"] div[data-baseweb="select"] svg {{
+    width: 24px !important;
+    height: 24px !important;
+    color: {VIOLET_600} !important;
+    fill: {VIOLET_600} !important;
+}}
+[data-testid="stSelectbox"] div[data-baseweb="select"] > div > div:last-child,
+[data-testid="stMultiSelect"] div[data-baseweb="select"] > div > div:last-child {{
+    border-left: 1px solid {VIOLET_300};
+    padding-left: 2px;
 }}
 [data-testid="stSelectbox"] label,
 [data-testid="stMultiSelect"] label {{
@@ -266,8 +330,38 @@ hr {{
 
 # ── Plotly chart defaults ─────────────────────────────────────────────────────
 
+def _deep_merge(base: dict, extra: dict) -> dict:
+    """
+    Merge `extra` into `base`, recursing into nested dicts.
+
+    A plain dict.update() would let a caller passing xaxis=dict(categoryorder=…)
+    wipe out the entire styled xaxis — gridcolor, tick font and all — leaving an
+    unstyled axis. Only the keys actually supplied should win.
+    """
+    out = dict(base)
+    for key, value in extra.items():
+        if isinstance(value, dict) and isinstance(out.get(key), dict):
+            out[key] = _deep_merge(out[key], value)
+        else:
+            out[key] = value
+    return out
+
+
 def plotly_layout(**overrides) -> dict:
-    """Returns a layout dict to pass to fig.update_layout()."""
+    """
+    Layout dict to pass to fig.update_layout().
+
+    Callers override any key; nested dicts merge rather than replace, and
+    `title="…"` is accepted as shorthand for the title text so the styling
+    survives.
+    """
+    # Plotly.js prints the string "undefined" above a chart when the title
+    # object carries styling but no text, which is exactly what this base
+    # provides. An explicit empty string keeps untitled charts blank.
+    title_override = overrides.pop("title", None)
+    if isinstance(title_override, str):
+        title_override = {"text": title_override}
+
     base = dict(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor=WHITE,
@@ -277,6 +371,7 @@ def plotly_layout(**overrides) -> dict:
             size=13,
         ),
         title=dict(
+            text="",
             font=dict(
                 family="Outfit, system-ui, sans-serif",
                 color=VIOLET_900,
@@ -311,5 +406,6 @@ def plotly_layout(**overrides) -> dict:
             bgcolor="rgba(0,0,0,0)",
         ),
     )
-    base.update(overrides)
-    return base
+    if title_override is not None:
+        overrides["title"] = title_override
+    return _deep_merge(base, overrides)

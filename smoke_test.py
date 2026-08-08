@@ -74,18 +74,18 @@ def main() -> int:
     for view in SCHOLAR_VIEWS:
         ok &= check("local", "Scholar Dashboard", view)
     for view in PRESENTATION_VIEWS:
-        ok &= check("local", "Canvas Accuracy", view)
+        ok &= check("local", "JAMP EY26", view)
     for view in ADMIN_VIEWS:
-        ok &= check("local", "Canvas Accuracy", view, staff=True)
+        ok &= check("local", "JAMP EY26", view, staff=True)
 
     print("\n--- deployed server (no cache, no exam data, no .env) ---")
     with hidden(LOCAL_ONLY):
         for view in SCHOLAR_VIEWS:
             ok &= check("server", "Scholar Dashboard", view)
         for view in PRESENTATION_VIEWS:
-            ok &= check("server", "Canvas Accuracy", view)
+            ok &= check("server", "JAMP EY26", view)
         for view in ADMIN_VIEWS:
-            ok &= check("server", "Canvas Accuracy", view, staff=True)
+            ok &= check("server", "JAMP EY26", view, staff=True)
 
     print("\nPASS" if ok else "\nFAIL")
     return 0 if ok else 1

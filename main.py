@@ -392,13 +392,13 @@ st.sidebar.title("Navigation")
 # controls, so mixing them into one list made the sidebar contradict itself.
 section = st.sidebar.radio(
     "Section",
-    ["Scholar Dashboard", "Canvas Accuracy"],
+    ["Scholar Dashboard", "JAMP EY26"],
     label_visibility="visible",
 )
 
 view_mode = None
 
-if section == "Canvas Accuracy":
+if section == "JAMP EY26":
     from canvas_app import jw_theme as jw
     from canvas_app.views import ADMIN_VIEWS, PRESENTATION_VIEWS
 

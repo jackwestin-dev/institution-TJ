@@ -184,113 +184,6 @@ def _unparsed_rows(df: pd.DataFrame, extracted: pd.DataFrame, mapping: dict) -> 
     return pd.DataFrame(cells)
 
 
-# ─── Course work vs exam growth ──────────────────────────────────────────────
-
-def _render_course_work_section(paired, topic_gains, course_id) -> None:
-    """
-    Whether doing well in the course predicted improving on the MCAT.
-
-    It didn't, and this section says so. It stays in the app because a null
-    result that isn't written down gets re-investigated, and because the method
-    matters: the obvious version of this analysis produces a convincing-looking
-    positive number that is entirely an artefact.
-    """
-    st.markdown("### Did course work predict exam improvement?")
-
-    if topic_gains.empty or "Standing Change" not in paired.columns:
-        st.caption("Not enough paired course data for this course to answer that.")
-        return
-
-    view = paired.dropna(subset=["Standing Change", "Change"])
-    if len(view) < 4:
-        st.caption("Too few students have both course and exam data to answer that.")
-        return
-
-    raw = ex.correlation(view["Standing Change"], view["Change"])
-    adj = ex.partial_correlation(view["Standing Change"], view["Change"], view["Exam 1"])
-
-    st.info(
-        f"**No. Course performance and MCAT improvement are unrelated in this cohort** "
-        f"(r = {raw['pearson']:+.2f}; r = {adj['pearson']:+.2f} after accounting for where "
-        f"students started, n = {len(view)}). Students who improved most in class were "
-        f"not the students who improved most on the MCAT. The exam growth on the other "
-        f"tabs is the real result — this is here to record that the link was tested.",
-        icon="🔍",
-    )
-
-    with st.expander("How this was measured, and why the obvious version is wrong"):
-        st.markdown(
-            "**The idea.** Every session has a *pre-class quiz* taken before teaching and "
-            "a *homework* on the same topic taken after. The difference between a "
-            "student's two scores should approximate what they learned from that session."
-            "\n\n"
-            "**Why raw score difference fails.** Homework and quiz are not equally hard. "
-            f"Across the {len(topic_gains)} paired topics the cohort's average moved by "
-            f"{topic_gains['Gain'].min():+.0f} to {topic_gains['Gain'].max():+.0f} points "
-            "depending on the topic — Emotion and Stress homework ran far harder than its "
-            "quiz, Redox far easier. A raw difference therefore measures which topics a "
-            "student happened to sit as much as what they learned. It is also mechanically "
-            "tied to the starting score: anyone who scores low on the quiz has more room "
-            "to gain."
-            "\n\n"
-            "**What is used instead.** Each student is scored against their own cohort on "
-            "each assignment, then compared: *how far up the class did they move from quiz "
-            "to homework on the same material?* A harder homework pushes everyone down "
-            "equally and cancels out. This measure is largely free of the starting-score "
-            "artefact (correlation with starting score falls from −0.47 to −0.15)."
-            "\n\n"
-            "**Result.** Even with a clean measure, it is unrelated to MCAT change. "
-            "Course assessments do track *ability* — pre-class scores correlate with "
-            "Exam 1 at about +0.5 — they just do not predict who *improves*."
-        )
-
-        st.markdown("**Topic difficulty — the confound this controls for**")
-        st.caption(
-            "Cohort average on the pre-class quiz vs the homework for the same topic. "
-            "A large gap means the two assessments were not equally hard."
-        )
-        show = topic_gains[["Topic", "Students", "Pre %", "Post %", "Gain"]].rename(
-            columns={"Pre %": "Pre-class avg %", "Post %": "Homework avg %",
-                     "Gain": "Difficulty gap (pts)"})
-        st.dataframe(show, use_container_width=True, hide_index=True)
-
-        dropped = topic_gains.attrs.get("dropped_ungraded") or []
-        if dropped:
-            st.caption(
-                "Excluded as ungraded (Canvas reports 0 correct, 0 incorrect and 0 "
-                "no-response for every student, so there is nothing to compare): "
-                + ", ".join(dropped)
-            )
-
-        st.markdown("**Every candidate measure against exam change**")
-        st.caption(
-            "The second column is what matters: it removes the effect of where a student "
-            "started, since low starters improve more regardless. Nothing survives it."
-        )
-        rows = []
-        for col, label in [
-            ("Standing Change",          "Course learning (difficulty-adjusted)"),
-            ("Learning Gain",            "Course learning (raw point difference)"),
-            ("Pre-Class Avg %",          "Pre-class quiz score"),
-            ("Post-Class Avg %",         "Homework score"),
-            ("Participation %",          "Participation rate"),
-            ("Avg Task Score %",         "Average score across all course items"),
-        ]:
-            if col not in paired.columns or paired[col].notna().sum() < 4:
-                continue
-            r1 = ex.correlation(paired[col], paired["Change"])
-            r2 = ex.partial_correlation(paired[col], paired["Change"], paired["Exam 1"])
-            rows.append({
-                "Measure": label,
-                "Students": r1["n"],
-                "vs exam change": round(r1["pearson"], 2) if r1["pearson"] is not None else None,
-                "…allowing for starting score": round(r2["pearson"], 2) if r2["pearson"] is not None else None,
-                "Verdict": ex.strength_label(r2["pearson"]),
-            })
-        if rows:
-            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
-
-
 # ─── Charts ──────────────────────────────────────────────────────────────────
 
 def _dumbbell(paired: pd.DataFrame, title: str) -> go.Figure:
@@ -910,9 +803,6 @@ A student "moved up" if their band on Exam 2 is higher than on Exam 1.
             st.markdown(f"**Exam 2 but not Exam 1 — {len(only2)}**")
             st.dataframe(only2[["Student", "Exam 2", "Band 2", "Participation %"]],
                          use_container_width=True, hide_index=True)
-
-        st.divider()
-        _render_course_work_section(paired, topic_gains, course_id)
 
         st.divider()
         st.markdown("### Downloads")
