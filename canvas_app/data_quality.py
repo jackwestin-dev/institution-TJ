@@ -6,7 +6,8 @@ back as a score of 0. Left alone, those zeros are read as poor performance, and
 they distort two things at once — they drag the cohort average down, and they
 widen the spread so the assignment looks harder than it was.
 
-Three rules, applied at build time so the committed data never carries them:
+Two rules, applied at build time so the committed data never carries them. Both
+target assignments that were never graded at all — not students who scored badly.
 
   1. A **homework** where every submitted score is 0 was never graded. Course
      345 has two — a study-skills homework and a coaching-session homework,
@@ -19,19 +20,21 @@ Three rules, applied at build time so the committed data never carries them:
      up, so only the fictitious 0% accuracy goes. This is also what stopped
      surveys reporting an average score of 5%.
 
-  3. On a homework with **two or more** zeros, those zero rows are dropped.
-     A lone zero is plausibly a student who tried and got nothing right; a
-     cluster is the signature of blank submissions.
-
-Every rule reports what it removed rather than applying silently, because what
+Both rules report what they removed rather than applying silently, because what
 was taken out changes how the remaining numbers should be read.
+
+Deliberately NOT a rule: dropping individual zero rows from a homework that has
+several. That was tried and removed. It rested on reading two zeros among ninety
+students as "blank submissions", which a normal low tail also produces, and it
+cost more than it bought — 12 real scores deleted, one assignment's average
+moved 5.7 points, and the local report cache left disagreeing with the published
+bundle because only one of them had been screened. A student who scored zero is
+exactly the student this dashboard exists to surface, so an unscored zero stays
+visible unless the whole assignment proves ungraded.
 """
 
-# A single zero can be a real score. Two or more on one homework is a pattern.
-MIN_ZEROS_TO_DROP = 2
-
-# Rules 1 and 3 are deliberately limited to homework. Participation tasks are
-# marked for taking part, so a zero there means something different in kind.
+# Limited to homework: participation tasks are marked for taking part, so a zero
+# there means something different in kind and rule 2 handles them instead.
 GRADED_TYPES = ("Homework",)
 
 
@@ -41,7 +44,9 @@ def screen(item_type: str, pct_by_key: dict) -> "tuple[bool, set, bool, str]":
 
     Returns (keep_assignment, keys_to_drop, blank_scores, reason):
       keep_assignment  False drops the assignment and all its rows
-      keys_to_drop     students whose individual rows should be omitted
+      keys_to_drop     students whose individual rows should be omitted; always
+                       empty now that per-student screening has been removed,
+                       kept so callers need no change if it ever returns
       blank_scores     keep the submissions, discard the scores
       reason           why, for the build log
     """
@@ -54,9 +59,5 @@ def screen(item_type: str, pct_by_key: dict) -> "tuple[bool, set, bool, str]":
         if item_type in GRADED_TYPES:
             return False, set(), False, why
         return True, set(), True, why + "; submissions kept, scores cleared"
-
-    zeros = {key for key, value in scored.items() if value == 0}
-    if item_type in GRADED_TYPES and len(zeros) >= MIN_ZEROS_TO_DROP:
-        return True, zeros, False, f"{len(zeros)} zero-score submissions dropped"
 
     return True, set(), False, ""

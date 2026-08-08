@@ -16,9 +16,9 @@ course_id,assignment_id,title,item_type,topic,due_at,n_submitted
 345,767,Learning Styles & Frameworks Participation Task,Participation Task,learning styles frameworks,2026-06-15T17:00:00Z,113
 345,768,Learning Styles & Frameworks - Pre-Class Quiz,Pre-Class Quiz,learning styles frameworks,2026-06-16T03:30:00Z,108
 345,770,CARS Strategy - Reading Fundamentals Participation Task,Participation Task,cars strategy reading fundamentals,2026-06-17T15:00:00Z,116
-345,1024,Psych/Soc Review Homework,Homework,psych soc review,2026-06-18T03:59:59Z,80
+345,1024,Psych/Soc Review Homework,Homework,psych soc review,2026-06-18T03:59:59Z,82
 345,1042,Learning Styles & Frameworks Post-Class Quiz,Other,learning styles frameworks post class quiz,2026-06-21T03:59:59Z,104
-345,867,CARS Strategy - Reading Fundamentals Homework,Homework,cars strategy reading fundamentals,2026-06-22T04:59:59Z,96
+345,867,CARS Strategy - Reading Fundamentals Homework,Homework,cars strategy reading fundamentals,2026-06-22T04:59:59Z,99
 345,1073,Atomic Structure and Periodic Trends- Participation Tasks,Participation Task,atomic structure and periodic trends,2026-06-22T15:30:00Z,115
 345,778,Chemical Equilibrium and Kinetics - Pre-Class Quiz,Pre-Class Quiz,chemical equilibrium and kinetics,2026-06-23T13:00:00Z,93
 345,1075,Chemical Equilibrium and Kinetics Participation Task,Participation Task,chemical equilibrium and kinetics,2026-06-23T16:00:00Z,116
@@ -77,7 +77,7 @@ course_id,assignment_id,title,item_type,topic,due_at,n_submitted
 345,842,"Peptide Bond Formation, Protein Structure, Non-enzymatic Function of Proteins - Pre-Class Quiz",Pre-Class Quiz,peptide bond formation protein structure non enzymatic function of proteins,2026-07-23T13:00:00Z,96
 345,841,"Peptide Bond Formation, Protein Structure, Non-enzymatic Function of Proteins Participation Task",Participation Task,peptide bond formation protein structure non enzymatic function of proteins,2026-07-23T15:00:00Z,101
 345,844,Small Groups: Guided Science Participation Task,Participation Task,small groups guided science,2026-07-23T17:30:00Z,93
-345,883,CARS - Practice Homework,Homework,cars practice,2026-07-27T04:59:59Z,86
+345,883,CARS - Practice Homework,Homework,cars practice,2026-07-27T04:59:59Z,88
 345,882,"Charged Amino Acids, Isoelectric Point, Ion Exchange Chromatography Homework",Homework,charged amino acids isoelectric point ion exchange chromatography,2026-07-27T04:59:59Z,95
 345,884,"Peptide Bond Formation, Protein Structure, Non-enzymatic Function of Proteins Homework",Homework,peptide bond formation protein structure non enzymatic function of proteins,2026-07-27T04:59:59Z,92
 345,831,"Polar Amino Acids, Nonpolar Amino Acids, Stereochemistry Homework",Homework,polar amino acids nonpolar amino acids stereochemistry,2026-07-27T04:59:59Z,93
@@ -88,7 +88,7 @@ course_id,assignment_id,title,item_type,topic,due_at,n_submitted
 351,1068,AAMC CARS Passage Analysis and Practice Participation Task,Participation Task,aamc cars passage analysis and practice,2026-06-22T10:06:22Z,48
 351,1059,Small Group Session 1 Participation Task,Participation Task,small group session 1,2026-06-22T17:00:00Z,63
 351,1065,Small Group Session 2 Participation Task,Participation Task,small group session 2,2026-06-23T17:00:00Z,55
-351,1058,Acid Base and Amino Acids Homework,Homework,acid base and amino acids,2026-06-24T03:59:59Z,50
+351,1058,Acid Base and Amino Acids Homework,Homework,acid base and amino acids,2026-06-24T03:59:59Z,55
 351,1062,Enzyme Kinetics and Inhibition Participation Task,Participation Task,enzyme kinetics and inhibition,2026-06-24T03:59:59Z,62
 351,1070,Small Group Session 3 Participation Task,Participation Task,small group session 3,2026-06-24T17:30:00Z,54
 351,1089,Electrostatics Participation Task,Participation Task,electrostatics,2026-06-25T15:00:00Z,54
