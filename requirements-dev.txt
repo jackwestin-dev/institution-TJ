@@ -1,0 +1,15 @@
+# Local-only tooling for refreshing Canvas report data.
+#
+#   pip install -r requirements.txt -r requirements-dev.txt
+#   playwright install chromium
+#   python sync_reports.py
+#   python build_canvas_metrics.py
+#
+# Kept out of requirements.txt because Streamlit Community Cloud cannot install
+# the Chromium binary, and its filesystem is wiped on restart, so a report cache
+# synced on the server would not survive anyway.
+
+-r requirements.txt
+
+playwright
+openpyxl   # lets the Exam Growth page read .xlsx score exports

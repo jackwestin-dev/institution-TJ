@@ -1,0 +1,108 @@
+cohort,key,title,type,n_submitted,accuracy,participation
+EY25,351_1069,AAMC CARS Passage Analysis Homework,Homework,39,64.5,60.0
+EY25,351_1058,Acid Base and Amino Acids Homework,Homework,55,56.7,84.6
+EY25,351_1107,Homework,Homework,25,88.3,38.5
+EY25,351_1099,6/29/26 Small Group Participation Task,Participation Task,47,73.0,72.3
+EY25,351_1101,7/1/26 Small Group Participation Task,Participation Task,47,90.4,72.3
+EY25,351_1100,7/1/26 Systems Review Participation Task,Participation Task,46,98.4,70.8
+EY25,351_1113,7/13/26 Small Group - Metabolism Participation Task,Participation Task,35,92.9,53.8
+EY25,351_1109,7/6/26 Experimental Passage Practice - Participation Task,Participation Task,32,49.2,49.2
+EY25,351_1068,AAMC CARS Passage Analysis and Practice Participation Task,Participation Task,48,45.8,73.8
+EY25,351_1071,AAMC CARS Practice Participation Task,Participation Task,53,88.7,81.5
+EY25,351_1057,Acid Base and Amino Acids Participation Task,Participation Task,63,94.4,96.9
+EY25,351_1089,Electrostatics Participation Task,Participation Task,54,98.8,83.1
+EY25,351_1062,Enzyme Kinetics and Inhibition Participation Task,Participation Task,62,89.5,95.4
+EY25,351_1097,Redox and Electrochemistry - Participation Task,Participation Task,49,96.6,75.4
+EY25,351_1059,Small Group Session 1 Participation Task,Participation Task,63,55.6,96.9
+EY25,351_1065,Small Group Session 2 Participation Task,Participation Task,55,,84.6
+EY25,351_1070,Small Group Session 3 Participation Task,Participation Task,54,30.2,83.1
+EY25,351_1072,Small Group Session 5 Participation Task,Participation Task,53,92.5,81.5
+EY25,351_1090,Theories of Emotion and Conditioning Participation Task,Participation Task,53,23.1,81.5
+EY25,351_1067,AAMC CARS Passage Analysis and Practice Post-Class Survey,Post-Class Quiz,48,,73.8
+EY26,345_790,Acid/Base Chemistry Homework,Homework,98,70.4,81.7
+EY26,345_773,Atomic Structure and Periodic Table Trends Homework,Homework,100,62.8,83.3
+EY26,345_818,Brain and Behavior Homework,Homework,101,72.8,84.2
+EY26,345_873,CARS - Mapping Homework,Homework,95,64.6,79.2
+EY26,345_880,CARS - Practice Homework,Homework,98,73.4,81.7
+EY26,345_883,CARS - Practice Homework,Homework,88,61.3,73.3
+EY26,345_876,CARS - Question Strategy Homework,Homework,93,65.1,77.5
+EY26,345_867,CARS Strategy - Reading Fundamentals Homework,Homework,99,67.5,82.5
+EY26,345_882,"Charged Amino Acids, Isoelectric Point, Ion Exchange Chromatography Homework",Homework,95,76.4,79.2
+EY26,345_868,Chemical Equilibrium and Kinetics Homework,Homework,99,76.7,82.5
+EY26,345_874,Coaching Session 1: Building a Successful Study Schedule Homework,Homework,94,,78.3
+EY26,345_802,Electrostatics Homework,Homework,97,60.4,80.8
+EY26,345_879,Emotion and Stress Homework,Homework,101,73.0,84.2
+EY26,345_886,Enzyme Activity and Enzyme Kinetics Homework,Homework,72,71.9,60.0
+EY26,345_847,Enzymes: Features and Thermodynamics Homework,Homework,74,70.8,61.7
+EY26,345_871,Fluid Dynamics Homework,Homework,96,79.0,80.0
+EY26,345_1044,Learning Styles & Frameworks Homework,Homework,81,,67.5
+EY26,345_1115,MCAT Math Homework,Homework,79,87.2,65.8
+EY26,345_875,Magnetism & Circuits Homework,Homework,97,69.3,80.8
+EY26,345_884,"Peptide Bond Formation, Protein Structure, Non-enzymatic Function of Proteins Homework",Homework,92,71.3,76.7
+EY26,345_831,"Polar Amino Acids, Nonpolar Amino Acids, Stereochemistry Homework",Homework,93,72.0,77.5
+EY26,345_1024,Psych/Soc Review Homework,Homework,82,57.1,68.3
+EY26,345_872,Redox and Electrochemistry Homework,Homework,97,71.8,80.8
+EY26,345_877,Research Methods Homework,Homework,90,76.1,75.0
+EY26,345_878,Small Groups: Guided CARS Homework,Homework,91,68.5,75.8
+EY26,345_885,Small Groups: Guided Science Homework,Homework,90,61.9,75.0
+EY26,345_869,Stoichiometry and Solutions Homework,Homework,97,56.2,80.8
+EY26,345_870,Waves (Light + Sound) Homework,Homework,96,71.9,80.0
+EY26,345_1116,JW - 9 Passage CARS Exam,Other,93,60.3,77.5
+EY26,345_1095,Acid/Base Chemistry - Participation Task,Participation Task,107,99.1,89.2
+EY26,345_1073,Atomic Structure and Periodic Trends- Participation Tasks,Participation Task,115,43.8,95.8
+EY26,345_763,B/B Section Full Length Exam Review - Science Strategies (practical applications) Participation Task,Participation Task,114,33.0,95.0
+EY26,345_819,Brain and Behavior Participation Task,Participation Task,101,73.1,84.2
+EY26,345_754,C/P Section Full Length Review - Participation Task,Participation Task,116,79.7,96.7
+EY26,345_854,CARS - AAMC Practice Participation Task -2,Participation Task,118,,98.3
+EY26,345_796,CARS - Mapping Participation Task,Participation Task,96,90.4,80.0
+EY26,345_825,CARS - Practice Participation Task,Participation Task,104,89.2,86.7
+EY26,345_838,CARS - Practice Participation Task,Participation Task,94,96.5,78.3
+EY26,345_811,CARS - Question Strategy Participation Task,Participation Task,101,,84.2
+EY26,345_770,CARS Strategy - Reading Fundamentals Participation Task,Participation Task,116,65.2,96.7
+EY26,345_835,"Charged Amino Acids, Isoelectric Point, Ion Exchange Chromatography Participation Task",Participation Task,101,86.4,84.2
+EY26,345_1075,Chemical Equilibrium and Kinetics Participation Task,Participation Task,116,96.1,96.7
+EY26,345_828,Coaching Session - Study Period Approach Participation Task,Participation Task,89,96.3,74.2
+EY26,345_799,Coaching Session 1 - Study Schedules & Time Management Participation Task,Participation Task,90,70.0,75.0
+EY26,345_803,Electrostatics Participation Task,Participation Task,106,96.7,88.3
+EY26,345_822,Emotion and Stress Participation Task,Participation Task,105,96.7,87.5
+EY26,345_786,Fluid Dynamics Participation Task,Participation Task,104,75.2,86.7
+EY26,345_767,Learning Styles & Frameworks Participation Task,Participation Task,113,97.9,94.2
+EY26,345_806,Magnetism & Circuits Participation Task,Participation Task,96,68.6,80.0
+EY26,345_841,"Peptide Bond Formation, Protein Structure, Non-enzymatic Function of Proteins Participation Task",Participation Task,101,93.7,84.2
+EY26,345_1015,Psych/Soc AAMC Sample Test- PARTICIPATION TASK,Participation Task,115,94.8,95.8
+EY26,345_1096,Redox and Electrochemistry - Participation Task,Participation Task,102,97.7,85.0
+EY26,345_812,Research Methods Participation Task,Participation Task,102,96.3,85.0
+EY26,345_815,Small Groups: Guided CARS Participation Task,Participation Task,101,82.7,84.2
+EY26,345_844,Small Groups: Guided Science Participation Task,Participation Task,93,60.8,77.5
+EY26,345_1085,Stoichiometry and Solution - Participation Task,Participation Task,113,99.1,94.2
+EY26,345_1088,Waves (Light + Sound) - Participation Task,Participation Task,112,95.8,93.3
+EY26,345_977,CARS Section Review Post-Class Survey,Post-Class Quiz,109,0.9,90.8
+EY26,345_1042,Learning Styles & Frameworks Post-Class Quiz,Post-Class Quiz,104,95.4,86.7
+EY26,345_1014,Psych/Soc Section Review Post-Class Survey,Post-Class Quiz,103,1.5,85.8
+EY26,345_791,Acid/Base Chemistry - Pre-Class Quiz,Pre-Class Quiz,101,61.6,84.2
+EY26,345_1005,Bio/Biochem Section Review Pre-Class Survey,Pre-Class Quiz,116,18.1,96.7
+EY26,345_820,Brain and Behavior - Pre-Class Quiz,Pre-Class Quiz,88,77.5,73.3
+EY26,345_753,C/P Section Review - Pre-Class Survey,Pre-Class Quiz,108,,90.0
+EY26,345_797,CARS - Mapping - Pre-Class Quiz,Pre-Class Quiz,67,74.6,55.8
+EY26,345_826,CARS - Practice - Pre-Class Quiz,Pre-Class Quiz,93,65.8,77.5
+EY26,345_839,CARS - Practice - Pre-Class Quiz,Pre-Class Quiz,92,56.9,76.7
+EY26,345_975,CARS Section Review Pre-Class Survey,Pre-Class Quiz,113,2.7,94.2
+EY26,345_836,"Charged Amino Acids, Isoelectric Point, Ion Exchange Chromatography - Pre-Class Quiz",Pre-Class Quiz,90,77.8,75.0
+EY26,345_778,Chemical Equilibrium and Kinetics - Pre-Class Quiz,Pre-Class Quiz,93,66.5,77.5
+EY26,345_804,Electrostatics - Pre-Class Prep Work,Pre-Class Quiz,59,60.8,49.2
+EY26,345_1108,Electrostatics- Pre-Class Quiz,Pre-Class Quiz,91,64.9,75.8
+EY26,345_823,Emotion and Stress - Pre-Class Quiz,Pre-Class Quiz,98,86.1,81.7
+EY26,345_787,Fluid Dynamics - Pre-Class Quiz,Pre-Class Quiz,99,65.6,82.5
+EY26,345_768,Learning Styles & Frameworks - Pre-Class Quiz,Pre-Class Quiz,108,91.4,90.0
+EY26,345_808,Magnetism & Circuits - Pre-Class Quiz,Pre-Class Quiz,95,55.7,79.2
+EY26,345_842,"Peptide Bond Formation, Protein Structure, Non-enzymatic Function of Proteins - Pre-Class Quiz",Pre-Class Quiz,96,75.9,80.0
+EY26,345_833,"Polar Amino Acids, Nonpolar Amino Acids, Stereochemistry - Pre-Class Quiz",Pre-Class Quiz,87,63.0,72.5
+EY26,345_1104,Pre-Class Check - Study Process and Solution Chemistry,Pre-Class Quiz,97,46.3,80.8
+EY26,345_1006,Psych/Soc Section Review Pre-Class Survey,Pre-Class Quiz,113,14.2,94.2
+EY26,345_794,Redox and Electrochemistry - Pre-Class Quiz,Pre-Class Quiz,8,60.0,6.7
+EY26,345_813,Research Methods - Pre-Class Quiz,Pre-Class Quiz,95,74.2,79.2
+EY26,345_784,Waves (Light + Sound) - Pre-Class Quiz,Pre-Class Quiz,24,70.5,20.0
+EY26,345_895,Exam Date Reporting,Survey/Form,5,,4.2
+EY26,345_751,Jack Westin MCAT Course - Onboarding Survey,Survey/Form,106,2.5,88.3
+EY26,345_894,Practice Exam Scores Submission Form,Survey/Form,27,,22.5
+EY26,345_896,Unscored Sample Test (Free) Score Submission,Survey/Form,107,,89.2
