@@ -13,6 +13,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from . import question_filter
 from .config import CACHE_DIR
 
 INDEX_FILE = CACHE_DIR / "index.json"
@@ -51,8 +52,16 @@ def is_cached(course_id: int, assignment_id: int) -> bool:
 
 
 def get_cached_csv(course_id: int, assignment_id: int) -> "bytes | None":
+    """The cached export, with any excluded questions removed.
+
+    Every reader goes through here, so an activity where the class never reached
+    some questions is corrected once rather than in each caller. The file on disk
+    stays exactly as Canvas exported it — see canvas_app.question_filter.
+    """
     path = _csv_path(course_id, assignment_id)
-    return path.read_bytes() if path.exists() else None
+    if not path.exists():
+        return None
+    return question_filter.apply(course_id, assignment_id, path.read_bytes())
 
 
 def save_csv(

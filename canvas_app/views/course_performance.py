@@ -17,6 +17,7 @@ import streamlit as st
 from .. import bundle
 from .. import exam_scores as ex
 from .. import jw_theme as jw
+from .. import sessions as sess
 
 COHORTS = {345: "EY26", 351: "EY25"}
 
@@ -146,15 +147,63 @@ def _course_table(course_id: int) -> pd.DataFrame:
         submitters = ex.course_submitters(course_id, aid)
         pcts = ex._pct_by_key(course_id, aid)
         values = list(pcts.values())
+        due = item.get("due_at") or ""
         rows.append({
             "Assignment":  item["title"],
             "Type":        item["item_type"],
             "Submissions": len(submitters),
             "Average %":   round(sum(values) / len(values), 1) if values else None,
-            "due_at":      item.get("due_at") or "",
+            "due_at":      due,
+            "Session":     sess.label(course_id, due),
             "assignment_id": aid,
         })
-    return pd.DataFrame(rows).sort_values(["due_at", "Assignment"]).reset_index(drop=True)
+    table = pd.DataFrame(rows).sort_values(["due_at", "Assignment"]).reset_index(drop=True)
+    # An activity whose deadline has not arrived is still collecting submissions,
+    # so its participation is a partial count rather than a result.
+    due_stamp = pd.to_datetime(table["due_at"], utc=True, errors="coerce")
+    table["Still open"] = due_stamp.notna() & (due_stamp > pd.Timestamp.now(tz="UTC"))
+    return table
+
+
+def _scope_controls(course_id: int, table: pd.DataFrame) -> pd.DataFrame:
+    """Session picker and the still-open exclusion. Returns the filtered table."""
+    names = sess.present(course_id, table["due_at"])
+    open_n = int(table["Still open"].sum())
+
+    if len(names) > 1:
+        st.markdown("### Which stretch of the course")
+        st.caption(
+            "This course shell runs more than one teaching session. They cover "
+            "different material to different students, so the numbers below are "
+            "kept separate rather than averaged across the join."
+        )
+        left, right = st.columns([3, 2])
+        with left:
+            choice = st.radio(
+                "Session", ["All sessions"] + names, horizontal=True,
+                label_visibility="collapsed",
+            )
+        with right:
+            hide_open = st.checkbox(
+                f"Exclude {open_n} activity(ies) not due yet", value=True,
+                disabled=not open_n,
+                help="Still-open activities have only some of their submissions "
+                     "in, so they understate participation.",
+            ) if open_n else True
+        if choice != "All sessions":
+            table = table[table["Session"] == choice]
+    else:
+        hide_open = st.checkbox(
+            f"Exclude {open_n} activity(ies) not due yet", value=True,
+            help="Still-open activities have only some of their submissions in.",
+        ) if open_n else True
+
+    if hide_open and open_n:
+        excluded = ", ".join(table.loc[table["Still open"], "Assignment"])
+        table = table[~table["Still open"]]
+        if excluded:
+            st.caption(f"Not due yet, left out: {excluded}")
+    return table.reset_index(drop=True)
 
 
 def render() -> None:
@@ -180,11 +229,6 @@ def render() -> None:
         )
         return
 
-    graded = table[table["Average %"].notna()]
-    n_students = 0
-    for aid in table["assignment_id"]:
-        n_students = max(n_students, len(ex.course_submitters(course_id, aid)))
-
     # ── What this page is ─────────────────────────────────────────────────────
     st.markdown(
         f"""
@@ -204,6 +248,20 @@ A high participation rate with low accuracy means students showed up but
 struggled; the reverse means a strong few and a long tail of non-submitters.
 """
     )
+
+    st.divider()
+
+    table = _scope_controls(course_id, table)
+    if table.empty:
+        st.info("Nothing to show for this selection.")
+        return
+    shown_sessions = sess.present(course_id, table["due_at"])
+    graded = table[table["Average %"].notna()]
+    n_students = 0
+    for aid in table["assignment_id"]:
+        n_students = max(n_students, len(ex.course_submitters(course_id, aid)))
+
+    st.divider()
 
     k = st.columns(4)
     k[0].metric("Activities", len(table),
@@ -251,18 +309,45 @@ struggled; the reverse means a strong few and a long tail of non-submitters.
         "Each bar is the average of every graded activity of that type. Only the "
         "students who submitted are counted."
     )
-    by_type = (graded.groupby("Type")["Average %"].mean().reindex(present).dropna()
-               .reset_index())
-    if len(by_type):
-        fig = go.Figure(go.Bar(
-            x=by_type["Type"], y=by_type["Average %"],
-            marker_color=[TYPE_COLOR.get(t, jw.GRAY_400) for t in by_type["Type"]],
-            text=[f"{v:.0f}%" for v in by_type["Average %"]], textposition="outside",
-            hovertemplate="%{x}<br>average %{y:.1f}%<extra></extra>",
+    if len(shown_sessions) > 1:
+        # Two sessions in view: put them side by side per type rather than
+        # collapsing them into one bar that belongs to neither.
+        st.caption(
+            "Bars are grouped by session, so a type that got easier or harder "
+            "between them is visible instead of averaged away."
+        )
+        session_colors = sess.colors(course_id)
+        grouped = (graded.groupby(["Type", "Session"])["Average %"].mean()
+                   .round(1).reset_index())
+        fig = go.Figure()
+        for name in shown_sessions:
+            part = grouped[grouped["Session"] == name].set_index("Type").reindex(present)
+            fig.add_trace(go.Bar(
+                name=name, x=present, y=part["Average %"],
+                marker_color=session_colors.get(name, jw.GRAY_400),
+                text=[f"{v:.0f}%" if pd.notna(v) else "" for v in part["Average %"]],
+                textposition="outside",
+                hovertemplate="%{x} · " + name + "<br>average %{y:.1f}%<extra></extra>",
+            ))
+        fig.update_layout(**jw.plotly_layout(
+            height=380, barmode="group", yaxis_range=[0, 108],
+            yaxis_title="Average score %", xaxis_title=None,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
         ))
-        fig.update_layout(**jw.plotly_layout(height=340, yaxis_range=[0, 108],
-                                             yaxis_title="Average score %", xaxis_title=None))
         st.plotly_chart(fig, use_container_width=True)
+    else:
+        by_type = (graded.groupby("Type")["Average %"].mean().reindex(present).dropna()
+                   .reset_index())
+        if len(by_type):
+            fig = go.Figure(go.Bar(
+                x=by_type["Type"], y=by_type["Average %"],
+                marker_color=[TYPE_COLOR.get(t, jw.GRAY_400) for t in by_type["Type"]],
+                text=[f"{v:.0f}%" for v in by_type["Average %"]], textposition="outside",
+                hovertemplate="%{x}<br>average %{y:.1f}%<extra></extra>",
+            ))
+            fig.update_layout(**jw.plotly_layout(height=340, yaxis_range=[0, 108],
+                                                 yaxis_title="Average score %", xaxis_title=None))
+            st.plotly_chart(fig, use_container_width=True)
 
     # ── Over time ─────────────────────────────────────────────────────────────
     dated = table[table["due_at"].astype(str).str.len() > 0].copy()
@@ -282,6 +367,18 @@ struggled; the reverse means a strong few and a long tail of non-submitters.
             category_orders={"Type": present},
         )
         fig_t.update_traces(marker=dict(size=10, line=dict(color=jw.WHITE, width=1)))
+        # Mark where one session ends and the next begins, so the gap is not read
+        # as a lull in a single continuous course.
+        span = dated["Date"]
+        for stamp, name in sess.boundaries(course_id):
+            if name not in shown_sessions or not (span.min() <= stamp <= span.max()):
+                continue
+            fig_t.add_vline(
+                x=stamp.timestamp() * 1000, line_dash="dot", line_width=2,
+                line_color=sess.colors(course_id).get(name, jw.GRAY_400),
+                annotation_text=f"{name} begins", annotation_position="top left",
+                annotation_font_color=sess.colors(course_id).get(name, jw.GRAY_400),
+            )
         fig_t.update_layout(**jw.plotly_layout(
             height=400, yaxis_range=[0, 105], yaxis_title="Average score %",
             xaxis_title="Due date",
@@ -341,13 +438,13 @@ struggled; the reverse means a strong few and a long tail of non-submitters.
     )
     pick = st.multiselect("Show types", options=present, default=present)
     shown = table[table["Type"].isin(pick)] if pick else table
-    st.dataframe(
-        shown[["Assignment", "Type", "Submissions", "Average %"]],
-        use_container_width=True, hide_index=True,
-    )
+    columns = ["Assignment", "Type", "Submissions", "Average %"]
+    if len(shown_sessions) > 1:
+        columns.insert(2, "Session")
+    st.dataframe(shown[columns], use_container_width=True, hide_index=True)
     st.download_button(
         "⬇️ Download this table (CSV)",
-        shown[["Assignment", "Type", "Submissions", "Average %"]].to_csv(index=False).encode(),
+        shown[columns].to_csv(index=False).encode(),
         file_name=f"course_{course_id}_activities.csv",
         mime="text/csv",
     )
