@@ -3,6 +3,7 @@
 import streamlit as st
 import requests
 import json
+import re
 import pandas as pd
 import plotly.express as px
 import base64
@@ -20,7 +21,51 @@ from ..config import DATA_DIR
 BASE_URL = "https://jackwestin.com/nova-api"
 
 SNAPSHOT = DATA_DIR / "attendance.csv"
-SNAPSHOT_COLUMNS = ["cohort", "date", "session", "type", "attended", "roster", "pct"]
+SNAPSHOT_COLUMNS = ["cohort", "date", "session", "type", "attended", "roster", "pct", "round"]
+# Files written before `round` existed are still readable; it is derived on load.
+SNAPSHOT_REQUIRED = ["cohort", "date", "session", "type", "attended", "roster", "pct"]
+
+_SMALL_GROUP_RE = re.compile(r"small\s*gro", re.IGNORECASE)
+_GROUP_NO_RE = re.compile(r"group\s*(\d+)", re.IGNORECASE)
+
+
+def group_number(label) -> "str | None":
+    """Which small group a session belongs to: '#41 … Group 2' -> '2'."""
+    match = _GROUP_NO_RE.search(str(label))
+    return match.group(1) if match else None
+
+
+def assign_rounds(labels_in_order) -> dict:
+    """Map each small-group session label to the round it belongs to.
+
+    Four groups run *simultaneously* and every student sits in one of them, so
+    the eight sessions are two rounds of four rather than eight independent
+    events. The n-th time a given group meets is round n.
+
+    Because the groups are concurrent, a student cannot appear in two of them in
+    the same round, which is what makes a round's attendance the exact sum of its
+    parallel groups rather than an over-count.
+    """
+    seen, rounds = {}, {}
+    for label in labels_in_order:
+        number = group_number(label)
+        key = number if number is not None else f"_{label}"
+        seen[key] = seen.get(key, 0) + 1
+        rounds[label] = seen[key]
+    return rounds
+
+
+def _with_rounds(df: pd.DataFrame) -> pd.DataFrame:
+    """Ensure a `round` column exists, deriving it when an older file lacks one."""
+    small = df["type"].astype(str).str.lower().eq("small_group")
+    if "round" not in df.columns:
+        df["round"] = pd.NA
+    missing = small & df["round"].isna()
+    if missing.any():
+        derived = assign_rounds(df.loc[small, "session"].tolist())
+        df.loc[missing, "round"] = df.loc[missing, "session"].map(derived)
+    df.loc[~small, "round"] = pd.NA
+    return df
 
 
 def _render_snapshot() -> bool:
@@ -37,8 +82,9 @@ def _render_snapshot() -> bool:
         df = pd.read_csv(SNAPSHOT)
     except Exception:
         return False
-    if df.empty or not set(SNAPSHOT_COLUMNS).issubset(df.columns):
+    if df.empty or not set(SNAPSHOT_REQUIRED).issubset(df.columns):
         return False
+    df = _with_rounds(df)
 
     # Sessions are numbered "#57 Emotion and Stress"; sort on the number so #7
     # doesn't land after #70, and so the chart runs in teaching order.
@@ -65,15 +111,18 @@ def _render_snapshot() -> bool:
                 help="Every student-session attended, over every student-session "
                      "offered, across whole-class sessions.")
 
+    n_rounds = int(small_group["round"].nunique()) if len(small_group) else 0
     if len(small_group):
         st.info(
-            f"**{len(small_group)} small-group sessions are reported separately below, "
-            f"as attendee counts rather than percentages.** The cohort is split into "
-            f"four groups of roughly 30, so only a fraction of students is expected at "
-            f"any one — measuring them against the full roster would show ~20% and "
-            f"badly understate turnout. A percentage isn't shown at all because the "
-            f"export doesn't record which group met, and two of these sessions drew "
-            f"more students than the largest group holds, so they combined groups.",
+            f"**{len(small_group)} small-group sessions are {n_rounds} rounds of "
+            f"parallel groups, and are measured by round.** The cohort splits into "
+            f"four groups that meet at the same time, so a student attends exactly "
+            f"one per round. Scoring them per session would cap everyone at "
+            f"{100 // max(1, len(small_group) // max(1, n_rounds))}%, and scoring "
+            f"them against the full roster reads ~20% — both badly understate "
+            f"turnout. Because the groups are concurrent nobody can attend two in "
+            f"one round, so a round's attendance is the exact sum of its groups and "
+            f"compares directly with a whole-class session.",
             icon="ℹ️",
         )
 
@@ -104,14 +153,43 @@ def _render_snapshot() -> bool:
 
     if len(small_group):
         st.divider()
-        st.markdown(f"#### Small-group sessions ({len(small_group)}) — students attending")
+        st.markdown(f"#### Small groups — {n_rounds} round(s) of parallel sessions")
+
+        by_round = (small_group.groupby(["cohort", "round"], as_index=False)
+                    .agg(attended=("attended", "sum"),
+                         roster=("roster", "max"),
+                         groups=("session", "nunique")))
+        by_round["pct"] = (100 * by_round["attended"] / by_round["roster"]).round(0)
+        by_round["label"] = ("Round " + by_round["round"].astype(int).astype(str)
+                             + " (" + by_round["groups"].astype(str) + " groups)")
         st.caption(
-            "Counts, not percentages: the group that met isn't recorded. For scale, "
-            "the four groups hold 31, 31, 31 and 29 students."
+            "Each round is one pass through all four groups, so its attendance is "
+            "directly comparable with a whole-class session above."
+        )
+        fig_r = go.Figure(go.Bar(
+            x=by_round["pct"], y=by_round["label"], orientation="h",
+            marker_color=jw.TEAL_500,
+            text=[f"{a}/{r}" for a, r in zip(by_round["attended"], by_round["roster"])],
+            textposition="auto",
+            hovertemplate="%{y}<br>%{x:.0f}% of roster present<extra></extra>",
+        ))
+        fig_r.update_layout(**jw.plotly_layout(
+            height=max(200, 34 * len(by_round) + 120), xaxis_title="% of roster present",
+            xaxis_range=[0, 100], yaxis_title=None,
+            yaxis=dict(categoryorder="array",
+                       categoryarray=by_round["label"].tolist()[::-1]),
+            margin=dict(t=20, r=20, b=48, l=8),
+        ))
+        st.plotly_chart(fig_r, use_container_width=True)
+
+        st.markdown("###### The individual groups behind those rounds")
+        st.caption(
+            "Counts, not percentages — group sizes shift between rounds, and two of "
+            "these drew more students than the largest group nominally holds."
         )
         fig_sg = go.Figure(go.Bar(
             x=small_group["attended"], y=small_group["session"], orientation="h",
-            marker_color=jw.TEAL_500,
+            marker_color=jw.VIOLET_300,
             text=small_group["attended"], textposition="auto",
             hovertemplate="%{y}<br>%{x} students attended<extra></extra>",
         ))
@@ -609,15 +687,34 @@ def render() -> None:
         snap = snap.sort_values("session", key=lambda s: s.map(order))
         snap.insert(0, "cohort", cohort_label)
         snap["date"] = ""
-        # Small groups are attended by a subset of the cohort by design, so the
-        # full roster is the wrong denominator for them. Labelling them here
-        # keeps them out of the headline attendance rate downstream.
+        # Small groups run in parallel and a student attends one of them, so the
+        # full roster is the wrong denominator per session. Labelling them keeps
+        # them out of the headline rate; the round number lets the view score
+        # them as "one pass through all groups", which IS roster-comparable.
         snap["type"] = snap["session"].str.contains(
-            r"small\s*gro", case=False, na=False
+            _SMALL_GROUP_RE, na=False
         ).map({True: "small_group", False: "regular"})
         snap["roster"] = int(roster_size)
-        snap["pct"] = (snap["attended"] / int(roster_size) * 100).round(0).astype(int)
+        small_mask = snap["type"].eq("small_group")
+        rounds_map = assign_rounds(snap.loc[small_mask, "session"].tolist())
+        snap["round"] = snap["session"].map(rounds_map).where(small_mask)
+        # Per-session percentages are meaningful only for whole-class sessions.
+        # A single group measured against the whole cohort reads ~20%, so it is
+        # left blank rather than published as a number nobody should use.
+        snap["pct"] = (snap["attended"] / int(roster_size) * 100).round(0)
+        snap.loc[small_mask, "pct"] = pd.NA
+        snap["pct"] = snap["pct"].astype("Int64")
         snap = snap[SNAPSHOT_COLUMNS]
+
+        if small_mask.any():
+            per_round = (snap[small_mask].groupby("round")["attended"].sum()
+                         .rename("attended").reset_index())
+            per_round["pct"] = (100 * per_round["attended"] / int(roster_size)).round(0)
+            st.caption(
+                "Small-group rounds (used for the percentage): "
+                + " · ".join(f"Round {int(r.round)} {int(r.attended)}/{int(roster_size)}"
+                             f" = {int(r.pct)}%" for r in per_round.itertuples())
+            )
 
         st.dataframe(snap, use_container_width=True, hide_index=True)
         st.download_button(

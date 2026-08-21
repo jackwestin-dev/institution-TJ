@@ -1,45 +1,45 @@
-cohort,date,session,type,attended,roster,pct
-EY26,,#35 Session 4 - Carbohydrate Metabolism & Glycolysis,regular,93,121,77
-EY26,,#36 Session 3 - Metabolism Overview: The Path Through Metabolism,regular,98,121,81
-EY26,,#37 Session 2 - CARS: Assumption & Analogy,regular,96,121,79
-EY26,,#38 Session 1 - JW FL1 Rematch: Biomolecules,regular,105,121,87
-EY26,,#39 JAMP EY26: Small Group Session Group 4,small_group,23,121,19
-EY26,,#40 JAMP EY26: Small Group Session Group 3,small_group,26,121,21
-EY26,,#41 JAMP EY26: Small Group Session Group 2,small_group,23,121,19
-EY26,,#42 JAMP EY26: Small Group Session Group 1,small_group,30,121,25
-EY26,,#43 JAMP EY26: Small Group Session Group 4,small_group,24,121,20
-EY26,,#44 JAMP EY26: Small Group Session Group 3,small_group,33,121,27
-EY26,,#45 JAMP EY26: Small Group Session Group 2,small_group,24,121,20
-EY26,,#46 JAMP EY26: Small Group Session Group 1,small_group,32,121,26
-EY26,,#47 Coaching Session 3 - Approaching Full Length Exams and Review,regular,101,121,83
-EY26,,#48 CARS - AAMC Practice,regular,97,121,80
-EY26,,#49 Enzyme Activity and Enzyme Kinetics,regular,97,121,80
-EY26,,#50 Enzymes: Features and Thermodynamics,regular,100,121,83
-EY26,,"#51 Peptide Bond Formation, Protein Structure, Non-enzymatic Function of P",regular,104,121,86
-EY26,,#52 CARS - Practice,regular,98,121,81
-EY26,,"#53 Charged Amino Acids, Isoelectric Point, Ion Exchange Chromatography",regular,103,121,85
-EY26,,"#54 Polar Amino Acids, Nonpolar Amino Acids, Stereochemistry",regular,103,121,85
-EY26,,#55 Coaching Session - Study Period Approach,regular,102,121,84
-EY26,,#56 CARS - Practice,regular,108,121,89
-EY26,,#57 Emotion and Stress,regular,105,121,87
-EY26,,#58 Brain and Behavior,regular,106,121,88
-EY26,,#59 Research Methods,regular,110,121,91
-EY26,,#60 CARS - Question Strategy,regular,103,121,85
-EY26,,#61 Magnetism & Circuits,regular,107,121,88
-EY26,,#62 Electrostatics,regular,107,121,88
-EY26,,#63 Coaching Session 1: Building a Successful Study Schedule,regular,107,121,88
-EY26,,#64 CARS Mapping,regular,102,121,84
-EY26,,#65 Proctored Exam - Unscored Sample Test (Free),regular,75,121,62
-EY26,,#67 Redox and Electrochemistry,regular,109,121,90
-EY26,,#68 Acid/Base Chemistry,regular,108,121,89
-EY26,,#69 Fluid Dynamics,regular,111,121,92
-EY26,,#70 Waves (Light + Sound),regular,113,121,93
-EY26,,#71 Stoichiometry and Solutions,regular,111,121,92
-EY26,,#72 Chemical Equilibrium and Kinetics,regular,117,121,97
-EY26,,#73 Atomic Structure and Periodic Table Trends,regular,115,121,95
-EY26,,#74 CARS Strategy - Reading Fundamentals,regular,116,121,96
-EY26,,#75 Learning Styles & Frameworks,regular,113,121,93
-EY26,,#76 P/S Section Full Length Exam Review- Science Strategies (practical app,regular,115,121,95
-EY26,,#77 Content Diagnostic,regular,117,121,97
-EY26,,#78 Full Length Exam Review – CARS - Reading Fundamentals Introduction,regular,117,121,97
-EY26,,#79 C/P Section Full Length Exam Review - Introduction to Science Strategi,regular,115,121,95
+cohort,date,session,type,attended,roster,pct,round
+EY26,,#35 Session 4 - Carbohydrate Metabolism & Glycolysis,regular,93,121,77,
+EY26,,#36 Session 3 - Metabolism Overview: The Path Through Metabolism,regular,98,121,81,
+EY26,,#37 Session 2 - CARS: Assumption & Analogy,regular,96,121,79,
+EY26,,#38 Session 1 - JW FL1 Rematch: Biomolecules,regular,105,121,87,
+EY26,,#39 JAMP EY26: Small Group Session Group 4,small_group,23,121,,1
+EY26,,#40 JAMP EY26: Small Group Session Group 3,small_group,26,121,,1
+EY26,,#41 JAMP EY26: Small Group Session Group 2,small_group,23,121,,1
+EY26,,#42 JAMP EY26: Small Group Session Group 1,small_group,30,121,,1
+EY26,,#43 JAMP EY26: Small Group Session Group 4,small_group,24,121,,2
+EY26,,#44 JAMP EY26: Small Group Session Group 3,small_group,33,121,,2
+EY26,,#45 JAMP EY26: Small Group Session Group 2,small_group,24,121,,2
+EY26,,#46 JAMP EY26: Small Group Session Group 1,small_group,32,121,,2
+EY26,,#47 Coaching Session 3 - Approaching Full Length Exams and Review,regular,101,121,83,
+EY26,,#48 CARS - AAMC Practice,regular,97,121,80,
+EY26,,#49 Enzyme Activity and Enzyme Kinetics,regular,97,121,80,
+EY26,,#50 Enzymes: Features and Thermodynamics,regular,100,121,83,
+EY26,,"#51 Peptide Bond Formation, Protein Structure, Non-enzymatic Function of P",regular,104,121,86,
+EY26,,#52 CARS - Practice,regular,98,121,81,
+EY26,,"#53 Charged Amino Acids, Isoelectric Point, Ion Exchange Chromatography",regular,103,121,85,
+EY26,,"#54 Polar Amino Acids, Nonpolar Amino Acids, Stereochemistry",regular,103,121,85,
+EY26,,#55 Coaching Session - Study Period Approach,regular,102,121,84,
+EY26,,#56 CARS - Practice,regular,108,121,89,
+EY26,,#57 Emotion and Stress,regular,105,121,87,
+EY26,,#58 Brain and Behavior,regular,106,121,88,
+EY26,,#59 Research Methods,regular,110,121,91,
+EY26,,#60 CARS - Question Strategy,regular,103,121,85,
+EY26,,#61 Magnetism & Circuits,regular,107,121,88,
+EY26,,#62 Electrostatics,regular,107,121,88,
+EY26,,#63 Coaching Session 1: Building a Successful Study Schedule,regular,107,121,88,
+EY26,,#64 CARS Mapping,regular,102,121,84,
+EY26,,#65 Proctored Exam - Unscored Sample Test (Free),regular,75,121,62,
+EY26,,#67 Redox and Electrochemistry,regular,109,121,90,
+EY26,,#68 Acid/Base Chemistry,regular,108,121,89,
+EY26,,#69 Fluid Dynamics,regular,111,121,92,
+EY26,,#70 Waves (Light + Sound),regular,113,121,93,
+EY26,,#71 Stoichiometry and Solutions,regular,111,121,92,
+EY26,,#72 Chemical Equilibrium and Kinetics,regular,117,121,97,
+EY26,,#73 Atomic Structure and Periodic Table Trends,regular,115,121,95,
+EY26,,#74 CARS Strategy - Reading Fundamentals,regular,116,121,96,
+EY26,,#75 Learning Styles & Frameworks,regular,113,121,93,
+EY26,,#76 P/S Section Full Length Exam Review- Science Strategies (practical app,regular,115,121,95,
+EY26,,#77 Content Diagnostic,regular,117,121,97,
+EY26,,#78 Full Length Exam Review – CARS - Reading Fundamentals Introduction,regular,117,121,97,
+EY26,,#79 C/P Section Full Length Exam Review - Introduction to Science Strategi,regular,115,121,95,
