@@ -70,25 +70,35 @@ def parse_score_csv(uploaded_file) -> "tuple[pd.DataFrame | None, float | None]"
             except ValueError:
                 pass
 
-        # Fallback for 0-point New Quizzes: PointsPossible and OverallScore are
-        # both 0 in the gradebook export, but the real performance survives in the
-        # question-count columns. Derive score = #correct and pts = #questions so
-        # downstream score/pts*100 yields a meaningful percentage.
-        if pts is None or pts == 0:
-            correct_col = next((c for c, n in col_norm.items() if n == "numberofcorrect"), None)
-            incorrect_col = next((c for c, n in col_norm.items() if n == "numberofincorrect"), None)
-            noresp_col = next((c for c, n in col_norm.items() if n == "noresponse"), None)
-            if correct_col is not None:
-                correct = pd.to_numeric(df[correct_col], errors="coerce").fillna(0)
-                incorrect = (pd.to_numeric(df[incorrect_col], errors="coerce").fillna(0)
-                             if incorrect_col else 0)
-                noresp = (pd.to_numeric(df[noresp_col], errors="coerce").fillna(0)
-                          if noresp_col else 0)
-                total = (correct + incorrect + noresp)
-                derived_pts = float(total.max()) if len(total) else 0.0
-                if derived_pts > 0:
-                    result["score"] = correct.values
-                    pts = derived_pts
+        # Fall back to the question-count basis when PointsPossible cannot be the
+        # real denominator. Two ways that happens:
+        #   * 0-point New Quizzes — PointsPossible and OverallScore both export
+        #     as 0, but the real performance survives in the question-count
+        #     columns.
+        #   * PointsPossible set BELOW the question count. Assignment 1246 is a
+        #     7-question activity configured as 1 point, so OverallScore is a
+        #     0-1 ratio that Canvas rounds to 1.0 for anyone near-perfect: it
+        #     reads as a completion rate (97.8%) rather than accuracy (87.3%).
+        # PointsPossible ABOVE the question count is left alone — that is
+        # ordinary per-question weighting.
+        correct_col = next((c for c, n in col_norm.items() if n == "numberofcorrect"), None)
+        incorrect_col = next((c for c, n in col_norm.items() if n == "numberofincorrect"), None)
+        noresp_col = next((c for c, n in col_norm.items() if n == "noresponse"), None)
+        derived_pts = 0.0
+        correct = None
+        if correct_col is not None:
+            correct = pd.to_numeric(df[correct_col], errors="coerce").fillna(0)
+            incorrect = (pd.to_numeric(df[incorrect_col], errors="coerce").fillna(0)
+                         if incorrect_col else 0)
+            noresp = (pd.to_numeric(df[noresp_col], errors="coerce").fillna(0)
+                      if noresp_col else 0)
+            total = (correct + incorrect + noresp)
+            derived_pts = float(total.max()) if len(total) else 0.0
+
+        if pts is None or pts == 0 or (derived_pts and pts < derived_pts):
+            if correct is not None and derived_pts > 0:
+                result["score"] = correct.values
+                pts = derived_pts
 
         return result.dropna(subset=["student"]).reset_index(drop=True), pts
     except Exception:

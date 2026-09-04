@@ -47,6 +47,22 @@ EXCLUDED_QUESTIONS = {
         1632: "More women play soccer than men.",
         1637: "a fair game is fair in as many ways as possible.",
     },
+    (345, 1246): {
+        # ETC, ATP Production & Bioenergetics Participation Task, 2026-08-31.
+        # Canvas "Participation Task 7", which is the SIXTH question block in
+        # the export — this activity's export order does not match Canvas's item
+        # numbering, so the ItemID is the only safe handle. 17 of 92 blank
+        # against 0-3 on the questions the class did reach.
+        1734: "Oxaloacetate is siphoned into gluconeogenesis, so acetyl-CoA "
+              "condenses into ketone bodies instead of entering the TCA cycle",
+    },
+    (345, 1254): {
+        # Thermodynamics, Gases & Phase Changes Participation Task, 2026-09-03.
+        # Canvas Tasks 5 and 6; the session stopped after Task 4. 49 and 51 of
+        # 86 blank, against 1-4 on Tasks 1-4.
+        1764: "W = 0, so ΔU = Q",
+        1765: "4.4 kJ",
+    },
 }
 
 

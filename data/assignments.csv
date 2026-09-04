@@ -90,8 +90,15 @@ course_id,assignment_id,title,item_type,topic,due_at,n_submitted
 345,1231,CARS: Assumption & Analogy Homework,Homework,cars assumption analogy,2026-08-17T04:59:00Z,82
 345,1234,Metabolism Overview: The Path Through Metabolism Participation Task,Participation Task,metabolism overview the path through metabolism,2026-08-18T01:00:00Z,88
 345,1238,Carbohydrate Metabolism & Glycolysis Participation Task,Participation Task,carbohydrate metabolism glycolysis,2026-08-20T01:00:00Z,90
-345,1239,Carbohydrate Metabolism & Glycolysis Homework,Homework,carbohydrate metabolism glycolysis,2026-08-24T04:59:00Z,5
-345,1235,Metabolism Overview: The Path Through Metabolism Homework,Homework,metabolism overview the path through metabolism,2026-08-24T04:59:00Z,10
+345,1239,Carbohydrate Metabolism & Glycolysis Homework,Homework,carbohydrate metabolism glycolysis,2026-08-24T04:59:00Z,88
+345,1235,Metabolism Overview: The Path Through Metabolism Homework,Homework,metabolism overview the path through metabolism,2026-08-24T04:59:00Z,88
+345,1242,"Pyruvate Oxidation, TCA Cycle & Lipid Metabolism Participation Task",Participation Task,pyruvate oxidation tca cycle lipid metabolism,2026-08-25T01:00:00Z,99
+345,1246,"ETC, ATP Production & Bioenergetics Participation Task",Participation Task,etc atp production bioenergetics,2026-08-31T01:00:00Z,92
+345,1247,"ETC, ATP Production & Bioenergetics Homework",Homework,etc atp production bioenergetics,2026-08-31T04:59:00Z,86
+345,1243,"Pyruvate Oxidation, TCA Cycle & Lipid Metabolism Homework",Homework,pyruvate oxidation tca cycle lipid metabolism,2026-08-31T04:59:00Z,87
+345,1250,AAMC Passage Workshop: Metabolism Participation Task,Participation Task,aamc passage workshop metabolism,2026-09-01T01:00:00Z,90
+345,1254,"Thermodynamics, Gases & Phase Changes Participation Task",Participation Task,thermodynamics gases phase changes,2026-09-03T01:00:00Z,86
+345,1255,"Thermodynamics, Gases & Phase Changes Homework",Homework,thermodynamics gases phase changes,2026-09-07T04:59:00Z,4
 351,1057,Acid Base and Amino Acids Participation Task,Participation Task,acid base and amino acids,2026-06-22T09:28:37Z,63
 351,1068,AAMC CARS Passage Analysis and Practice Participation Task,Participation Task,aamc cars passage analysis and practice,2026-06-22T10:06:22Z,48
 351,1059,Small Group Session 1 Participation Task,Participation Task,small group session 1,2026-06-22T17:00:00Z,63

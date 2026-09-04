@@ -31,6 +31,15 @@ exam_data/
 # the one thing that could reverse it, so it stays local.
 data/.student_map.csv
 
+# Roster email addresses, pulled by fetch_student_emails.py for the outreach
+# list. An address identifies a student as surely as their name, and git history
+# cannot be un-published.
+data/.student_emails.csv
+
+# Staff reference sheet: dashboard IDs -> names, built by
+# build_student_reference.py from the map above. Same reason, same rule.
+student_reference.csv
+
 # Presentation deck and its generator, kept deliberately local. Nothing here is
 # student-identifying — the deck is cohort-level and was checked — they are just
 # not wanted in the repo. Listed so a stray `git add -A` can't sweep them in.

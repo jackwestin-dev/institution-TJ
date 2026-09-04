@@ -33,7 +33,7 @@ OUT_FILE = DATA_DIR / "canvas_metrics.csv"
 # Canvas course -> (cohort label, enrollment). Enrollment is the denominator for
 # participation; it is the cohort roster size, not the number who submitted.
 COURSES = {
-    345: ("EY26", 120),
+    345: ("EY26", 122),
     351: ("EY25", 65),
 }
 
