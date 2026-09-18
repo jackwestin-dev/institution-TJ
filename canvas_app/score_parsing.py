@@ -8,6 +8,52 @@ execute that page's script body).
 import pandas as pd
 
 
+def _norm(columns) -> dict:
+    """{column: comparison key} — lowercase, no spaces or underscores."""
+    return {c: str(c).lower().replace(" ", "").replace("_", "") for c in columns}
+
+
+def _pick(col_norm: dict, *names) -> "str | None":
+    return next((c for c, n in col_norm.items() if n in names), None)
+
+
+def latest_attempts(df: pd.DataFrame) -> pd.DataFrame:
+    """One row per student: the attempt Canvas keeps.
+
+    A New Quiz that allows a retake exports one row per attempt, so a row count
+    is not a submission count and a column mean is not a cohort mean. GI System,
+    Plasma Membrane & Second Messengers (345_1278) is the case this was built
+    for: the activity ran across two class sessions, 31 of its 89 students sat
+    it twice, and the export's 120 rows read as 120 submissions against a roster
+    of 122 — 98.4% participation on an activity 73.0% of the cohort did.
+
+    Canvas keeps the last attempt, and keeping it here reproduces that quiz's own
+    Quiz and Item Analysis report exactly: 449 correct of 534, 84.1%, where the
+    raw 120 rows average 79.2%. Neither other candidate rule lands on Canvas's
+    number (first attempt 410, highest-scoring 455), and the kept set matches the
+    89 submissions the submissions API reports.
+
+    Rows whose student cannot be identified are always kept — dropping a row for
+    want of an ID would undercount a submission that did happen.
+    """
+    col_norm = _norm(df.columns)
+    key = (_pick(col_norm, "id", "sisid")
+           or _pick(col_norm, "student", "name", "studentname", "fullname"))
+    if key is None or df[key].is_unique:
+        return df
+
+    ranked = df
+    attempt = _pick(col_norm, "attempt")
+    if attempt is not None:
+        ranked = df.assign(
+            _attempt=pd.to_numeric(df[attempt], errors="coerce").fillna(0)
+        ).sort_values("_attempt", kind="stable")
+
+    identified = ranked[ranked[key].notna()]
+    kept = identified.groupby(key, sort=False).tail(1)
+    return df.loc[df.index.isin(kept.index) | df[key].isna()]
+
+
 def parse_score_csv(uploaded_file) -> "tuple[pd.DataFrame | None, float | None]":
     """
     Parse a Canvas New Quizzes Student Analysis CSV export.
@@ -21,6 +67,7 @@ def parse_score_csv(uploaded_file) -> "tuple[pd.DataFrame | None, float | None]"
     try:
         df = pd.read_csv(uploaded_file)
         df.columns = [str(c).strip() for c in df.columns]
+        df = latest_attempts(df)
 
         # Normalised column names for matching (lowercase, no spaces/underscores)
         col_norm = {c: c.lower().replace(" ", "").replace("_", "") for c in df.columns}
@@ -109,12 +156,14 @@ def submitted_students(uploaded_file) -> "list[str]":
     """
     Return the list of student names that appear in a Student Analysis CSV.
 
-    A row in the export means the student submitted an attempt, so this is the
-    completion roster for that assignment regardless of whether scores parse.
+    A student in the export submitted an attempt, so this is the completion
+    roster for that assignment regardless of whether scores parse. One name per
+    student, not one per attempt — see latest_attempts.
     """
     try:
         df = pd.read_csv(uploaded_file)
         df.columns = [str(c).strip() for c in df.columns]
+        df = latest_attempts(df)
         col_norm = {c: c.lower().replace(" ", "").replace("_", "") for c in df.columns}
         name_col = next(
             (c for c, n in col_norm.items() if n in ("student", "name", "studentname", "fullname")),

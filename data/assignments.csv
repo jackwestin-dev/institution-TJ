@@ -2,7 +2,7 @@ course_id,assignment_id,title,item_type,topic,due_at,n_submitted
 345,894,Practice Exam Scores Submission Form,Survey,practice exam scores submission form,2026-05-20T13:41:09Z,27
 345,895,Exam Date Reporting,Survey,exam date reporting,2026-05-20T14:06:14Z,5
 345,896,Unscored Sample Test (Free) Score Submission,Survey,unscored sample test free score submission,2026-05-20T17:34:41Z,107
-345,751,Jack Westin MCAT Course - Onboarding Survey,Survey,jack westin mcat course onboarding survey,2026-05-22T04:59:59Z,106
+345,751,Jack Westin MCAT Course - Onboarding Survey,Survey,jack westin mcat course onboarding survey,2026-05-22T04:59:59Z,103
 345,753,C/P Section Review - Pre-Class Survey,Survey,c p section review pre class survey,2026-06-01T12:50:00Z,108
 345,754,C/P Section Full Length Review - Participation Task,Participation Task,c p section full length review,2026-06-01T15:00:00Z,116
 345,975,CARS Section Review Pre-Class Survey,Survey,cars section review pre class survey,2026-06-03T17:00:00Z,113
@@ -99,6 +99,9 @@ course_id,assignment_id,title,item_type,topic,due_at,n_submitted
 345,1250,AAMC Passage Workshop: Metabolism Participation Task,Participation Task,aamc passage workshop metabolism,2026-09-01T01:00:00Z,90
 345,1254,"Thermodynamics, Gases & Phase Changes Participation Task",Participation Task,thermodynamics gases phase changes,2026-09-03T01:00:00Z,86
 345,1255,"Thermodynamics, Gases & Phase Changes Homework",Homework,thermodynamics gases phase changes,2026-09-07T04:59:00Z,4
+345,1258,CARS: Timing & Diagnosing Weak Areas Participation Task,Participation Task,cars timing diagnosing weak areas,2026-09-10T01:00:00Z,87
+345,1259,CARS: Timing & Diagnosing Weak Areas Homework,Homework,cars timing diagnosing weak areas,2026-09-14T04:59:00Z,74
+345,1278,"GI System, Plasma Membrane & Second Messengers Participation Task",Participation Task,gi system plasma membrane second messengers,2026-09-17T01:00:00Z,89
 351,1057,Acid Base and Amino Acids Participation Task,Participation Task,acid base and amino acids,2026-06-22T09:28:37Z,63
 351,1068,AAMC CARS Passage Analysis and Practice Participation Task,Participation Task,aamc cars passage analysis and practice,2026-06-22T10:06:22Z,48
 351,1059,Small Group Session 1 Participation Task,Participation Task,small group session 1,2026-06-22T17:00:00Z,63
