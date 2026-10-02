@@ -85,32 +85,35 @@ def pct_by_key(course_id: int, assignment_id: int) -> "dict[str, float]":
     return {str(r.student_id): float(r.score_pct) for r in hit.itertuples()}
 
 
-def exam_frames() -> "tuple[pd.DataFrame, pd.DataFrame]":
+def exam_frames(labels) -> "dict[str, pd.DataFrame]":
     """
-    (exam1, exam2) shaped like exam_scores.extract_scores output, so
-    build_growth_table consumes them unchanged.
+    {label: frame} for each exam label, shaped like exam_scores.extract_scores
+    output so build_growth_table consumes them unchanged. A label with no rows
+    gets an empty frame.
     """
     empty = pd.DataFrame(columns=["key", "student", "total", *SECTIONS, "source_row"])
     df = _read(EXAMS)
     if df.empty:
-        return empty.copy(), empty.copy()
+        return {label: empty.copy() for label in labels}
 
-    out = []
-    for label in ("exam1", "exam2"):
+    out = {}
+    for label in labels:
         subset = df[df["exam"] == label].copy()
         if subset.empty:
-            out.append(empty.copy())
+            out[label] = empty.copy()
             continue
         frame = pd.DataFrame({
-            "key":        subset["student_id"].astype(str),
+            # Lower-cased because exam_scores.normalize_name lower-cases the IDs
+            # participation is keyed on, and the two have to join.
+            "key":        subset["student_id"].astype(str).str.lower(),
             "student":    subset["student_id"].astype(str),
             "total":      pd.to_numeric(subset["total"], errors="coerce"),
             **{s: pd.to_numeric(subset[s], errors="coerce") if s in subset else None
                for s in SECTIONS},
             "source_row": range(len(subset)),
         })
-        out.append(frame.reset_index(drop=True))
-    return out[0], out[1]
+        out[label] = frame.reset_index(drop=True)
+    return out
 
 
 def cohorts() -> "dict[str, str]":

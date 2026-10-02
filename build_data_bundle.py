@@ -173,20 +173,28 @@ def collect_assignments_and_scores() -> "tuple[list, list, dict, dict, list, lis
 
 
 def collect_exams() -> "tuple[list, dict]":
-    """Extract both MCAT exams from exam_data/, newest-looking file per exam."""
+    """Extract every exam in ex.EXAMS from exam_data/, one file per exam."""
     rows, display = [], {}
     if not EXAM_DATA_DIR.exists():
         return rows, display
 
     files = sorted(p for p in EXAM_DATA_DIR.iterdir()
                    if p.suffix.lower() in (".csv", ".xlsx", ".xls"))
-    for label, needle in (("exam1", "exam1"), ("exam2", "exam2")):
-        match = next((p for p in files if needle in p.name.lower()), None)
+    for exam in ex.EXAMS:
+        label = exam["label"]
+        match = next((p for p in files if p.name.lower().startswith(label)), None)
         if match is None:
-            print(f"  ! no file matching {needle!r} in {EXAM_DATA_DIR.name}/")
+            print(f"  ! no file starting {label!r} in {EXAM_DATA_DIR.name}/")
             continue
         df = (pd.read_excel(match) if match.suffix.lower() in (".xlsx", ".xls")
               else pd.read_csv(match))
+        # A shared score form: keep only the rows reporting this exam.
+        df, other = ex.filter_exam_rows(df, exam.get("which_exam"))
+        if len(other):
+            # The export mangles the ® in "AAMC®", which a cp1252 console can't print.
+            said = ", ".join(f"{n} x {what}" for what, n in other.items())
+            print(f"    dropped {int(other.sum())} row(s) reporting another exam: "
+                  + said.encode("ascii", "replace").decode())
         mapping = ex.describe_source(df)
         if not mapping["name_col"]:
             print(f"  ! {match.name}: no name column detected, skipped")

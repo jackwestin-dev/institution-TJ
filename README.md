@@ -15,7 +15,7 @@ Streamlit dashboard for JFDs. The sidebar has two sections, each with its own ra
 ## Canvas Accuracy views
 
 - **Quiz Reports** — Per-quiz scores, question analysis, cross-quiz comparison, essay review, trends, and module comparison for a Canvas course. Needs a Canvas URL and API token (sidebar, or `st.secrets`).
-- **Exam Growth** — MCAT exam 1 → exam 2 growth for the EY26 cohort: score bands, band movement, and participation-vs-improvement correlation.
+- **Exam Growth** — MCAT growth for the EY26 cohort across its full-length exams (AAMC baseline → JW FL1 → AAMC FL1), led by baseline → latest AAMC as the like-for-like comparison: score-band movement (<496 / 496–501 / 502+), band mix at every exam, and homework completion and accuracy against improvement.
 - **Nova Attendance** — Session attendance for a Nova class. Needs browser cookies pasted into the sidebar; they expire with your browser session.
 
 ## Data files (optional)

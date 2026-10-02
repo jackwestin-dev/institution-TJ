@@ -43,6 +43,33 @@ BAND_NAMES = [b[0] for b in BANDS]
 
 SECTIONS = ["C/P", "CARS", "B/B", "P/S"]
 
+# ── The cohort's exams, in the order they were sat ───────────────────────────
+#
+# `label` is the key everything is stored under: the exam_data/ filename prefix
+# and the `exam` column of data/exam_scores.csv.
+#
+# `maker` matters for reading the numbers. Exams from different test makers are
+# not on an identical scale, so a drop from a Jack Westin exam to an AAMC exam
+# is partly a change of ruler. The page leads with the AAMC-to-AAMC comparison
+# for that reason.
+#
+# `homework_cutoff` bounds the homework counted against growth to an exam: only
+# items due before it, so work set after the exam can't be credited to it.
+#
+# `which_exam` is for a shared score form. The Full Length Exam Scores survey
+# asks "Which exam did you take?", and a few students used it to report a
+# different exam — those rows are dropped rather than counted as this one.
+EXAMS = [
+    {"label": "exam1", "short": "Baseline", "name": "AAMC Unscored Sample Test",
+     "maker": "AAMC", "taken": "May–Jun 2026", "homework_cutoff": "2026-06-06"},
+    {"label": "exam2", "short": "JW FL1", "name": "Jack Westin Full-Length 1",
+     "maker": "Jack Westin", "taken": "Jul–Aug 2026", "homework_cutoff": "2026-08-06"},
+    {"label": "exam3", "short": "AAMC FL1", "name": "AAMC Practice Exam 1",
+     "maker": "AAMC", "taken": "Sep 2026", "homework_cutoff": "2026-09-28",
+     "which_exam": r"aamc.*practice exam 1\b"},
+]
+EXAM_BY_LABEL = {e["label"]: e for e in EXAMS}
+
 
 def band_of(total: "float | None") -> "str | None":
     if total is None or pd.isna(total):
@@ -156,11 +183,16 @@ def _reserved_columns(columns) -> set:
     }
 
 # (section label, ordered list of regexes tried against the normalised header)
+# The trailing "scaledscore.*<section>" patterns catch survey questions worded
+# "What was your scaled score in the Chem/Phys section?".
 _SECTION_PATTERNS = {
-    "C/P":  [r"^cpscaledscore$", r"chemphysscaledscore", r"^cp.*scaled", r"chemphys.*scaled"],
-    "CARS": [r"^carsscaledscore$", r"cars.*scaled", r"^cars$"],
-    "B/B":  [r"^bbscaledscore$", r"biobiochemscaledscore", r"^bb.*scaled", r"biobiochem.*scaled"],
-    "P/S":  [r"^psscaledscore$", r"psychsocscaledscore", r"^ps.*scaled", r"psychsoc.*scaled"],
+    "C/P":  [r"^cpscaledscore$", r"chemphysscaledscore", r"^cp.*scaled", r"chemphys.*scaled",
+             r"scaledscore.*chemphys"],
+    "CARS": [r"^carsscaledscore$", r"cars.*scaled", r"^cars$", r"scaledscore.*cars"],
+    "B/B":  [r"^bbscaledscore$", r"biobiochemscaledscore", r"^bb.*scaled", r"biobiochem.*scaled",
+             r"scaledscore.*biobiochem"],
+    "P/S":  [r"^psscaledscore$", r"psychsocscaledscore", r"^ps.*scaled", r"psychsoc.*scaled",
+             r"scaledscore.*psychsoc"],
 }
 
 
@@ -215,6 +247,25 @@ def describe_source(df: pd.DataFrame) -> dict:
         "mode":         "total" if detect_total_column(cols) else
                         ("sections" if len(sections) == 4 else "none"),
     }
+
+
+def filter_exam_rows(df: pd.DataFrame, pattern: "str | None") -> "tuple[pd.DataFrame, pd.Series]":
+    """
+    Keep only the rows of a shared score form that report the exam wanted.
+
+    Returns (kept rows, value counts of what the dropped rows said they took).
+    A table with no "Which exam did you take?" column, or no pattern, passes
+    through whole.
+    """
+    none_dropped = pd.Series(dtype=int)
+    if not pattern:
+        return df, none_dropped
+    col = next((c for c in df.columns if _norm_col(c).startswith("whichexam")), None)
+    if col is None:
+        return df, none_dropped
+    said = df[col].map(clean_cell)
+    keep = said.str.lower().str.contains(pattern, regex=True, na=False)
+    return df[keep], said[~keep].replace("", "(blank)").value_counts()
 
 
 # ── Extraction ───────────────────────────────────────────────────────────────
@@ -481,6 +532,7 @@ def participation_table(
     item_types: "list[str]",
     *,
     exclude_ids: "set | None" = None,
+    due_before: "str | None" = None,
 ) -> "tuple[pd.DataFrame, int]":
     """
     Per-student participation across the cached reports for a course.
@@ -492,11 +544,17 @@ def participation_table(
     export, i.e. they submitted an attempt. "Avg Task Score %" averages the
     score percentages of the items they did submit, and is NaN for items whose
     points can't be resolved (0-point tasks with no question-count columns).
+
+    due_before ("YYYY-MM-DD") keeps only items due before that date, so work
+    set after an exam isn't counted toward growth measured by it. Items with no
+    due date are kept.
     """
     exclude_ids = exclude_ids or set()
     items = course_items(course_id)
     items = items[items["item_type"].isin(item_types)]
     items = items[~items["assignment_id"].isin(exclude_ids)]
+    if due_before:
+        items = items[(items["due_at"] == "") | (items["due_at"] < due_before)]
 
     submissions: "dict[str, dict]" = {}
     n_items = 0
@@ -604,6 +662,30 @@ def _is_ungraded(pcts: "dict[str, float]") -> bool:
     return bool(values) and all(v == 0 for v in values)
 
 
+def never_graded(course_id: int, item_type: str) -> "set[int]":
+    """
+    IDs of `item_type` items Canvas never graded (every score exactly zero).
+
+    build_data_bundle drops these whole for graded types, so the deployed app
+    never sees them. Excluding them locally too keeps a count of "homework done"
+    the same in both places. Always empty on the bundle, which has none left.
+    """
+    if using_bundle(course_id):
+        return set()
+    out = set()
+    items = course_items(course_id)
+    for aid in items.loc[items["item_type"] == item_type, "assignment_id"]:
+        raw = _rc.get_cached_csv(course_id, aid)
+        if not raw:
+            continue
+        score_df, pts = parse_score_csv(io.BytesIO(raw))
+        if score_df is None or not pts:
+            continue
+        if _is_ungraded({i: s for i, s in enumerate(score_df["score"] / pts * 100)}):
+            out.add(int(aid))
+    return out
+
+
 def _pct_by_key(course_id: int, assignment_id: int) -> "dict[str, float]":
     """
     {student identifier: score %} for one assignment, best attempt kept.
@@ -612,7 +694,9 @@ def _pct_by_key(course_id: int, assignment_id: int) -> "dict[str, float]":
     student did submit — but never toward an average score.
     """
     if using_bundle(course_id):
-        found = _bundle.pct_by_key(course_id, assignment_id)
+        # Keyed the way participation_table keys submitters, so the two join.
+        found = {normalize_name(k): v
+                 for k, v in _bundle.pct_by_key(course_id, assignment_id).items()}
         return {} if _is_ungraded(found) else found
     raw = _rc.get_cached_csv(course_id, assignment_id)
     if not raw:

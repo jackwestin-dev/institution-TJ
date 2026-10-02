@@ -63,6 +63,24 @@ EXCLUDED_QUESTIONS = {
         1764: "W = 0, so ΔU = Q",
         1765: "4.4 kJ",
     },
+    # The two below had no Quiz and Item Analysis report to take answers from.
+    # Each key was instead solved from the Student Analysis export: the only
+    # assignment of correct options that reproduces Canvas's NumberOfCorrect on
+    # every row. It was unique for both, and the two questions the reports share
+    # solve to the same answer in each.
+    (345, 1286): {
+        # Respiratory System & Circulation Participation Task, 2026-09-21.
+        # The last two questions, 44 and 46 of 74 blank against 0-1 on the
+        # rest. The class picked them up next session — they open 1290.
+        1817: "One-sixteenth of the original flow",
+        1818: "Capillary hydrostatic pressure rises, so filtration exceeds reabsorption",
+    },
+    (345, 1290): {
+        # Renal & Urinary System Participation Task, 2026-09-23.
+        # The last two questions, 54 and 58 of 78 blank against 0-14 on the rest.
+        1849: "Higher in volume and more dilute",
+        1850: "Angiotensin II down, aldosterone down, blood pressure down",
+    },
 }
 
 

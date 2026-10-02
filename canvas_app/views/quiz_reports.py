@@ -314,14 +314,11 @@ def _render_essay_tab(
     st.success(f"Loaded {len(resp_df)} student responses, {len(q_cols)} question column(s).")
 
     # ── Step 3: Concept Checking ──────────────────────────────────────────────
-    backend_label = {"keyword": "Keyword Matching (no API key)", "gemini": "Google Gemini", "anthropic": "Anthropic Claude"}
-    backend_color = {"keyword": jw.TEAL_500, "gemini": jw.AMBER_500, "anthropic": jw.VIOLET_600}
     st.markdown(
         f"#### Step 3 — Concept Checking"
         f"<span style='margin-left:10px; padding:3px 10px; border-radius:12px; "
-        f"background:{backend_color.get(backend, jw.GRAY_400)}22; "
-        f"color:{backend_color.get(backend, jw.GRAY_400)}; font-size:0.85em; font-weight:600'>"
-        f"▶ {backend_label.get(backend, backend)}</span>",
+        f"background:{jw.TEAL_500}22; color:{jw.TEAL_500}; "
+        f"font-size:0.85em; font-weight:600'>▶ Keyword Matching</span>",
         unsafe_allow_html=True,
     )
 
@@ -853,39 +850,9 @@ def render() -> None:
         st.divider()
         st.markdown("**📝 Essay Review**")
 
-        essay_backend = st.radio(
-            "Concept-check method",
-            options=["keyword", "gemini", "anthropic"],
-            format_func=lambda x: {
-                "keyword":   "Keyword matching (no API key)",
-                "gemini":    "Google Gemini (free API key)",
-                "anthropic": "Anthropic Claude",
-            }[x],
-            index=0,
-            help=(
-                "**Keyword**: no AI, instant, checks if key terms appear in responses.\n"
-                "**Gemini**: free AI (get key at aistudio.google.com with a Google account).\n"
-                "**Anthropic**: most capable, requires console.anthropic.com account."
-            ),
-        )
-
-        gemini_key = ""
-        anthropic_key = ""
-
-        if essay_backend == "gemini":
-            gemini_key = st.text_input(
-                "Gemini API Key",
-                value=_secret("GEMINI_API_KEY"),
-                type="password",
-                help="Free key from aistudio.google.com — no credit card needed.",
-            )
-        elif essay_backend == "anthropic":
-            anthropic_key = st.text_input(
-                "Anthropic API Key",
-                value=_secret("ANTHROPIC_API_KEY"),
-                type="password",
-                help="From console.anthropic.com.",
-            )
+        # Concept checking runs on keyword matching only — instant, no external
+        # service involved, so the sidebar carries no method choice.
+        essay_backend = "keyword"
 
         essay_doc_url = st.text_input(
             "Answer Guide (Google Doc URL)",
@@ -1358,8 +1325,6 @@ def render() -> None:
                 doc_url=essay_doc_url,
                 quiz_id=quiz_id,
                 quiz_name=selected_quiz_name,
-                anthropic_key=anthropic_key,
-                gemini_key=gemini_key,
             )
 
         with tab6:
@@ -1645,8 +1610,6 @@ def render() -> None:
             doc_url=essay_doc_url,
             quiz_id=quiz_id,
             quiz_name=selected_quiz_name,
-            anthropic_key=anthropic_key,
-            gemini_key=gemini_key,
         )
 
     # ── Tab 6: Trends ─────────────────────────────────────────────────────────────
