@@ -81,6 +81,13 @@ EXCLUDED_QUESTIONS = {
         1849: "Higher in volume and more dilute",
         1850: "Angiotensin II down, aldosterone down, blood pressure down",
     },
+    (345, 1310): {
+        # CARS: AAMC Question Types - Applied Practice Participation Task,
+        # 2026-10-14. The second of two questions, 46 of 105 blank against 3 on
+        # the first. Key solved from the export as for 1286/1290; unique.
+        1962: "A city certifies hundreds of new lifeguards, but with no new "
+              "pools being built, most of them never find lifeguard work.",
+    },
 }
 
 

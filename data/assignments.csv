@@ -105,6 +105,12 @@ course_id,assignment_id,title,item_type,topic,due_at,n_submitted
 345,1286,Respiratory System & Circulation Participation Task,Participation Task,respiratory system circulation,2026-09-22T01:00:00Z,74
 345,1290,Renal & Urinary System Participation Task,Participation Task,renal urinary system,2026-09-24T00:30:00Z,78
 345,1294,Coaching: AAMC Full-Length 1 Review & Study Plan Check-In Participation Task,Participation Task,coaching aamc full length 1 review study plan check in,2026-10-04T00:30:00Z,82
+345,1302,Musculoskeletal System & Skin Participation Task,Participation Task,musculoskeletal system skin,2026-10-06T01:00:00Z,87
+345,1306,AAMC Passage Workshop: Organ Systems Participation Task,Participation Task,aamc passage workshop organ systems,2026-10-08T00:30:00Z,81
+345,1399,Coaching: AAMC Full Length Review Homework,Homework,coaching aamc full length review,2026-10-12T03:59:59Z,64
+345,1307,AAMC Passage Workshop: Organ Systems Homework,Homework,aamc passage workshop organ systems,2026-10-12T04:59:00Z,63
+345,1303,Musculoskeletal System & Skin Homework,Homework,musculoskeletal system skin,2026-10-12T04:59:00Z,60
+345,1310,CARS: AAMC Question Types - Applied Practice Participation Task,Participation Task,cars aamc question types applied practice,2026-10-15T00:30:00Z,76
 351,1057,Acid Base and Amino Acids Participation Task,Participation Task,acid base and amino acids,2026-06-22T09:28:37Z,63
 351,1068,AAMC CARS Passage Analysis and Practice Participation Task,Participation Task,aamc cars passage analysis and practice,2026-06-22T10:06:22Z,48
 351,1059,Small Group Session 1 Participation Task,Participation Task,small group session 1,2026-06-22T17:00:00Z,63
